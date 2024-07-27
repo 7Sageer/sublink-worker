@@ -1,0 +1,42 @@
+name: Deploy to Cloudflare Workers and Create R2 Bucket if Not Exists
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '21'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Install wrangler
+        run: npm install -g wrangler
+      
+      - name: Check and Create R2 Bucket
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          BUCKET_NAME="sublink-worker"
+          if ! wrangler r2 bucket list | grep -q "$BUCKET_NAME"; then
+            echo "Bucket $BUCKET_NAME does not exist. Creating..."
+            wrangler r2 bucket create "$BUCKET_NAME"
+            echo "Bucket $BUCKET_NAME created successfully."
+          else
+            echo "Bucket $BUCKET_NAME already exists. Skipping creation."
+          fi
+        
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
