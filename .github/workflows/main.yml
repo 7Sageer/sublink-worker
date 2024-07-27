@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers and Create R2 Bucket if Not Exists
+name: Deploy Worker
 
 on:
   push:
