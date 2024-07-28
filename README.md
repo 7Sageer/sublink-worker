@@ -1,6 +1,6 @@
 # Sublink Worker
 
-这是一个可部署在Cloudflare Worker的轻量级订阅转换工具，用于将各种代理协议的订阅链接转换为不同客户端可用的配置格式。
+这是一个可部署在Cloudflare Worker的轻量级订阅转换工具，用于将各种代理协议的分享url转换为不同客户端可用的订阅链接。
 
 ![image](/doc/image.png)
 
@@ -9,7 +9,8 @@
 
 ## 功能特点
 
-- 支持协议：SS、VMess、VLESS、Hysteria2
+- 支持协议：SS、VMess、VLESS、Hysteria2、Trojan
+- 支持从其他base64订阅链接获取分享url
 - 支持客户端：
   - Sing-Box
   - Clash
@@ -17,6 +18,17 @@
 - 提供Web界面用于便捷操作
 - 支持短链接生成（基于R2）
 - 浅色/深色主题切换
+- **新功能：支持 HTTP/HTTPS 的 Base64 订阅链接**
+- **新功能：支持 Trojan 协议**
+- **各种优化和性能提升**
+
+## 最近更新（7.28）
+
+我很高兴宣布以下新功能和改进：
+
+1. 新增对 HTTP/HTTPS 的 Base64 订阅链接的支持
+2. 新增对 Trojan 协议的支持
+3. 优化了页面引导和整体性能
 
 ## 部署
 

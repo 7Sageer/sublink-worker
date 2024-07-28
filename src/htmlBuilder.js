@@ -145,8 +145,8 @@ export function generateHtml(xrayUrl, singboxUrl, clashUrl){
       <div class="card-body">
         <form method="POST" id="encodeForm">
           <div class="mb-4">
-            <label for="inputTextarea" class="form-label">Enter Your Subscribe URL:</label>
-            <textarea class="form-control" id="inputTextarea" name="input" required placeholder="Enter your URL here" rows="3"></textarea>
+            <label for="inputTextarea" class="form-label">Enter Your Share URLs:</label>
+            <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
           </div>
           <div class="d-grid">
             <button type="submit" class="btn btn-primary btn-lg">
@@ -155,7 +155,7 @@ export function generateHtml(xrayUrl, singboxUrl, clashUrl){
           </div>
         </form>
         <div class="mt-5">
-          <h2 class="mb-4">Your converted links:</h2>
+          <h2 class="mb-4">Your subscribe links:</h2>
           <div class="mb-4">
             <label for="xrayLink" class="form-label">Xray Link:</label>
             <div class="input-group">
@@ -188,7 +188,7 @@ export function generateHtml(xrayUrl, singboxUrl, clashUrl){
           </div>
           <div class="d-grid">
             <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-              <i class="fas fa-compress-alt me-2"></i>Shorten All URLs
+              <i class="fas fa-compress-alt me-2"></i>Shorten Your Subscribe links
             </button>
           </div>
         </div>
@@ -243,7 +243,7 @@ export function generateHtml(xrayUrl, singboxUrl, clashUrl){
         console.error('Error:', error);
       } finally {
         shortenButton.disabled = false;
-        shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten All URLs';
+        shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Your Subscribe links';
       }
     }
 

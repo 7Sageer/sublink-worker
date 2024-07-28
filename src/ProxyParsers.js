@@ -1,4 +1,4 @@
-import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig } from './utils.js';
+import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64 } from './utils.js';
 
 
 export class ProxyParser {
@@ -8,7 +8,9 @@ export class ProxyParser {
 			case 'ss': return new ShadowsocksParser().parse(url);
 			case 'vmess': return new VmessParser().parse(url);
 			case 'vless': return new VlessParser().parse(url);
-            case 'hysteria2': return new Hysteria2Parser().parse(url);
+      case 'hysteria2': return new Hysteria2Parser().parse(url);
+      case 'http' || 'https': return HttpParser.parse(url);
+      case 'trojan': return new TrojanParser().parse(url);
 		}
 	}
 	}
@@ -132,3 +134,50 @@ export class ProxyParser {
           };
         }
       }
+
+      class TrojanParser {
+        parse(url) {
+          // trojan://8jxfHkRdEV@diylink.qhr.icu:31190?security=reality&sni=yahoo.com&fp=random&pbk=KlaUGzBvKlBX0GqI7hCPioRZvDuLP3O5wozg-L8nCiw&sid=a9d30b07&spx=%2F&type=tcp&headerType=none#trojan-test-nuu4xgxm
+          const { addressPart, params, name } = parseUrlParams(url);
+          const [password, serverInfo] = addressPart.split('@');
+          const { host, port } = parseServerInfo(serverInfo);
+
+          const parsedURL = parseServerInfo(addressPart);
+          const tls = createTlsConfig(params);
+          const transport = params.type !== 'tcp' ? createTransportConfig(params) : undefined;
+          return {
+            type: 'trojan',
+            tag: name,
+            server: host,
+            server_port: port,
+            password: password || parsedURL.username,
+            network: "tcp",
+            tcp_fast_open: false,
+            tls: tls,
+            transport: transport,
+            flow: params.flow ?? undefined
+          };
+        }
+      }
+        // 
+      class HttpParser {
+        static async parse(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const text = await response.text();
+                let decodedText;
+                try {
+                    decodedText = decodeBase64(text.trim());
+                } catch (e) {
+                    decodedText = text;
+                }
+                return decodedText.split('\n').filter(line => line.trim() !== '');
+            } catch (error) {
+                console.error('Error fetching or parsing HTTP(S) content:', error);
+                return null;
+            }
+        }
+    }

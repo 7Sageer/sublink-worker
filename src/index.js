@@ -42,11 +42,8 @@ async function handleRequest(request) {
 
       const shortCode = GenerateWebPath();
       
-      await Promise.all([
-        R2_BUCKET.put(`urls/x/${shortCode}`, JSON.stringify({ longUrl: xray })),
-        R2_BUCKET.put(`urls/s/${shortCode}`, JSON.stringify({ longUrl: singbox })),
-        R2_BUCKET.put(`urls/c/${shortCode}`, JSON.stringify({ longUrl: clash }))
-      ]);
+      // Store only the content once
+      await R2_BUCKET.put(`urls/${shortCode}`, JSON.stringify({ xray, singbox, clash }));
 
       const xrayShortUrl = `${url.origin}/x/${shortCode}`;
       const singboxShortUrl = `${url.origin}/s/${shortCode}`;
@@ -58,14 +55,20 @@ async function handleRequest(request) {
     } else if (url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/') || url.pathname.startsWith('/c/')) {
       // Handle shortened URLs
       const [, type, shortCode] = url.pathname.split('/');
-      const key = `urls/${type}/${shortCode}`;
+      const key = `urls/${shortCode}`;
       const object = await R2_BUCKET.get(key);
 
       if (object === null) {
         return new Response('Short URL not found', { status: 404 });
       }
 
-      const { longUrl } = JSON.parse(await object.text());
+      const data = JSON.parse(await object.text());
+      const longUrl = data[type === 'x' ? 'xray' : type === 's' ? 'singbox' : 'clash'];
+      
+      if (!longUrl) {
+        return new Response('Invalid URL type', { status: 400 });
+      }
+
       return Response.redirect(longUrl, 302);
     } else if (url.pathname.startsWith('/singbox')) {
       // Handle SingBox config requests
