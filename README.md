@@ -9,8 +9,7 @@
 
 ## 功能特点
 
-- 支持协议：SS、VMess、VLESS、Hysteria2、Trojan
-- 支持从其他base64订阅链接获取分享url
+- 支持协议：SS、VMess、VLESS、Hysteria2
 - 支持客户端：
   - Sing-Box
   - Clash
@@ -19,8 +18,7 @@
 - 支持短链接生成（基于R2）
 - 浅色/深色主题切换
 - **新功能：支持 HTTP/HTTPS 的 Base64 订阅链接**
-- **新功能：支持 Trojan 协议**
-- **各种优化和性能提升**
+- **新功能：支持 Trojan**
 
 ## 最近更新（7.28）
 
