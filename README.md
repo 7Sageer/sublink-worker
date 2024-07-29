@@ -13,16 +13,14 @@
 - 支持客户端：
   - Sing-Box
   - Clash
-  - XRay/V2Ray
+  - Xray/V2Ray
 - 提供Web界面用于便捷操作
 - 支持短链接生成（基于R2）
 - 浅色/深色主题切换
-- **新功能：支持 HTTP/HTTPS 的 Base64 订阅链接**
-- **新功能：支持 Trojan**
+- **新功能：支持导入 HTTP/HTTPS 的 Base64 订阅链接**
+- **新功能：支持导入 Trojan分享链接**
 
 ## 最近更新（7.28）
-
-我很高兴宣布以下新功能和改进：
 
 1. 新增对 HTTP/HTTPS 的 Base64 订阅链接的支持
 2. 新增对 Trojan 协议的支持
@@ -57,7 +55,6 @@
 
 这个项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
-<div style="background-color: #ffe6e6; border: 1px solid #ff8080; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-<strong>免责声明：</strong><br>
-本项目仅供学习交流使用，请勿用于非法用途。使用本项目所造成的一切后果由使用者自行承担，与开发者无关。
-</div>
+## 免责声明
+
+本项目仅供学习交流使用，请勿用于非法用途。使用本项目所造成的一切后果由使用者自行承担，与开发者无关
