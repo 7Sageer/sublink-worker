@@ -5,26 +5,32 @@
 ![image](/doc/image.png)
 
 演示地址：[https://sublink-worker.seven7-ade.workers.dev/](https://sublink-worker.seven7-ade.workers.dev/)
-> 提示：请保护自己的数据，建议自行部署
+> 提示：请保护自己的数据，建议[自行部署](#部署)
 
 ## 功能特点
 
-- 支持协议：SS、VMess、VLESS、Hysteria2
+- 支持协议：SS、VMess、VLESS、Hysteria2, Trojan
+- 支持导入Base64订阅链接
+- [一键部署](#部署)， 无需后端
 - 支持客户端：
   - Sing-Box
   - Clash
   - Xray/V2Ray
-- 提供Web界面用于便捷操作
+- 提供快速上手的Web界面
 - 支持短链接生成（基于R2）
 - 浅色/深色主题切换
-- **新功能：支持导入 HTTP/HTTPS 的 Base64 订阅链接**
-- **新功能：支持导入 Trojan分享链接**
 
-## 最近更新（7.28）
+## 最近更新
 
-1. 新增对 HTTP/HTTPS 的 Base64 订阅链接的支持
-2. 新增对 Trojan 协议的支持
-3. 优化了页面引导和整体性能
+### 29/7
+
+- 简化逆天路由规则
+
+### 28/7
+
+- 新增对 HTTP/HTTPS 的 Base64 订阅链接的支持
+- 新增对 Trojan 协议的支持
+- 优化了页面引导和整体性能
 
 ## 部署
 

@@ -130,12 +130,28 @@ export function generateHtml(xrayUrl, singboxUrl, clashUrl){
       right: 20px;
       z-index: 1000;
     }
+    .github-link {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      font-size: 2rem;
+      color: var(--text-color);
+      transition: color 0.3s ease;
+    }
+
+    .github-link:hover {
+      color: #6a11cb;
+    }
   </style>
 </head>
 <body>
   <button id="darkModeToggle" class="btn btn-outline-secondary">
     <i class="fas fa-moon"></i>
   </button>
+  <a href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer" class="github-link">
+    <i class="fab fa-github"></i>
+  </a>
 
   <div class="container mt-5">
     <div class="card mb-5">
