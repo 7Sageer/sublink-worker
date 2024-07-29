@@ -1,5 +1,4 @@
 # Logs
-test
 
 logs
 _.log
@@ -171,3 +170,7 @@ dist
 
 .dev.vars
 .wrangler/
+
+test
+.editorconfig
+.prettierrc
