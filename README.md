@@ -5,13 +5,13 @@
 ![image](/doc/image.png)
 
 演示地址：[https://sublink-worker.seven7-ade.workers.dev/](https://sublink-worker.seven7-ade.workers.dev/)
-> 提示：请保护自己的数据，建议[自行部署](#部署)
+> 提示：请保护自己的数据，建议[自行部署](#最近更新)
 
 ## 功能特点
 
 - 支持协议：SS、VMess、VLESS、Hysteria2, Trojan
 - 支持导入Base64订阅链接
-- [一键部署](#部署)， 无需后端
+- [一键部署](#最近更新)， 无需后端
 - 支持客户端：
   - Sing-Box
   - Clash
