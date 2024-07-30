@@ -48,9 +48,9 @@ export class ConfigBuilder {
         this.config.outbounds.push({
             type: "urltest",
             tag: "⚡ 自动选择",
-            outbounds: tagList
+            outbounds: DeepCopy(tagList),
         });
-        tagList.push('DIRECT', 'REJECT');
+        tagList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
 		SELECTORS_LIST.forEach(selector => {
 			this.config.outbounds.push({
 				type: "selector",

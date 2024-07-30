@@ -52,7 +52,7 @@ export class ClashConfigBuilder {
             interval: 300,
             lazy: false
         });
-        proxyList.push('DIRECT', 'REJECT');
+        proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
 		SELECTORS_LIST.forEach(selector => {
 			if (!this.config['proxy-groups'].some(g => g.name === selector)) {
 				this.config['proxy-groups'].push({
