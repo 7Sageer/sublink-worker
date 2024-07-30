@@ -44,7 +44,15 @@ export class ClashConfigBuilder {
             }
 		});
 		const proxyList = customProxies.filter(proxy => proxy?.tag !== undefined).map(proxy => proxy?.tag);
-		proxyList.push('DIRECT', 'REJECT');
+        this.config['proxy-groups'].push({
+            name: '⚡ 自动选择',
+            type: 'url-test',
+            proxies: DeepCopy(proxyList),
+            url: 'https://www.gstatic.com/generate_204',
+            interval: 300,
+            lazy: false
+        });
+        proxyList.push('DIRECT', 'REJECT');
 		SELECTORS_LIST.forEach(selector => {
 			if (!this.config['proxy-groups'].some(g => g.name === selector)) {
 				this.config['proxy-groups'].push({

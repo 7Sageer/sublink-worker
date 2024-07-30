@@ -44,7 +44,13 @@ export class ConfigBuilder {
     }
 
 	addSelectors() {
-		const tagList = this.config.outbounds.filter(outbound => outbound.type != 'selector').map(outbound => outbound?.tag);
+		const tagList = this.config.outbounds.filter(outbound => outbound?.server != undefined).map(outbound => outbound.tag);
+        this.config.outbounds.push({
+            type: "urltest",
+            tag: "⚡ 自动选择",
+            outbounds: tagList
+        });
+        tagList.push('DIRECT', 'REJECT');
 		SELECTORS_LIST.forEach(selector => {
 			this.config.outbounds.push({
 				type: "selector",

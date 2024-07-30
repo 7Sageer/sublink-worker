@@ -109,13 +109,7 @@ export const SING_BOX_CONFIG = {
 		{
 			"type": "dns",
 			"tag": "dns-out"
-		},
-		{
-			"type": "selector",
-			"tag": "🐟 漏网之鱼",
-			"outbounds": ["DIRECT", "REJECT", "🚀 节点选择"]
 		}
-
 	],
 
 "route": {
@@ -232,7 +226,7 @@ export const SING_BOX_CONFIG = {
 		}
 	}
 }
-export const SELECTORS_LIST =  ['🚀 节点选择', '📲 电报消息', '💬 OpenAi', '📹 油管视频', '🎥 奈飞视频', '📺 巴哈姆特', '📺 哔哩哔哩国际', '🌍 国外媒体', '🇨🇳 国内服务', '🔍 谷歌服务', '🐱 GitHub', '🛑 广告拦截', '🎥 奈飞节点', 'GLOBAL']
+export const SELECTORS_LIST =  ['🚀 节点选择', '🛑 广告拦截', '🌍 国外媒体', '🇨🇳 国内服务', '📲 电报消息', '💬 OpenAi', '📹 油管视频', '🎥 奈飞视频', '📺 巴哈姆特', '📺 哔哩哔哩国际', '🔍 谷歌服务', '🐱 GitHub', '🐟 漏网之鱼', 'GLOBAL']
 
 export const CLASH_RULES = `
   # - AND,(AND,(DST-PORT,443),(NETWORK,UDP)),(NOT,((GEOSITE,cn))),REJECT # quic
@@ -275,10 +269,10 @@ export const CLASH_CONFIG = {
 		fallback: ['8.8.8.8', '8.8.4.4', 'tls://1.0.0.1:853', 'tls://dns.google:853'],
 	},
     proxies: [],
-    'proxy-groups': [{
-		'name': '🐟 漏网之鱼',
-		'type': 'select',
-		'proxies': ['🚀 节点选择','DIRECT','REJECT']
-	}],
+    'proxy-groups': [
+		// 'name': '🐟 漏网之鱼',
+		// 'type': 'select',
+		// 'proxies': ['🚀 节点选择','DIRECT','REJECT']
+	],
 	rules: parsedRules,
 };
