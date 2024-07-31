@@ -9,8 +9,11 @@ export class ProxyParser {
 			case 'vmess': return new VmessParser().parse(url);
 			case 'vless': return new VlessParser().parse(url);
       case 'hysteria2': return new Hysteria2Parser().parse(url);
-      case 'http' || 'https': return HttpParser.parse(url);
+      case 'http':
+      case 'https':
+      return HttpParser.parse(url);
       case 'trojan': return new TrojanParser().parse(url);
+      case 'tuic': return new TuicParser().parse(url);
 		}
 	}
 	}
@@ -137,7 +140,6 @@ export class ProxyParser {
 
       class TrojanParser {
         parse(url) {
-          // trojan://8jxfHkRdEV@diylink.qhr.icu:31190?security=reality&sni=yahoo.com&fp=random&pbk=KlaUGzBvKlBX0GqI7hCPioRZvDuLP3O5wozg-L8nCiw&sid=a9d30b07&spx=%2F&type=tcp&headerType=none#trojan-test-nuu4xgxm
           const { addressPart, params, name } = parseUrlParams(url);
           const [password, serverInfo] = addressPart.split('@');
           const { host, port } = parseServerInfo(serverInfo);
@@ -159,7 +161,34 @@ export class ProxyParser {
           };
         }
       }
-        // 
+
+      class TuicParser {
+        parse(url) {
+          const { addressPart, params, name } = parseUrlParams(url);
+          const [userinfo, serverInfo] = addressPart.split('@');
+          const { host, port } = parseServerInfo(serverInfo);
+      
+          const tls = {
+            enabled: true,
+            server_name: params.sni,
+            alpn: [params.alpn],
+          };
+      
+          return {
+            tag: name,
+            type: "tuic",
+            server: host,
+            server_port: port,
+            uuid: userinfo.split(':')[0],
+            password: userinfo.split(':')[1],
+            congestion_control: params.congestion_control,
+            tls: tls,
+            flow: params.flow ?? undefined
+          };
+        }
+      }
+      
+
       class HttpParser {
         static async parse(url) {
             try {

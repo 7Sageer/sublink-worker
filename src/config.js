@@ -269,10 +269,6 @@ export const CLASH_CONFIG = {
 		fallback: ['8.8.8.8', '8.8.4.4', 'tls://1.0.0.1:853', 'tls://dns.google:853'],
 	},
     proxies: [],
-    'proxy-groups': [
-		// 'name': '🐟 漏网之鱼',
-		// 'type': 'select',
-		// 'proxies': ['🚀 节点选择','DIRECT','REJECT']
-	],
+    'proxy-groups': [],
 	rules: parsedRules,
 };

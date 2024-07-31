@@ -158,6 +158,17 @@ export class ClashConfigBuilder {
                     'skip-cert-verify': proxy.tls.insecure,
                     'flow': proxy.flow ?? undefined,
 				}
+            case 'tuic':
+                return {
+                    name: proxy.tag,
+                    type: proxy.type,
+                    server: proxy.server,
+                    port: proxy.server_port,
+                    uuid: proxy.uuid,
+                    password: proxy.password,
+                    'congestion-controller': proxy.congestion,
+                    'skip-cert-verify': proxy.tls.insecure,
+                };
             default:
                 return proxy; // Return as-is if no specific conversion is defined
         }
