@@ -9,7 +9,7 @@
 
 ## 功能特点
 
-- 支持协议：SS、VMess、VLESS、Hysteria2, Trojan, TUIC
+- 支持协议：SS, VMess, VLESS, Hysteria2, Trojan, TUIC
 - 支持导入Base64订阅链接
 - [一键部署](#最近更新)， 无需后端
 - 支持客户端：
@@ -24,16 +24,22 @@
 
 ### 3/8
 
-- 适配Sing-Box的rule-set
+- 适配SingBox的rule-set
+
+---
 
 ### 31/7
 
 - 支持 TUIC
 
+---
+
 ### 30/7
 
 - 简化路由逻辑
 - 修复了一些小问题
+
+---
 
 ## 部署
 
