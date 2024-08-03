@@ -1,10 +1,10 @@
 import yaml from 'js-yaml';
 
 export const SING_BOX_CONFIG = {
-    log : {
-		disabled: false,
-		level: 'info',
-		timestamp: true,
+	log : {
+	disabled: false,
+	level: 'info',
+	timestamp: true,
 	},
     dns : {
 		"servers": [
@@ -71,14 +71,13 @@ export const SING_BOX_CONFIG = {
 			"inet4_range": "198.18.0.0/15"
 		}
 	}, 
-    ntp : {
+	ntp : {
 		"enabled": true,
 		"server": "time.apple.com",
 		"server_port": 123,
 		"interval": "30m",
 		"detour": "DIRECT"
 	},
-
 	inbounds : [
 		{
 			"type": "mixed",
@@ -96,7 +95,7 @@ export const SING_BOX_CONFIG = {
 			"sniff": true
 		}
 	],
-
+	
 	outbounds : [
 		{
 			"type": "direct",
@@ -112,108 +111,116 @@ export const SING_BOX_CONFIG = {
 		}
 	],
 
-"route": {
-    "rules": [
-      {
-        "protocol": "dns",
-        "port": 53,
-        "outbound": "dns-out"
-      },
-      {
-        "clash_mode": "direct",
-        "outbound": "DIRECT"
-      },
-      {
-        "clash_mode": "global",
-        "outbound": "GLOBAL"
-      },
-	  {
-		"geosite": "category-ads-all",
-		"outbound": "🛑 广告拦截"
-	  },
-	  {
-		"geosite": "openai",
-		"outbound": "💬 OpenAi"
-	  },
-	  {
-		"geosite": "biliintl",
-		"outbound": "📺 哔哩哔哩国际"
-	  },
-	  {
-		"geosite": "twitter",
-		"outbound": "🌍 国外媒体"
-	  },
-	  {
-		"geosite": "spotify",
-		"outbound": "🌍 国外媒体"
-	  },
-	  {
-		"geosite": "youtube",
-		"outbound": "📹 油管视频"
-	  },
-	  {
-		"geosite": "github",
-		"outbound": "🐱 GitHub"
-	  },
-	  {
-		"geosite": "google",
-		"outbound": "🔍 谷歌服务"
-	  },
-	  {
-		"geosite": "telegram",
-		"outbound": "📲 电报消息"
-	  },
-	  {
-		"geosite": "netflix",
-		"outbound": "🎥 奈飞视频"
-	  },
-	  {
-		"geosite": "bahamut",
-		"outbound": "📺 巴哈姆特"
-	  },
-	  {
-		"geosite": "geolocation-!cn",
-		"outbound": "🌍 国外媒体"
-	  },
-	  {
-		"geoip": "google",
-		"outbound": "🔍 谷歌服务"
-	  },
-	  {
-		"geoip": "netflix",
-		"outbound": "🎥 奈飞视频"
-	  },
-	  {
-		"geoip": "telegram",
-		"outbound": "📲 电报消息"
-	  },
-	  {
-		"geoip": "twitter",
-		"outbound": "🌍 国外媒体"
-	  },
-	  {
-		"geosite": "pixiv",
-		"outbound": "🌍 国外媒体"
-	  },
-	  {
-		"geosite": "CN",
-		"outbound": "🇨🇳 国内服务"
-	  },
-	  {
-		"geoip": "CN",
-		"outbound": "🇨🇳 国内服务"
-	  }
-		
-    ],
-    "final": "🐟 漏网之鱼",
-    "auto_detect_interface": true,
-	"geoip": {
-		"download_detour": "proxy"
-	  },
-	"geosite": {
-		"download_detour": "proxy"
+   "route": {
+	"rules": [
+		{
+			"protocol": "dns",
+			"port": 53,
+			"outbound": "dns-out"
+		  },
+		  {
+			"clash_mode": "direct",
+			"outbound": "DIRECT"
+		  },
+		  {
+			"clash_mode": "global",
+			"outbound": "GLOBAL"
+		},
+		{ "rule_set": [ "ads" ], "outbound": "🛑 广告拦截" },
+		{ "ip_is_private": true, "outbound": "🔒 私有网络" },
+		{ "rule_set": [ "google-cn" ], "outbound": "🇬 谷歌服务" },
+		{ "rule_set": [ "netflix" ], "outbound": "🎥 奈飞视频" },
+		{ "rule_set": [ "youtube" ], "outbound": "📹 油管视频" },
+		{ "rule_set": [ "bilibili" ], "outbound": "📺 哔哩哔哩" },
+		{ "rule_set": [ "ai" ], "outbound": "💬 OpenAI" },
+		{ "rule_set": [ "cn" ], "outbound": "🇨🇳 国内服务" },
+		{ "rule_set": [ "netflixip" ], "outbound": "🎥 奈飞视频"},
+		{ "rule_set": [ "telegramip" ], "outbound": "📲 电报消息"},
+		{ "ip_is_private": true, "outbound": "🔒 私有网络"},
+		{ "rule_set": [ "cnip" ], "outbound": "🇨🇳 国内服务" },
+	],
+	"auto_detect_interface": true,
+	"final": "🐟 漏网之鱼",
+	"rule_set": [
+		{
+			"tag": "ads",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-adblockplus.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "google-cn",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-google.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "netflix",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-netflix.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "youtube",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-youtube.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "bilibili",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-bilibili.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "ai",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-openai.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "cn",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geosite-cn.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "netflixip",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geoip-netflix.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "telegramip",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geoip-telegram.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "cnip",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/geoip-cn.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+		{
+			"tag": "geosite-geolocation-!cn",
+			"type": "remote",
+			"format": "binary",
+			"url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-!cn.srs",
+			"download_detour": "⚡ 自动选择"
+		},
+	]
 	},
-   },
 
 	experimental : {
 		"cache_file": {
@@ -226,49 +233,47 @@ export const SING_BOX_CONFIG = {
 		}
 	}
 }
-export const SELECTORS_LIST =  ['🚀 节点选择', '🛑 广告拦截', '🌍 国外媒体', '🇨🇳 国内服务', '📲 电报消息', '💬 OpenAi', '📹 油管视频', '🎥 奈飞视频', '📺 巴哈姆特', '📺 哔哩哔哩国际', '🔍 谷歌服务', '🐱 GitHub', '🐟 漏网之鱼', 'GLOBAL']
+export const SELECTORS_LIST = ['🚀 节点选择', '🛑 广告拦截', '🌍 国外媒体', '🔒 私有网络', '🇨🇳 国内服务', '📲 电报消息', '💬 OpenAI', '📹 油管视频', '🎥 奈飞视频', '📺 哔哩哔哩', '🇬 谷歌服务', '🐟 漏网之鱼', 'GLOBAL']
 
 export const CLASH_RULES = `
   # - AND,(AND,(DST-PORT,443),(NETWORK,UDP)),(NOT,((GEOSITE,cn))),REJECT # quic
-
   - GEOSITE,category-ads-all,🛑 广告拦截
-  - GEOSITE,openai, 💬 OpenAi
-  - GEOSITE,biliintl, 📺 哔哩哔哩国际
+  - GEOSITE,openai,💬 OpenAI
+  - GEOSITE,biliintl,📺 哔哩哔哩
+  - GEOSITE,bilibili,📺 哔哩哔哩
   - GEOSITE,twitter,🌍 国外媒体
   - GEOSITE,spotify,🌍 国外媒体
   - GEOSITE,youtube,📹 油管视频
-  - GEOSITE,github, 🐱 GitHub
-  - GEOSITE,google, 🔍 谷歌服务
+  - GEOSITE,google,🇬 谷歌服务
   - GEOSITE,telegram,📲 电报消息
   - GEOSITE,netflix,🎥 奈飞视频
-  - GEOSITE,bahamut,📺 巴哈姆特
   - GEOSITE,geolocation-!cn,🌍 国外媒体
-
   # - AND,(AND,(DST-PORT,443),(NETWORK,UDP)),(NOT,((GEOIP,CN))),REJECT # quic
-  - GEOIP,google,🔍 谷歌服务
+  - GEOIP,private,🔒 私有网络
+  - GEOIP,google,🇬 谷歌服务
   - GEOIP,netflix,🎥 奈飞视频
   - GEOIP,telegram,📲 电报消息
   - GEOIP,twitter,🌍 国外媒体
   - GEOSITE,pixiv,🌍 国外媒体
-  - GEOSITE,CN, 🇨🇳 国内服务
+  - GEOSITE,CN,🇨🇳 国内服务
   - GEOIP,CN,🇨🇳 国内服务
   - MATCH,🐟 漏网之鱼,🚀 节点选择
-  `;
+`;
 
 const parsedRules = yaml.load(CLASH_RULES);
 
 export const CLASH_CONFIG = {
-    port: 7890,
-    'socks-port': 7891,
-    'allow-lan': false,
-    mode: 'Rule',
-    'log-level': 'info',
+	port: 7890,
+	'socks-port': 7891,
+	'allow-lan': false,
+	mode: 'Rule',
+	'log-level': 'info',
 	dns: {
 		enable: true,
 		nameserver: ['119.29.29.29', '223.5.5.5'],
 		fallback: ['8.8.8.8', '8.8.4.4', 'tls://1.0.0.1:853', 'tls://dns.google:853'],
 	},
-    proxies: [],
-    'proxy-groups': [],
+		proxies: [],
+		'proxy-groups': [],
 	rules: parsedRules,
 };
