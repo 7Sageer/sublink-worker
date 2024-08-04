@@ -1,49 +1,23 @@
 import yaml from 'js-yaml';
-import { ProxyParser } from './ProxyParsers.js';
 import { CLASH_CONFIG, SELECTORS_LIST } from './config.js';
+import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
-export class ClashConfigBuilder {
+export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString) {
-        this.inputString = inputString;
-        this.config = DeepCopy(CLASH_CONFIG);
+        super(inputString, CLASH_CONFIG);
     }
 
-    async build() {
-        const customProxies = await this.parseCustomProxies();
-        this.addCustomProxies(customProxies);
-        return yaml.dump(this.config);
-    }
-
-    async parseCustomProxies() {
-        const urls = this.inputString.split('\n').filter(url => url.trim() !== '');
-        const parsedProxies = [];
-
-        for (const url of urls) {
-            const result = await ProxyParser.parse(url);
-            if (Array.isArray(result)) {
-                // If the result is an array, it's from an HTTP(S) source
-                for (const subUrl of result) {
-                    const subResult = await ProxyParser.parse(subUrl);
-                    if (subResult) {
-                        parsedProxies.push(subResult);
-                    }
-                }
-            } else if (result) {
-                parsedProxies.push(result);
+    addCustomItems(customItems) {
+        customItems.forEach(item => {
+            if (item?.tag && !this.config.proxies.some(p => p.name === item.tag)) {
+                this.config.proxies.push(this.convertToClashProxy(item));
             }
-        }
-
-        return parsedProxies;
+        });
     }
 
-	addCustomProxies(customProxies) {
-		customProxies.forEach(proxy => {
-            if (proxy?.tag && !this.config.proxies.some(p => p.name === proxy.tag)) {
-                this.config.proxies.push(this.convertToClashProxy(proxy));
-            }
-		});
-		const proxyList = customProxies.filter(proxy => proxy?.tag !== undefined).map(proxy => proxy?.tag);
+    addSelectors() {
+        const proxyList = this.config.proxies.map(proxy => proxy.name);
         this.config['proxy-groups'].push({
             name: '⚡ 自动选择',
             type: 'url-test',
@@ -53,17 +27,20 @@ export class ClashConfigBuilder {
             lazy: false
         });
         proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
-		SELECTORS_LIST.forEach(selector => {
-			if (!this.config['proxy-groups'].some(g => g.name === selector)) {
-				this.config['proxy-groups'].push({
-					type: "select",
-					name: selector,
-					proxies: selector !== '🚀 节点选择' ? ['🚀 节点选择', ...proxyList] : proxyList
-				});
-			}
-		});
-	}
+        SELECTORS_LIST.forEach(selector => {
+            if (!this.config['proxy-groups'].some(g => g.name === selector)) {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: selector,
+                    proxies: selector !== '🚀 节点选择' ? ['🚀 节点选择', ...proxyList] : proxyList
+                });
+            }
+        });
+    }
 
+    formatConfig() {
+        return yaml.dump(this.config);
+    }
     convertToClashProxy(proxy) {
         switch(proxy.type) {
             case 'shadowsocks':
