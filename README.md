@@ -11,7 +11,7 @@
 
 - 支持协议：SS, VMess, VLESS, Hysteria2, Trojan, TUIC
 - 支持导入Base64订阅链接
-- [一键部署](#最近更新)， 无需后端
+- [一键部署](#最近更新)，Vanilla JS + Cloudflare Worker，无需后端
 - 支持客户端：
   - Sing-Box
   - Clash
@@ -22,9 +22,9 @@
 
 ## 最近更新
 
-### 3/8
+### 4/8
 
-- 适配SingBox的rule-set
+- 重构配置文件生成逻辑
 
 ---
 
