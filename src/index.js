@@ -16,22 +16,51 @@ async function handleRequest(request) {
       return new Response(generateHtml('', '', ''), {
         headers: { 'Content-Type': 'text/html' }
       });
-    } else if (request.method === 'POST' && url.pathname === '/') {
-      // Handle form submission
+    }  else if (request.method === 'POST' && url.pathname === '/') {
       const formData = await request.formData();
       const inputString = formData.get('input');
-
+      const selectedRules = formData.getAll('selectedRules');
+    
       if (!inputString) {
         return new Response('Missing input parameter', { status: 400 });
       }
-
+    
+      // If no rules are selected, use the default rules
+      const rulesToUse = selectedRules.length > 0 ? selectedRules : ['广告拦截', '谷歌服务', '国外媒体', '电报消息'];
+    
       const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
-      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}`;
-      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}`;
-
+      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}`;
+      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}`;
+    
       return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl), {
         headers: { 'Content-Type': 'text/html' }
       });
+    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash')) {
+      const inputString = url.searchParams.get('config');
+      const selectedRules = JSON.parse(decodeURIComponent(url.searchParams.get('selectedRules')));
+
+      if (!inputString) {
+        return new Response('Missing config parameter', { status: 400 });
+      }
+
+      let configBuilder;
+      if (url.pathname.startsWith('/singbox')) {
+        configBuilder = new ConfigBuilder(inputString, selectedRules);
+        const config = await configBuilder.build();
+
+        return new Response(JSON.stringify(config, null, 2), {
+          headers: { 'content-type': 'application/json; charset=utf-8' }
+        });
+      } else {
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules);
+        const config = await configBuilder.build();
+
+        return new Response(config, {
+          headers: { 'content-type': 'text/yaml; charset=utf-8' }
+        });
+      }
+
+
     } else if (request.method === 'POST' && url.pathname === '/shorten-all') {
       // Handle shortening all URLs
       const { xray, singbox, clash } = await request.json();
@@ -70,19 +99,6 @@ async function handleRequest(request) {
       }
 
       return Response.redirect(longUrl, 302);
-    } else if (url.pathname.startsWith('/singbox')) {
-      // Handle SingBox config requests
-      const inputString = url.searchParams.get('config');
-      if (!inputString) {
-        return new Response('Missing config parameter', { status: 400 });
-      }
-
-      const configBuilder = new ConfigBuilder(inputString);
-      const config = await configBuilder.build();
-
-      return new Response(JSON.stringify(config, null, 2), {
-        headers: { 'content-type': 'application/json; charset=utf-8' }
-      });
     } else if (url.pathname.startsWith('/xray')) {
       // Handle Xray config requests
       const inputString = url.searchParams.get('config');
@@ -94,19 +110,7 @@ async function handleRequest(request) {
       return new Response(encodeBase64(inputString), {
         headers: { 'content-type': 'application/json; charset=utf-8' }
       });
-    } else if (url.pathname.startsWith('/clash')) {
-      const inputString = url.searchParams.get('config');
-      if (!inputString) {
-          return new Response('Missing config parameter', { status: 400 });
-      }
-  
-      const configBuilder = new ClashConfigBuilder(inputString);
-      const config = await configBuilder.build();
-  
-      return new Response(config, {
-        headers: { 'Content-Type': 'text/yaml; charset=utf-8' }
-    });
-  } if (url.pathname === '/favicon.ico') {
+    } else if (url.pathname === '/favicon.ico') {
     return Response.redirect('https://cravatar.cn/avatar/9240d78bbea4cf05fb04f2b86f22b18d?s=160&d=retro&r=g', 301)
   }
 

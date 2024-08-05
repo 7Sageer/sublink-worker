@@ -1,11 +1,12 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG, SELECTORS_LIST } from './config.js';
+import { CLASH_CONFIG,  generateRuleSets, generateRules, getOutbounds} from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString) {
+    constructor(inputString, selectedRules) {
         super(inputString, CLASH_CONFIG);
+        this.selectedRules = selectedRules;
     }
 
     addCustomItems(customItems) {
@@ -17,7 +18,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addSelectors() {
+        const outbounds = getOutbounds(this.selectedRules);
         const proxyList = this.config.proxies.map(proxy => proxy.name);
+        
         this.config['proxy-groups'].push({
             name: '⚡ 自动选择',
             type: 'url-test',
@@ -26,21 +29,46 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             interval: 300,
             lazy: false
         });
+
         proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
-        SELECTORS_LIST.forEach(selector => {
-            if (!this.config['proxy-groups'].some(g => g.name === selector)) {
+        outbounds.unshift('🚀 节点选择', 'GLOBAL');
+        
+        outbounds.forEach(outbound => {
+            if (outbound !== '🚀 节点选择') {
                 this.config['proxy-groups'].push({
                     type: "select",
-                    name: selector,
-                    proxies: selector !== '🚀 节点选择' ? ['🚀 节点选择', ...proxyList] : proxyList
+                    name: outbound,
+                    proxies: ['🚀 节点选择', ...proxyList]
+                });
+            } else {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: outbound,
+                    proxies: proxyList
                 });
             }
         });
-    }
 
+        this.config['proxy-groups'].push({
+            type: "select",
+            name: "🐟 漏网之鱼",
+            proxies: ['🚀 节点选择', ...proxyList]
+        });
+    }
     formatConfig() {
+        const rules = generateRules(this.selectedRules);
+
+        this.config.rules = rules.flatMap(rule => [
+            ...rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`),
+            ...rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`)
+        ]);
+
+        // Add the final catch-all rule
+        this.config.rules.push('MATCH,🐟 漏网之鱼');
+
         return yaml.dump(this.config);
     }
+
     convertToClashProxy(proxy) {
         switch(proxy.type) {
             case 'shadowsocks':

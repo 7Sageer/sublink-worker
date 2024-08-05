@@ -16,11 +16,15 @@
   - Sing-Box
   - Clash
   - Xray/V2Ray
-- 提供快速上手的Web界面
+- 提供快速上手的Web界面，支持自定义路由规则
 - 支持短链接生成（基于R2）
 - 浅色/深色主题切换
 
 ## 最近更新
+
+### 5/8
+
+- 支持自定义规则集
 
 ### 4/8
 
@@ -34,13 +38,6 @@
 
 ---
 
-### 30/7
-
-- 简化路由逻辑
-- 修复了一些小问题
-
----
-
 ## 部署
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker)
@@ -50,6 +47,7 @@
 ## 项目结构
 
 - `index.js`: 主要的服务器逻辑，处理请求路由
+- `BaseConfigBuilder.js`: 构建基础配置
 - `SingboxConfigBuilder.js`: 构建Sing-Box配置
 - `ClashConfigBuilder.js`: 构建Clash配置
 - `ProxyParsers.js`: 解析各种代理协议的URL

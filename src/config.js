@@ -1,44 +1,150 @@
-// Base URL for remote rule sets
-const RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/raw/';
+export const SITE_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/';
+export const IP_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/raw/rule-set-geoip/';
 
-// Rule set definitions
-const SITE_RULE_SETS = {
-	'category-ads-all': 'rule-set-geosite/geosite-adblockplus.srs',
-	google: 'rule-set-geosite/geosite-google.srs',
-	netflix: 'rule-set-geosite/geosite-netflix.srs',
-	youtube: 'rule-set-geosite/geosite-youtube.srs',
-	bilibili: 'rule-set-geosite/geosite-bilibili.srs',
-	openai: 'rule-set-geosite/geosite-openai.srs',
-	cn: 'rule-set-geosite/geosite-cn.srs',
-	'geolocation-cn': 'rule-set-geosite/geosite-geolocation-cn.srs',
-	'geolocation-!cn': 'rule-set-geosite/geosite-geolocation-!cn.srs'
-};
+// Unified rule structure
+export const UNIFIED_RULES = [
+	{
+		name: '广告拦截',
+		outbound: '🛑 广告拦截',
+		site_rules: ['category-ads-all'],
+		ip_rules: ['ad']
+	},
+	{
+		name: 'OpenAI',
+		outbound: '💬 OpenAI',
+		site_rules: ['openai'],
+		ip_rules: []
+	},
+	{
+		name: '哔哩哔哩',
+		outbound: '📺 哔哩哔哩',
+		site_rules: ['bilibili'],
+		ip_rules: []
+	},
+	{
+		name: '油管视频',
+		outbound: '📹 油管视频',
+		site_rules: ['youtube'],
+		ip_rules: []
+	},
+	{
+		name: '谷歌服务',
+		outbound: '🇬 谷歌服务',
+		site_rules: ['google'],
+		ip_rules: ['google']
+	},
+	{
+		name: '奈飞视频',
+		outbound: '🎥 奈飞视频',
+		site_rules: ['netflix'],
+		ip_rules: ['netflix']
+	},
 
-const IP_RULE_SETS = { 
-	'netflix': 'rule-set-geoip/geoip-netflix.srs',
-	'telegram': 'rule-set-geoip/geoip-telegram.srs',
-};
+	{
+		name: '私有网络',
+		outbound: '🔒 私有网络',
+		site_rules: [],
+		ip_rules: ['private']
+	},
+	{
+		name: '国内服务',
+		outbound: '🇨🇳 国内服务',
+		site_rules: ['geolocation-cn'],
+		ip_rules: ['cn']
+	},
+	{
+		name: '电报消息',
+		outbound: '📲 电报消息',
+		site_rules: [],
+		ip_rules: ['telegram']
+	},
+	{
+		name: '微软服务',
+		outbound: '🇺 微软服务',
+		site_rules: ['microsoft'],
+		ip_rules: []
+	},
+	{
+		name: '苹果服务',
+		outbound: '🍏 苹果服务',
+		site_rules: ['apple'],
+		ip_rules: []
+	},
+	{
+		name: '巴哈姆特',
+		outbound: '🎮 巴哈姆特',
+		site_rules: ['bahamut'],
+		ip_rules: []
+	},
 
-// Unified selectors list
-export const SELECTORS_LIST = ['🚀 节点选择', '🛑 广告拦截', '🌍 国外媒体', '🔒 私有网络', '🇨🇳 国内服务', '📲 电报消息', '💬 OpenAI', '📹 油管视频', '🎥 奈飞视频', '📺 哔哩哔哩', '🇬 谷歌服务', '🐟 漏网之鱼', 'GLOBAL'];
-
-// Unified rules for both Singbox and Clash
-const SITE_UNIFIED_RULES = [
-	{ rule_set: ['category-ads-all'], outbound: '🛑 广告拦截' },
-	{ rule_set: ['openai'], outbound: '💬 OpenAI' },
-	{ rule_set: ['bilibili'], outbound: '📺 哔哩哔哩' },
-	{ rule_set: ['youtube'], outbound: '📹 油管视频' },
-	{ rule_set: ['google'], outbound: '🇬 谷歌服务' },
-	{ rule_set: ['netflix'], outbound: '🎥 奈飞视频' },
-	{ rule_set: ['geolocation-!cn'], outbound: '🌍 国外媒体' },
-	{ ip_is_private: true, outbound: '🔒 私有网络' },
-	{ rule_set: ['geolocation-cn'], outbound: '🇨🇳 国内服务' }
 ];
 
-const IP_UNIFIED_RULES = [
-	{ rule_set: ['netflix-ip'], outbound: '🎥 奈飞视频' },
-	{ rule_set: ['telegram-ip'], outbound: '📲 电报消息' },
-];
+// Generate SITE_RULE_SETS and IP_RULE_SETS from UNIFIED_RULES
+export const SITE_RULE_SETS = UNIFIED_RULES.reduce((acc, rule) => {
+	rule.site_rules.forEach(site_rule => {
+		acc[site_rule] = `geosite-${site_rule}.srs`;
+	});
+	return acc;
+}, {});
+
+export const IP_RULE_SETS = UNIFIED_RULES.reduce((acc, rule) => {
+	rule.ip_rules.forEach(ip_rule => {
+		acc[ip_rule] = `geoip-${ip_rule}.srs`;
+	});
+	return acc;
+}, {});
+
+// Helper function to get outbounds based on selected rule names
+export function getOutbounds(selectedRuleNames) {
+    if (!selectedRuleNames || !Array.isArray(selectedRuleNames)) {
+        return []; // or handle this case as appropriate for your use case
+    }
+    return UNIFIED_RULES
+      .filter(rule => selectedRuleNames.includes(rule.name))
+      .map(rule => rule.outbound);
+}
+
+// Helper function to generate rules based on selected rule names
+export function generateRules(selectedRuleNames = []) {
+	// If selectedRuleNames is null or undefined, use an empty array
+	const safeSelectedRuleNames = selectedRuleNames || [];
+
+	return UNIFIED_RULES
+		.filter(rule => safeSelectedRuleNames.includes(rule.name))
+		.map(rule => ({
+		site_rules: rule.site_rules,
+		ip_rules: rule.ip_rules,
+		outbound: rule.outbound
+			}));
+		}
+
+// Helper function to generate rule sets based on selected rule names
+export function generateRuleSets(selectedRuleNames = []) {
+	// If selectedRuleNames is null or undefined, use an empty array
+	const safeSelectedRuleNames = selectedRuleNames || [];
+
+	const selectedRules = UNIFIED_RULES.filter(rule => safeSelectedRuleNames.includes(rule.name));
+
+	const siteRuleSets = selectedRules.flatMap(rule => rule.site_rules);
+	const ipRuleSets = selectedRules.flatMap(rule => rule.ip_rules);
+
+	return {
+		site_rule_sets: siteRuleSets.map(rule => ({
+		tag: rule,
+		type: 'remote',
+		format: 'binary',
+		url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
+		download_detour: '⚡ 自动选择'
+			})),
+			ip_rule_sets: ipRuleSets.map(rule => ({
+		tag: `${rule}-ip`,
+		type: 'remote',
+		format: 'binary',
+		url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
+		download_detour: '⚡ 自动选择'
+			}))
+	};
+		}
 
 // Singbox configuration
 export const SING_BOX_CONFIG = {
@@ -86,29 +192,27 @@ export const SING_BOX_CONFIG = {
 	],
 	route : {
 		rules: [
-		  { protocol: 'dns', port: 53, outbound: 'dns-out' },
-		  { clash_mode: 'direct', outbound: 'DIRECT' },
-		  { clash_mode: 'global', outbound: 'GLOBAL' },
-		  ...SITE_UNIFIED_RULES,
-		  ...IP_UNIFIED_RULES
+			{ protocol: 'dns', port: 53, outbound: 'dns-out' },
+			{ clash_mode: 'direct', outbound: 'DIRECT' },
+			{ clash_mode: 'global', outbound: 'GLOBAL' },
 		],
 		auto_detect_interface: true,
 		final: '🐟 漏网之鱼',
 		rule_set: [
-		  ...Object.entries(SITE_RULE_SETS).map(([tag, filename]) => ({
+			...Object.entries(SITE_RULE_SETS).map(([tag, filename]) => ({
 			tag,
 			type: 'remote',
 			format: 'binary',
-			url: `${RULE_SET_BASE_URL}${filename}`,
+			url: `${SITE_RULE_SET_BASE_URL}${filename}`,
 			download_detour: '⚡ 自动选择'
-		  })),
-		  ...Object.entries(IP_RULE_SETS).map(([tag, filename]) => ({
+				})),
+				...Object.entries(IP_RULE_SETS).map(([tag, filename]) => ({
 			tag: `${tag}-ip`, 
 			type: 'remote',
 			format: 'binary',
-			url: `${RULE_SET_BASE_URL}${filename}`,
+			url: `${IP_RULE_SET_BASE_URL}${filename}`,
 			download_detour: '⚡ 自动选择'
-		  }))
+				}))
 		]
 	},
 	experimental: {
@@ -123,22 +227,6 @@ export const SING_BOX_CONFIG = {
 	}
 };
 
-// Clash configuration
-const CLASH_RULES = [
-	...SITE_UNIFIED_RULES.map(rule => {
-	  if (rule.rule_set) {
-		return `GEOSITE,${rule.rule_set.join('|')},${rule.outbound}`;
-	  } else if (rule.ip_is_private) {
-		return `IP-CIDR,192.168.0.0/16,${rule.outbound},no-resolve`;
-	  }
-	}),
-	...IP_UNIFIED_RULES.map(rule => {
-	  return `GEOIP,${rule.rule_set.join('|').replace('-ip', '')},${rule.outbound}`;
-	})
-  ].filter(Boolean);
-
-CLASH_RULES.push('MATCH,🐟 漏网之鱼');
-
 export const CLASH_CONFIG = {
 	port: 7890,
 	'socks-port': 7891,
@@ -152,31 +240,4 @@ export const CLASH_CONFIG = {
 	},
 	proxies: [],
 	'proxy-groups': [],
-	rules: [...CLASH_RULES],
-// will be implemented in the future
-//
-// 'rule-providers': Object.fromEntries(
-// Object.entries(RULE_SETS).map(([name, filename]) => [
-// name,
-// {
-// type: 'http',
-// behavior: 'domain',
-// url: `${RULE_SET_BASE_URL}${filename}`,
-// path: `./ruleset/${name}.yaml`,
-// interval: 86400
-// }
-// ])
-// )
 };
-
-// Function to get user-defined rules (placeholder for future implementation)
-export function getUserDefinedRules() {
-	// This function can be implemented in the future to allow users to define their own rules
-	return [];
-}
-
-// Function to merge user-defined rules with default rules
-export function mergeRules(defaultRules, userRules) {
-	// This function can be implemented to merge user-defined rules with the default rules
-	return [...userRules, ...defaultRules];
-}

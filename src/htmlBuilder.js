@@ -1,4 +1,4 @@
-// htmlBuilder.js
+import { UNIFIED_RULES } from './config.js';
 
 const generateHead = () => `
   <head>
@@ -22,6 +22,13 @@ const generateStyles = () => `
     --btn-primary-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
     --input-bg: #ffffff;
     --input-border: #ced4da;
+    --input-text: #495057;
+    --checkbox-bg: #ffffff;
+    --checkbox-border: #ced4da;
+    --checkbox-checked-bg: #6a11cb;
+    --checkbox-checked-border: #6a11cb;
+    --explanation-bg: #e9ecef;
+    --explanation-text: #495057;
   }
 
   [data-theme="dark"] {
@@ -32,6 +39,13 @@ const generateStyles = () => `
     --btn-primary-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
     --input-bg: #3c3c3c;
     --input-border: #555555;
+    --input-text: #e0e0e0;
+    --checkbox-bg: #3c3c3c;
+    --checkbox-border: #555555;
+    --checkbox-checked-bg: #4a0e8f;
+    --checkbox-checked-border: #4a0e8f;
+    --explanation-bg: #383838;
+    --explanation-text: #b0b0b0;
   }
 
   body {
@@ -75,18 +89,18 @@ const generateStyles = () => `
   .input-group-text, .form-control {
     background-color: var(--input-bg);
     border-color: var(--input-border);
-    color: var(--text-color);
+    color: var(--input-text);
   }
 
   .form-control:focus {
     background-color: var(--input-bg);
-    color: var(--text-color);
+    color: var(--input-text);
     box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
   }
 
   .input-group { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04); }
 
-  h2 {
+  h2, h4 {
     color: var(--text-color);
     font-weight: 600;
   }
@@ -135,6 +149,28 @@ const generateStyles = () => `
   }
 
   .github-link:hover { color: #6a11cb; }
+
+  .form-check-input {
+    background-color: var(--checkbox-bg);
+    border-color: var(--checkbox-border);
+  }
+
+  .form-check-input:checked {
+    background-color: var(--checkbox-checked-bg);
+    border-color: var(--checkbox-checked-border);
+  }
+
+  .form-check-label {
+    color: var(--text-color);
+  }
+  .explanation-text {
+    background-color: var(--explanation-bg);
+    color: var(--explanation-text);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl) => `
@@ -178,7 +214,14 @@ const generateForm = () => `
       <label for="inputTextarea" class="form-label">Enter Your Share URLs:</label>
       <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
     </div>
-    <div class="d-grid">
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="advancedToggle">
+      <label class="form-check-label" for="advancedToggle">Advanced Options</label>
+    </div>
+    <div id="advancedOptions" style="display: none;">
+      ${generateRuleSetSelection()}
+    </div>
+    <div class="d-grid mt-4">
       <button type="submit" class="btn btn-primary btn-lg">
         <i class="fas fa-sync-alt me-2"></i>Convert
       </button>
@@ -218,7 +261,15 @@ const generateScripts = () => `
     ${copyToClipboardFunction()}
     ${shortenAllUrlsFunction()}
     ${darkModeToggleFunction()}
+    ${advancedOptionsToggleFunction()}
   </script>
+`;
+
+const advancedOptionsToggleFunction = () => `
+  document.getElementById('advancedToggle').addEventListener('change', function() {
+    const advancedOptions = document.getElementById('advancedOptions');
+    advancedOptions.style.display = this.checked ? 'block' : 'none';
+  });
 `;
 
 const copyToClipboardFunction = () => `
@@ -318,3 +369,27 @@ export function generateHtml(xrayUrl, singboxUrl, clashUrl) {
     </html>
   `;
 }
+
+const generateRuleSetSelection = () => `
+  <div class="mt-3">
+    <h4 class="mb-3">Select Rules:</h4>
+    <p class="explanation-text mb-3">
+      Choose which routing rules to apply to your configuration. These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
+    </p>
+    <div class="row">
+      ${UNIFIED_RULES.map(rule => `
+        <div class="col-md-4 mb-2">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules" ${isDefaultRule(rule.name) ? 'checked' : ''}>
+            <label class="form-check-label" for="${rule.name}">${rule.name}</label>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+`;
+
+const isDefaultRule = (ruleName) => {
+  const defaultRules = ['广告拦截', '谷歌服务', '国内服务', '电报消息'];
+  return defaultRules.includes(ruleName);
+};
