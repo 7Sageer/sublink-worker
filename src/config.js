@@ -144,7 +144,7 @@ export function generateRuleSets(selectedRuleNames = []) {
 		download_detour: '⚡ 自动选择'
 			}))
 	};
-		}
+}
 
 // Singbox configuration
 export const SING_BOX_CONFIG = {
@@ -191,29 +191,6 @@ export const SING_BOX_CONFIG = {
 		{ type: 'dns', tag: 'dns-out' }
 	],
 	route : {
-		rules: [
-			{ protocol: 'dns', port: 53, outbound: 'dns-out' },
-			{ clash_mode: 'direct', outbound: 'DIRECT' },
-			{ clash_mode: 'global', outbound: 'GLOBAL' },
-		],
-		auto_detect_interface: true,
-		final: '🐟 漏网之鱼',
-		rule_set: [
-			...Object.entries(SITE_RULE_SETS).map(([tag, filename]) => ({
-			tag,
-			type: 'remote',
-			format: 'binary',
-			url: `${SITE_RULE_SET_BASE_URL}${filename}`,
-			download_detour: '⚡ 自动选择'
-				})),
-				...Object.entries(IP_RULE_SETS).map(([tag, filename]) => ({
-			tag: `${tag}-ip`, 
-			type: 'remote',
-			format: 'binary',
-			url: `${IP_RULE_SET_BASE_URL}${filename}`,
-			download_detour: '⚡ 自动选择'
-				}))
-		]
 	},
 	experimental: {
 		cache_file: {

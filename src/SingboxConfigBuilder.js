@@ -60,11 +60,14 @@ export class ConfigBuilder extends BaseConfigBuilder {
         }));
 
         // Add any default rules that should always be present
-        this.config.route.rules.push(
-            { protocol: 'dns', port: 53, outbound: 'dns-out' },
+        this.config.route.rules.unshift(
+            { protocol: 'dns', outbound: 'dns-out' },
             { clash_mode: 'direct', outbound: 'DIRECT' },
             { clash_mode: 'global', outbound: 'GLOBAL' }
         );
+
+        this.config.route.auto_detect_interface = true;
+        this.config.route.final = '🐟 漏网之鱼';
 
         return this.config;
     }
