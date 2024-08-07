@@ -4,7 +4,7 @@ export const IP_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/r
 // Unified rule structure
 export const UNIFIED_RULES = [
 	{
-		name: '广告拦截',
+		name: 'Ad Block',
 		outbound: '🛑 广告拦截',
 		site_rules: ['category-ads-all'],
 		ip_rules: ['ad']
@@ -16,62 +16,62 @@ export const UNIFIED_RULES = [
 		ip_rules: []
 	},
 	{
-		name: '哔哩哔哩',
+		name: 'Bilibili',
 		outbound: '📺 哔哩哔哩',
 		site_rules: ['bilibili'],
 		ip_rules: []
 	},
 	{
-		name: '油管视频',
+		name: 'Youtube',
 		outbound: '📹 油管视频',
 		site_rules: ['youtube'],
 		ip_rules: []
 	},
 	{
-		name: '谷歌服务',
+		name: 'Google',
 		outbound: '🇬 谷歌服务',
 		site_rules: ['google'],
 		ip_rules: ['google']
 	},
 	{
-		name: '奈飞视频',
+		name: 'Netflix',
 		outbound: '🎥 奈飞视频',
 		site_rules: ['netflix'],
 		ip_rules: ['netflix']
 	},
 
 	{
-		name: '私有网络',
+		name: 'Private',
 		outbound: '🔒 私有网络',
 		site_rules: [],
 		ip_rules: ['private']
 	},
 	{
-		name: '国内服务',
+		name: 'Location:CN',
 		outbound: '🇨🇳 国内服务',
 		site_rules: ['geolocation-cn'],
 		ip_rules: ['cn']
 	},
 	{
-		name: '电报消息',
+		name: 'Telegram',
 		outbound: '📲 电报消息',
 		site_rules: [],
 		ip_rules: ['telegram']
 	},
 	{
-		name: '微软服务',
-		outbound: '🇺 微软服务',
+		name: 'Microsoft',
+		outbound: 'Ⓜ️ 微软服务',
 		site_rules: ['microsoft'],
 		ip_rules: []
 	},
 	{
-		name: '苹果服务',
+		name: 'Apple',
 		outbound: '🍏 苹果服务',
 		site_rules: ['apple'],
 		ip_rules: []
 	},
 	{
-		name: '巴哈姆特',
+		name: 'Bahamut',
 		outbound: '🎮 巴哈姆特',
 		site_rules: ['bahamut'],
 		ip_rules: []

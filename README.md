@@ -2,7 +2,7 @@
 
 这是一个可部署在Cloudflare Worker的轻量级订阅转换工具，用于将各种代理协议的分享url转换为不同客户端可用的订阅链接。
 
-![image](/doc/image1.png)
+![image](/doc/image.png)
 
 演示地址：[https://sublink-worker.seven7-ade.workers.dev/](https://sublink-worker.seven7-ade.workers.dev/)
 > 提示：请保护自己的数据，建议[自行部署](#最近更新)
@@ -22,19 +22,21 @@
 
 ## 最近更新
 
+### 7/8
+
+- 优化UI
+
+---
+
 ### 5/8
 
 - 支持自定义规则集
 
+---
+
 ### 4/8
 
 - 重构配置文件生成逻辑
-
----
-
-### 31/7
-
-- 支持 TUIC
 
 ---
 

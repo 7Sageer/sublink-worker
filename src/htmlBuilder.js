@@ -171,6 +171,17 @@ const generateStyles = () => `
     margin-bottom: 15px;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+
+  #advancedOptions {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+
+  #advancedOptions.show {
+    max-height: 1000px; /* Adjust this value based on your content */
+    transition: max-height 0.5s ease-in;
+  }
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl) => `
@@ -218,7 +229,7 @@ const generateForm = () => `
       <input class="form-check-input" type="checkbox" id="advancedToggle">
       <label class="form-check-label" for="advancedToggle">Advanced Options</label>
     </div>
-    <div id="advancedOptions" style="display: none;">
+    <div id="advancedOptions">
       ${generateRuleSetSelection()}
     </div>
     <div class="d-grid mt-4">
@@ -268,7 +279,11 @@ const generateScripts = () => `
 const advancedOptionsToggleFunction = () => `
   document.getElementById('advancedToggle').addEventListener('change', function() {
     const advancedOptions = document.getElementById('advancedOptions');
-    advancedOptions.style.display = this.checked ? 'block' : 'none';
+    if (this.checked) {
+      advancedOptions.classList.add('show');
+    } else {
+      advancedOptions.classList.remove('show');
+    }
   });
 `;
 
@@ -374,14 +389,14 @@ const generateRuleSetSelection = () => `
   <div class="mt-3">
     <h4 class="mb-3">Select Rules:</h4>
     <p class="explanation-text mb-3">
-      Choose which routing rules to apply to your configuration. These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
+      These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
     </p>
     <div class="row">
       ${UNIFIED_RULES.map(rule => `
         <div class="col-md-4 mb-2">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules" ${isDefaultRule(rule.name) ? 'checked' : ''}>
-            <label class="form-check-label" for="${rule.name}">${rule.name}</label>
+            <label class="form-check-label" for="${rule.outbound}">${rule.outbound}</label>
           </div>
         </div>
       `).join('')}
@@ -390,6 +405,6 @@ const generateRuleSetSelection = () => `
 `;
 
 const isDefaultRule = (ruleName) => {
-  const defaultRules = ['广告拦截', '谷歌服务', '国内服务', '电报消息'];
+  const defaultRules = ['Ad Block','Location:CN', 'Private']
   return defaultRules.includes(ruleName);
 };
