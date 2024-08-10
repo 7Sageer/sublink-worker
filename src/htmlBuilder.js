@@ -1,5 +1,15 @@
 import { UNIFIED_RULES } from './config.js';
 
+export function generateHtml(xrayUrl, singboxUrl, clashUrl) {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+      ${generateHead()}
+      ${generateBody(xrayUrl, singboxUrl, clashUrl)}
+    </html>
+  `;
+}
+
 const generateHead = () => `
   <head>
     <meta charset="UTF-8">
@@ -29,6 +39,9 @@ const generateStyles = () => `
     --checkbox-checked-border: #6a11cb;
     --explanation-bg: #e9ecef;
     --explanation-text: #495057;
+    --select-bg: #ffffff;
+    --select-text: #495057;
+    --select-border: #ced4da;
   }
 
   [data-theme="dark"] {
@@ -46,7 +59,12 @@ const generateStyles = () => `
     --checkbox-checked-border: #4a0e8f;
     --explanation-bg: #383838;
     --explanation-text: #b0b0b0;
+    --select-bg: #3c3c3c;
+    --select-text: #e0e0e0;
+    --select-border: #555555;
   }
+
+  .container { max-width: 800px; }
 
   body {
     background-color: var(--bg-color);
@@ -54,8 +72,6 @@ const generateStyles = () => `
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-
-  .container { max-width: 800px; }
 
   .card {
     background-color: var(--card-bg);
@@ -149,6 +165,62 @@ const generateStyles = () => `
   }
 
   .github-link:hover { color: #6a11cb; }
+  
+  .tooltip-icon {
+    cursor: pointer;
+    margin-left: 5px;
+    color: var(--text-color);
+    position: relative;
+    display: inline-block;
+    vertical-align: super;
+    font-size: 1em;
+  }
+
+  .question-mark {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: var(--text-color);
+    color: var(--card-bg);
+  }
+
+  .tooltip-content {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 1;
+    width: 300px;
+    max-width: 100vw;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s, visibility 0.3s;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .tooltip-icon:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .tooltip-content {
+      width: 250px;
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+  }
 
   .form-check-input {
     background-color: var(--checkbox-bg);
@@ -172,16 +244,45 @@ const generateStyles = () => `
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
+  .form-select {
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    border-color: var(--select-border);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .form-select:focus {
+    background-color: var(--select-bg);
+    color: var(--select-text);
+    border-color: var(--checkbox-checked-border);
+    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+  }
+
   #advancedOptions {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out, transform 0.5s ease-out;
+    opacity: 0;
+    transform: translateY(-10px);
   }
 
   #advancedOptions.show {
-    max-height: 1000px; /* Adjust this value based on your content */
-    transition: max-height 0.5s ease-in;
+    max-height: 2000px; /* Adjust this value based on your content */
+    opacity: 1;
+    transform: translateY(0);
+    transition: max-height 0.5s ease-in, opacity 0.5s ease-in, transform 0.5s ease-in;
   }
+
+  .header-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+  }
+  .header-title {
+      margin: 0;
+      margin-right: 10px;
+  }
+
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl) => `
@@ -248,7 +349,7 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl) => `
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     <div class="d-grid">
       <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-        <i class="fas fa-compress-alt me-2"></i>Shorten Your Subscribe links
+        <i class="fas fa-compress-alt me-2"></i>Shorten Links
       </button>
     </div>
   </div>
@@ -273,6 +374,8 @@ const generateScripts = () => `
     ${shortenAllUrlsFunction()}
     ${darkModeToggleFunction()}
     ${advancedOptionsToggleFunction()}
+    ${applyPredefinedRulesFunction()}
+    ${tooltipFunction()}
   </script>
 `;
 
@@ -375,28 +478,33 @@ const darkModeToggleFunction = () => `
   observer.observe(body, { attributes: true });
 `;
 
-export function generateHtml(xrayUrl, singboxUrl, clashUrl) {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      ${generateHead()}
-      ${generateBody(xrayUrl, singboxUrl, clashUrl)}
-    </html>
-  `;
-}
-
 const generateRuleSetSelection = () => `
-  <div class="mt-3">
-    <h4 class="mb-3">Select Rules:</h4>
-    <p class="explanation-text mb-3">
-      These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
-    </p>
-    <div class="row">
+    <div class="container">
+      <div class="header-container">
+          <h4 class="header-title">Add Rules Selection</h4>
+          <span class="tooltip-icon">
+              <i class="fas fa-question-circle"></i>
+              <span class="tooltip-content">
+                  These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
+              </span>
+          </span>
+      </div>
+
+      <div class="content-container">
+          <label for="predefinedRules" class="form-label">Predefined Rule Sets:</label>
+          <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
+              <option value="">Custom</option>
+              <option value="minimal">Minimal</option>
+              <option value="balanced">Balanced</option>
+              <option value="comprehensive">Comprehensive</option>
+          </select>
+      </div>
+    <div class="row" id="ruleCheckboxes">
       ${UNIFIED_RULES.map(rule => `
         <div class="col-md-4 mb-2">
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules" ${isDefaultRule(rule.name) ? 'checked' : ''}>
-            <label class="form-check-label" for="${rule.outbound}">${rule.outbound}</label>
+            <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules" ${isDefaultRule(rule.name) ? 'checked' : ''}>
+            <label class="form-check-label" for="${rule.name}">${rule.outbound}</label>
           </div>
         </div>
       `).join('')}
@@ -404,7 +512,61 @@ const generateRuleSetSelection = () => `
   </div>
 `;
 
+
+
 const isDefaultRule = (ruleName) => {
-  const defaultRules = ['Ad Block','Location:CN', 'Private']
+  const defaultRules = ['Ad Block', 'Location:CN', 'Private'];
   return defaultRules.includes(ruleName);
 };
+
+
+const applyPredefinedRulesFunction = () => `
+  function applyPredefinedRules() {
+    const predefinedRules = document.getElementById('predefinedRules').value;
+    const checkboxes = document.querySelectorAll('.rule-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+
+    switch(predefinedRules) {
+      case 'minimal':
+        ['Ad Block', 'Location:CN', 'Private'].forEach(rule => {
+          document.getElementById(rule).checked = true;
+        });
+        break;
+      case 'balanced':
+        ['Ad Block', 'Location:CN', 'Private', 'Google', 'Youtube', 'AI 服务', 'Telegram'].forEach(rule => {
+          document.getElementById(rule).checked = true;
+        });
+        break;
+      case 'comprehensive':
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = true;
+        });
+        break;
+    }
+  }
+`;
+
+const tooltipFunction = () => `
+  function initTooltips() {
+    const tooltips = document.querySelectorAll('.tooltip-icon');
+    tooltips.forEach(tooltip => {
+      tooltip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const content = tooltip.querySelector('.tooltip-content');
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+      });
+    });
+
+    document.addEventListener('click', () => {
+      const openTooltips = document.querySelectorAll('.tooltip-content[style="display: block;"]');
+      openTooltips.forEach(tooltip => {
+        tooltip.style.display = 'none';
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initTooltips);
+`;

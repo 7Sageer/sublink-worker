@@ -7,12 +7,12 @@ export const UNIFIED_RULES = [
 		name: 'Ad Block',
 		outbound: '🛑 广告拦截',
 		site_rules: ['category-ads-all'],
-		ip_rules: ['ad']
+		ip_rules: []
 	},
 	{
-		name: 'OpenAI',
-		outbound: '💬 OpenAI',
-		site_rules: ['openai'],
+		name: 'AI 服务',
+		outbound: '💬 AI 服务',
+		site_rules: ['openai', 'anthropic','jetbrains-ai'],
 		ip_rules: []
 	},
 	{
@@ -32,12 +32,6 @@ export const UNIFIED_RULES = [
 		outbound: '🇬 谷歌服务',
 		site_rules: ['google'],
 		ip_rules: ['google']
-	},
-	{
-		name: 'Netflix',
-		outbound: '🎥 奈飞视频',
-		site_rules: ['netflix'],
-		ip_rules: ['netflix']
 	},
 
 	{
@@ -76,6 +70,49 @@ export const UNIFIED_RULES = [
 		site_rules: ['bahamut'],
 		ip_rules: []
 	},
+
+	{
+		name: 'Social Media',
+		outbound: '🌐 社交媒体',
+		site_rules: ['facebook', 'instagram', 'twitter', 'tiktok', 'linkedin'],
+		ip_rules: []
+	  },
+	  {
+		name: 'Streaming',
+		outbound: '🎬 流媒体',
+		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon'],
+		ip_rules: []
+	  },
+	  {
+		name: 'Gaming',
+		outbound: '🎮 游戏平台',
+		site_rules: ['steam', 'epicgames', 'ea', 'ubisoft', 'blizzard'],
+		ip_rules: []
+	  },
+	  {
+		name: 'Github',
+		outbound: '🐱 Github',
+		site_rules: ['github', 'gitlab'],
+		ip_rules: []
+	  },
+	  {
+		name: 'Education',
+		outbound: '📚 教育资源',
+		site_rules: ['coursera', 'edx', 'udemy', 'khanacademy'],
+		ip_rules: []
+	  },
+	  {
+		name: 'Financial',
+		outbound: '💰 金融服务',
+		site_rules: ['paypal', 'visa', 'mastercard'],
+		ip_rules: []
+	  },
+	  {
+		name: 'Cloud Services',
+		outbound: '☁️ 云服务',
+		site_rules: ['aws', 'azure', 'digitalocean', 'heroku', 'dropbox'],
+		ip_rules: []
+	  }
 
 ];
 
@@ -136,7 +173,7 @@ export function generateRuleSets(selectedRuleNames = []) {
 		url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
 		download_detour: '⚡ 自动选择'
 			})),
-			ip_rule_sets: ipRuleSets.map(rule => ({
+		ip_rule_sets: ipRuleSets.map(rule => ({
 		tag: `${rule}-ip`,
 		type: 'remote',
 		format: 'binary',
