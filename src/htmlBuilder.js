@@ -249,6 +249,20 @@ const generateStyles = () => `
     color: var(--select-text);
     border-color: var(--select-border);
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23495057' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+    padding-right: 2.5em;
+  }
+
+  [data-theme="dark"] .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   }
 
   .form-select:focus {
@@ -488,17 +502,17 @@ const generateRuleSetSelection = () => `
                   These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
               </span>
           </span>
-      </div>
+    </div>
 
-      <div class="content-container">
-          <label for="predefinedRules" class="form-label">Predefined Rule Sets:</label>
-          <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
-              <option value="">Custom</option>
-              <option value="minimal">Minimal</option>
-              <option value="balanced">Balanced</option>
-              <option value="comprehensive">Comprehensive</option>
-          </select>
-      </div>
+    <div class="content-container mb-3">
+        <label for="predefinedRules" class="form-label">Predefined Rule Sets:</label>
+        <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
+            <option value="">Custom</option>
+            <option value="minimal">Minimal</option>
+            <option value="balanced">Balanced</option>
+            <option value="comprehensive">Comprehensive</option>
+        </select>
+    </div>
     <div class="row" id="ruleCheckboxes">
       ${UNIFIED_RULES.map(rule => `
         <div class="col-md-4 mb-2">
@@ -536,7 +550,7 @@ const applyPredefinedRulesFunction = () => `
         });
         break;
       case 'balanced':
-        ['Ad Block', 'Location:CN', 'Private', 'Google', 'Youtube', 'AI 服务', 'Telegram'].forEach(rule => {
+        ['Ad Block', 'Location:CN', 'Private', 'Google', 'Youtube', 'AI Services', 'Telegram'].forEach(rule => {
           document.getElementById(rule).checked = true;
         });
         break;

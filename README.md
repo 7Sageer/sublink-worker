@@ -2,7 +2,7 @@
 
 这是一个可部署在Cloudflare Worker的轻量级订阅转换工具，用于将各种代理协议的分享url转换为不同客户端可用的订阅链接。
 
-![image](/doc/image1.png)
+![image](/doc/main.png)
 
 演示地址：[https://sublink-worker.seven7-ade.workers.dev/](https://sublink-worker.seven7-ade.workers.dev/)
 > 提示：请保护自己的数据，建议[自行部署](#最近更新)
@@ -10,15 +10,17 @@
 ## 功能特点
 
 - 支持协议：SS, VMess, VLESS, Hysteria2, Trojan, TUIC
-- 支持导入Base64订阅链接
+- 支持导入Base64的http/https订阅链接
 - [一键部署](#最近更新)，Vanilla JS + Cloudflare Worker，无需后端
 - 支持客户端：
   - Sing-Box
   - Clash
   - Xray/V2Ray
-- 提供快速上手的Web界面，支持自定义路由规则
 - 支持短链接生成（基于R2）
 - 浅色/深色主题切换
+- 快速上手的Web界面，提供主流自定义路由规则:
+![image](/doc/rules.png)
+
 
 ## 最近更新
 

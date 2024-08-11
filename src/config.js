@@ -10,7 +10,7 @@ export const UNIFIED_RULES = [
 		ip_rules: []
 	},
 	{
-		name: 'AI 服务',
+		name: 'AI Services',
 		outbound: '💬 AI 服务',
 		site_rules: ['openai', 'anthropic','jetbrains-ai'],
 		ip_rules: []
@@ -29,20 +29,20 @@ export const UNIFIED_RULES = [
 	},
 	{
 		name: 'Google',
-		outbound: '🇬 谷歌服务',
+		outbound: '🔍 谷歌服务',
 		site_rules: ['google'],
 		ip_rules: ['google']
 	},
 
 	{
 		name: 'Private',
-		outbound: '🔒 私有网络',
+		outbound: '🏠 私有网络',
 		site_rules: [],
 		ip_rules: ['private']
 	},
 	{
 		name: 'Location:CN',
-		outbound: '🇨🇳 国内服务',
+		outbound: '🔒 国内服务',
 		site_rules: ['geolocation-cn'],
 		ip_rules: ['cn']
 	},
