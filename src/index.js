@@ -2,6 +2,7 @@ import { ConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { encodeBase64, GenerateWebPath} from './utils.js';
+import { PREDEFINED_RULE_SETS } from './config.js';
 
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
@@ -37,68 +38,67 @@ async function handleRequest(request) {
       });
     } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash')) {
       const inputString = url.searchParams.get('config');
-      const selectedRules = JSON.parse(decodeURIComponent(url.searchParams.get('selectedRules')));
-
+      let selectedRules = url.searchParams.get('selectedRules');
+    
       if (!inputString) {
         return new Response('Missing config parameter', { status: 400 });
       }
-
+    
+      // deal with predefined rule sets
+      if (PREDEFINED_RULE_SETS[selectedRules]) {
+        selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+      } else {
+        try {
+          selectedRules = JSON.parse(decodeURIComponent(selectedRules));
+        } catch (error) {
+          console.error('Error parsing selectedRules:', error);
+          selectedRules = PREDEFINED_RULE_SETS.minimal;  // 使用默认最小规则集
+        }
+      }
+    
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
         configBuilder = new ConfigBuilder(inputString, selectedRules);
-        const config = await configBuilder.build();
-
-        return new Response(JSON.stringify(config, null, 2), {
-          headers: { 'content-type': 'application/json; charset=utf-8' }
-        });
       } else {
         configBuilder = new ClashConfigBuilder(inputString, selectedRules);
-        const config = await configBuilder.build();
-
-        return new Response(config, {
-          headers: { 'content-type': 'text/yaml; charset=utf-8' }
-        });
       }
-
-
-    } else if (request.method === 'POST' && url.pathname === '/shorten-all') {
-      // Handle shortening all URLs
-      const { xray, singbox, clash } = await request.json();
-      
-      if (!xray || !singbox || !clash) {
-        return new Response('Missing URL parameters', { status: 400 });
+    
+      const config = await configBuilder.build();
+    
+      return new Response(
+        url.pathname.startsWith('/singbox') ? JSON.stringify(config, null, 2) : config,
+        {
+          headers: { 
+            'content-type': url.pathname.startsWith('/singbox') 
+              ? 'application/json; charset=utf-8' 
+              : 'text/yaml; charset=utf-8' 
+          }
+        }
+      );
+    }  if (url.pathname === '/shorten') {
+      const originalUrl = url.searchParams.get('url');
+      if (!originalUrl) {
+        return new Response('Missing URL parameter', { status: 400 });
       }
-
+  
       const shortCode = GenerateWebPath();
-      
-      // Store only the content once
-      await R2_BUCKET.put(`urls/${shortCode}`, JSON.stringify({ xray, singbox, clash }));
-
-      const xrayShortUrl = `${url.origin}/x/${shortCode}`;
-      const singboxShortUrl = `${url.origin}/s/${shortCode}`;
-      const clashShortUrl = `${url.origin}/c/${shortCode}`;
-      
-      return new Response(JSON.stringify({ xrayShortUrl, singboxShortUrl, clashShortUrl }), {
+      await R2_BUCKET.put(`urls/${shortCode}`, originalUrl);
+  
+      const shortUrl = `${url.origin}/s/${shortCode}`;
+      return new Response(JSON.stringify({ shortUrl }), {
         headers: { 'Content-Type': 'application/json' }
       });
-    } else if (url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/') || url.pathname.startsWith('/c/')) {
-      // Handle shortened URLs
-      const [, type, shortCode] = url.pathname.split('/');
-      const key = `urls/${shortCode}`;
-      const object = await R2_BUCKET.get(key);
-
-      if (object === null) {
+    }
+  
+    if (url.pathname.startsWith('/s/')) {
+      const shortCode = url.pathname.split('/')[2];
+      const originalUrl = await R2_BUCKET.get(`urls/${shortCode}`);
+  
+      if (originalUrl === null) {
         return new Response('Short URL not found', { status: 404 });
       }
-
-      const data = JSON.parse(await object.text());
-      const longUrl = data[type === 'x' ? 'xray' : type === 's' ? 'singbox' : 'clash'];
-      
-      if (!longUrl) {
-        return new Response('Invalid URL type', { status: 400 });
-      }
-
-      return Response.redirect(longUrl, 302);
+  
+      return Response.redirect(await originalUrl.text(), 302);
     } else if (url.pathname.startsWith('/xray')) {
       // Handle Xray config requests
       const inputString = url.searchParams.get('config');

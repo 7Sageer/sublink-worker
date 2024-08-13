@@ -1,4 +1,4 @@
-import { UNIFIED_RULES } from './config.js';
+import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 
 export function generateHtml(xrayUrl, singboxUrl, clashUrl) {
   return `
@@ -390,8 +390,10 @@ const generateScripts = () => `
     ${advancedOptionsToggleFunction()}
     ${applyPredefinedRulesFunction()}
     ${tooltipFunction()}
+    ${submitFormFunction()}
   </script>
 `;
+
 
 const advancedOptionsToggleFunction = () => `
   document.getElementById('advancedToggle').addEventListener('change', function() {
@@ -424,37 +426,39 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
+  async function shortenUrl(url) {
+    const response = await fetch(\`/shorten?url=\${encodeURIComponent(url)}\`);
+    if (response.ok) {
+      const data = await response.json();
+      return data.shortUrl;
+    }
+    throw new Error('Failed to shorten URL');
+  }
+
   async function shortenAllUrls() {
     const shortenButton = document.querySelector('button[onclick="shortenAllUrls()"]');
     shortenButton.disabled = true;
     shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
 
     try {
-      const response = await fetch('/shorten-all', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          xray: document.getElementById('xrayLink').value,
-          singbox: document.getElementById('singboxLink').value,
-          clash: document.getElementById('clashLink').value
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        document.getElementById('xrayLink').value = data.xrayShortUrl;
-        document.getElementById('singboxLink').value = data.singboxShortUrl;
-        document.getElementById('clashLink').value = data.clashShortUrl;
-      } else {
-        console.error('Failed to shorten URLs');
-      }
+      const xrayLink = document.getElementById('xrayLink');
+      const singboxLink = document.getElementById('singboxLink');
+      const clashLink = document.getElementById('clashLink');
+
+      const [xrayShortUrl, singboxShortUrl, clashShortUrl] = await Promise.all([
+        shortenUrl(xrayLink.value),
+        shortenUrl(singboxLink.value),
+        shortenUrl(clashLink.value)
+      ]);
+
+      xrayLink.value = xrayShortUrl;
+      singboxLink.value = singboxShortUrl;
+      clashLink.value = clashShortUrl;
     } catch (error) {
       console.error('Error:', error);
     } finally {
       shortenButton.disabled = false;
-      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Your Subscribe links';
+      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
     }
   }
 `;
@@ -493,31 +497,31 @@ const darkModeToggleFunction = () => `
 `;
 
 const generateRuleSetSelection = () => `
-    <div class="container">
-      <div class="header-container">
-          <h4 class="header-title">Add Rules Selection</h4>
-          <span class="tooltip-icon">
-              <i class="fas fa-question-circle"></i>
-              <span class="tooltip-content">
-                  These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can leave the default rules selected.
-              </span>
-          </span>
+  <div class="container">
+    <div class="header-container">
+      <h4 class="header-title">Rule Selection</h4>
+      <span class="tooltip-icon">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can use a predefined rule set.
+        </span>
+      </span>
     </div>
 
     <div class="content-container mb-3">
-        <label for="predefinedRules" class="form-label">Predefined Rule Sets:</label>
-        <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
-            <option value="">Custom</option>
-            <option value="minimal">Minimal</option>
-            <option value="balanced">Balanced</option>
-            <option value="comprehensive">Comprehensive</option>
-        </select>
+      <label for="predefinedRules" class="form-label">Rule Sets:</label>
+      <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
+        <option value="custom">Custom</option>
+        <option value="minimal">Minimal</option>
+        <option value="balanced">Balanced</option>
+        <option value="comprehensive">Comprehensive</option>
+      </select>
     </div>
     <div class="row" id="ruleCheckboxes">
       ${UNIFIED_RULES.map(rule => `
         <div class="col-md-4 mb-2">
           <div class="form-check">
-            <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules" ${isDefaultRule(rule.name) ? 'checked' : ''}>
+            <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
             <label class="form-check-label" for="${rule.name}">${rule.outbound}</label>
           </div>
         </div>
@@ -525,14 +529,6 @@ const generateRuleSetSelection = () => `
     </div>
   </div>
 `;
-
-
-
-const isDefaultRule = (ruleName) => {
-  const defaultRules = ['Ad Block', 'Location:CN', 'Private'];
-  return defaultRules.includes(ruleName);
-};
-
 
 const applyPredefinedRulesFunction = () => `
   function applyPredefinedRules() {
@@ -543,23 +539,18 @@ const applyPredefinedRulesFunction = () => `
       checkbox.checked = false;
     });
 
-    switch(predefinedRules) {
-      case 'minimal':
-        ['Ad Block', 'Location:CN', 'Private'].forEach(rule => {
-          document.getElementById(rule).checked = true;
-        });
-        break;
-      case 'balanced':
-        ['Ad Block', 'Location:CN', 'Private', 'Google', 'Youtube', 'AI Services', 'Telegram'].forEach(rule => {
-          document.getElementById(rule).checked = true;
-        });
-        break;
-      case 'comprehensive':
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = true;
-        });
-        break;
+    if (predefinedRules === 'custom') {
+      return;
     }
+
+    const rulesToApply = ${JSON.stringify(PREDEFINED_RULE_SETS)};
+    
+    rulesToApply[predefinedRules].forEach(rule => {
+      const checkbox = document.getElementById(rule);
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
   }
 `;
 
@@ -583,4 +574,32 @@ const tooltipFunction = () => `
   }
 
   document.addEventListener('DOMContentLoaded', initTooltips);
+`;
+
+const submitFormFunction = () => `
+  function submitForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const inputString = formData.get('input');
+    
+    let selectedRules;
+    const predefinedRules = document.getElementById('predefinedRules').value;
+    if (predefinedRules !== 'custom') {
+      selectedRules = predefinedRules;
+    } else {
+      selectedRules = Array.from(document.querySelectorAll('input[name="selectedRules"]:checked'))
+        .map(checkbox => checkbox.value);
+    }
+
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}\`;
+
+    document.getElementById('xrayLink').value = xrayUrl;
+    document.getElementById('singboxLink').value = singboxUrl;
+    document.getElementById('clashLink').value = clashUrl;
+  }
+
+  document.getElementById('encodeForm').addEventListener('submit', submitForm);
 `;

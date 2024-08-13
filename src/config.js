@@ -116,6 +116,14 @@ export const UNIFIED_RULES = [
 
 ];
 
+export const PREDEFINED_RULE_SETS = {
+	minimal: ['Ad Block', 'Location:CN', 'Private'],
+	balanced: ['Ad Block', 'Location:CN', 'Private', 'Google', 'Youtube', 'AI Services', 'Telegram'],
+	comprehensive: UNIFIED_RULES.map(rule => rule.name)
+  };
+  
+
+
 // Generate SITE_RULE_SETS and IP_RULE_SETS from UNIFIED_RULES
 export const SITE_RULE_SETS = UNIFIED_RULES.reduce((acc, rule) => {
 	rule.site_rules.forEach(site_rule => {
@@ -142,47 +150,66 @@ export function getOutbounds(selectedRuleNames) {
 }
 
 // Helper function to generate rules based on selected rule names
-export function generateRules(selectedRuleNames = []) {
-	// If selectedRuleNames is null or undefined, use an empty array
-	const safeSelectedRuleNames = selectedRuleNames || [];
+  export function generateRules(selectedRules = []) {
+	// if selectedRules is a string and a predefined rule set, use the predefined rule set
+	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
+		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+	}
 
+	if (!selectedRules || selectedRules.length === 0) {
+		selectedRules = PREDEFINED_RULE_SETS.minimal;
+	}
+	
 	return UNIFIED_RULES
-		.filter(rule => safeSelectedRuleNames.includes(rule.name))
+		.filter(rule => selectedRules.includes(rule.name))
 		.map(rule => ({
 		site_rules: rule.site_rules,
 		ip_rules: rule.ip_rules,
 		outbound: rule.outbound
-			}));
-		}
+		}));
+	}
 
-// Helper function to generate rule sets based on selected rule names
-export function generateRuleSets(selectedRuleNames = []) {
-	// If selectedRuleNames is null or undefined, use an empty array
-	const safeSelectedRuleNames = selectedRuleNames || [];
 
-	const selectedRules = UNIFIED_RULES.filter(rule => safeSelectedRuleNames.includes(rule.name));
+export function generateRuleSets(selectedRules = []) {
+  // if selectedRules is a string and a predefined rule set, use the predefined rule set
+  if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
+    selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+  }
+  
+  // if selectedRules is a string and a predefined rule set, use the predefined rule set
+  if (!selectedRules || selectedRules.length === 0) {
+    selectedRules = PREDEFINED_RULE_SETS.minimal;
+  }
 
-	const siteRuleSets = selectedRules.flatMap(rule => rule.site_rules);
-	const ipRuleSets = selectedRules.flatMap(rule => rule.ip_rules);
+  const selectedRulesSet = new Set(selectedRules);
 
-	return {
-		site_rule_sets: siteRuleSets.map(rule => ({
-		tag: rule,
-		type: 'remote',
-		format: 'binary',
-		url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
-		download_detour: '⚡ 自动选择'
-			})),
-		ip_rule_sets: ipRuleSets.map(rule => ({
-		tag: `${rule}-ip`,
-		type: 'remote',
-		format: 'binary',
-		url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
-		download_detour: '⚡ 自动选择'
-			}))
-	};
+  const siteRuleSets = new Set();
+  const ipRuleSets = new Set();
+
+  UNIFIED_RULES.forEach(rule => {
+    if (selectedRulesSet.has(rule.name)) {
+      rule.site_rules.forEach(siteRule => siteRuleSets.add(siteRule));
+      rule.ip_rules.forEach(ipRule => ipRuleSets.add(ipRule));
+    }
+  });
+
+  return {
+    site_rule_sets: Array.from(siteRuleSets).map(rule => ({
+      tag: rule,
+      type: 'remote',
+      format: 'binary',
+      url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
+      download_detour: '⚡ 自动选择'
+    })),
+    ip_rule_sets: Array.from(ipRuleSets).map(rule => ({
+      tag: `${rule}-ip`,
+      type: 'remote',
+      format: 'binary',
+      url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
+      download_detour: '⚡ 自动选择'
+    }))
+  };
 }
-
 // Singbox configuration
 export const SING_BOX_CONFIG = {
 	log: {

@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG,  generateRuleSets, generateRules, getOutbounds} from './config.js';
+import { CLASH_CONFIG,  generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
@@ -18,7 +18,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addSelectors() {
-        const outbounds = getOutbounds(this.selectedRules);
+        let outbounds;
+        if (typeof this.selectedRules === 'string' && PREDEFINED_RULE_SETS[this.selectedRules]) {
+            outbounds = getOutbounds(PREDEFINED_RULE_SETS[this.selectedRules]);
+        } else if(!this.selectedRules) {
+            outbounds = getOutbounds(this.selectedRules);
+        } else {
+            outbounds = getOutbounds(PREDEFINED_RULE_SETS.minimal);
+        }
+
         const proxyList = this.config.proxies.map(proxy => proxy.name);
         
         this.config['proxy-groups'].push({

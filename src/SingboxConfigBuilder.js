@@ -1,4 +1,4 @@
-import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds} from './config.js';
+import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
@@ -14,7 +14,15 @@ export class ConfigBuilder extends BaseConfigBuilder {
     }
 
     addSelectors() {
-        const outbounds = getOutbounds(this.selectedRules);
+        let outbounds;
+        if (typeof this.selectedRules === 'string' && PREDEFINED_RULE_SETS[this.selectedRules]) {
+            outbounds = getOutbounds(PREDEFINED_RULE_SETS[this.selectedRules]);
+        } else if(!this.selectedRules) {
+            outbounds = getOutbounds(this.selectedRules);
+        } else {
+            outbounds = getOutbounds(PREDEFINED_RULE_SETS.minimal);
+        }
+
         const proxyList = this.config.outbounds.filter(outbound => outbound?.server != undefined).map(outbound => outbound.tag);
         
         this.config.outbounds.push({
@@ -25,6 +33,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
 
         proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
         outbounds.unshift('🚀 节点选择', 'GLOBAL');
+        
         outbounds.forEach(outbound => {
             if (outbound !== '🚀 节点选择') {
                 this.config.outbounds.push({
