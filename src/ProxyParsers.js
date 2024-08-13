@@ -124,6 +124,12 @@ export class ProxyParser {
             insecure: true,
             alpn: ["h3"],
           };
+
+          const obfs = {};
+          if (params['obfs-password']) {
+            obfs.type = params.obfs;
+            obfs.password = params['obfs-password'];
+          };
       
           return {
             tag: name,
@@ -132,6 +138,7 @@ export class ProxyParser {
             server_port: port,
             password: uuid,
             tls: tls,
+            obfs: obfs,
             up_mbps: 100,
             down_mbps: 100
           };
