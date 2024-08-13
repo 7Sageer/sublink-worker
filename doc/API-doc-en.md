@@ -87,24 +87,24 @@ These can be used in the `selectedRules` parameter for Sing-Box and Clash config
 
 Instead of using predefined rule sets, you can provide a custom list of rules as a JSON array in the `selectedRules` parameter. Available rules include:
 
-- Ad Block
-- AI Services
-- Bilibili
-- Youtube
-- Google
-- Private
-- Location:CN
-- Telegram
-- Microsoft
-- Apple
-- Bahamut
-- Social Media
-- Streaming
-- Gaming
-- Github
-- Education
-- Financial
-- Cloud Services
+- Ad Block (site-rule:category-ads-all) 
+- AI Services (site-rule:openai,anthropic,jetbrains-ai)
+- Bilibili (site-rule:bilibili)
+- Youtube (site-rule:youtube)
+- Google (site-rule:google)
+- Private (site-rule:private)
+- Location:CN (ip-rule:cn), (site-rule:geolocation-cn)
+- Telegram (ip-rule:telegram)
+- Microsoft (site-rule:microsoft)
+- Apple (site-rule:apple)
+- Bahamut (site-rule:bahamut)
+- Social Media (site-rule:facebook, instagram, twitter, tiktok, linkedin)
+- Streaming (site-rule:netflix, hulu, disney, hbo, amazon)
+- Gaming (site-rule:steam, epicgames, ea, ubisoft, blizzard)
+- Github (site-rule:github, gitlab)
+- Education (site-rule:coursera, edx, udemy, khanacademy)
+- Financial (site-rule:paypal, visa, mastercard)
+- Cloud Services (site-rule:aws, azure, digitalocean, heroku, dropbox)
 
 ## Error Handling
 
