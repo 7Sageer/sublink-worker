@@ -12,7 +12,7 @@ export const UNIFIED_RULES = [
 	{
 		name: 'AI Services',
 		outbound: '💬 AI 服务',
-		site_rules: ['openai', 'anthropic','jetbrains-ai'],
+		site_rules: ['openai', 'anthropic','jetbrains-ai','perplexity'],
 		ip_rules: []
 	},
 	{
@@ -104,7 +104,7 @@ export const UNIFIED_RULES = [
 	  {
 		name: 'Financial',
 		outbound: '💰 金融服务',
-		site_rules: ['paypal', 'visa', 'mastercard'],
+		site_rules: ['paypal', 'visa', 'mastercard','stripe','wise'],
 		ip_rules: []
 	  },
 	  {

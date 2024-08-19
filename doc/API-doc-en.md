@@ -90,7 +90,7 @@ Instead of using predefined rule sets, you can provide a custom list of rules as
 | Rule Name | Used Site Rules | Used IP Rules |
 |---|---|---|
 | Ad Block | category-ads-all |  |
-| AI Services | openai,anthropic,jetbrains-ai |  |
+| AI Services | openai,anthropic,jetbrains-ai,perplexity |  |
 | Bilibili | bilibili |  |
 | Youtube | youtube |  |
 | Google | google | google |
@@ -105,8 +105,10 @@ Instead of using predefined rule sets, you can provide a custom list of rules as
 | Gaming | steam, epicgames, ea, ubisoft, blizzard |  |
 | Github | github, gitlab |  |
 | Education | coursera, edx, udemy, khanacademy |  |
-| Financial | paypal, visa, mastercard |  |
+| Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
+
+The rule set of SingBox comes from [https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), thanks to lyc8503's contribution!
 
 ## Error Handling
 

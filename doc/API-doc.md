@@ -90,7 +90,7 @@ API 支持以下预定义规则集:
 | Rule Name | Used Site Rules | Used IP Rules |
 |---|---|---|
 | Ad Block | category-ads-all |  |
-| AI Services | openai,anthropic,jetbrains-ai |  |
+| AI Services | openai,anthropic,jetbrains-ai,perplexity |  |
 | Bilibili | bilibili |  |
 | Youtube | youtube |  |
 | Google | google | google |
@@ -105,8 +105,10 @@ API 支持以下预定义规则集:
 | Gaming | steam, epicgames, ea, ubisoft, blizzard |  |
 | Github | github, gitlab |  |
 | Education | coursera, edx, udemy, khanacademy |  |
-| Financial | paypal, visa, mastercard |  |
+| Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
+
+> SingBox的规则集来自于[https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), 感谢lyc8503的贡献！
 
 ## 错误处理
 

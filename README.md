@@ -41,6 +41,13 @@ Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare
 
 ## 最近更新
 
+### 2024-08-19
+
+- 更新规则集：
+  - `💬 AI 服务` 规则集增加 `Perplexity`
+  - `💰 金融服务` 规则集增加 `Stripe`, `Wise`
+
+
 ### 2024-08-13
 
 - 优化 API 架构
@@ -52,7 +59,7 @@ Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare
 - 添加快速选择规则集
 - 细化规则集
   - 增添更多分类
-  - 将 OpenAI 改为 AI 服务，包含 Claude，Jetbrains-AI 等规则
+  - 将 `💬 OpenAI` 改为 `💬 AI 服务`，包含 Claude，Jetbrains-AI 等规则
   - 优化显示
 
 ## 项目结构
