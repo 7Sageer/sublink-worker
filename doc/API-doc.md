@@ -25,14 +25,11 @@ https://your-worker-domain.workers.dev
 - **参数**:
   - `config` (必需): URL 编码的字符串,包含一个或多个代理配置
   - `selectedRules` (可选): 预定义规则集名称或自定义规则的 JSON 数组
+  - `customRules` (可选): 自定义规则的 JSON 数组
 
 **示例**:
 ```
-/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced
-```
-或
-```
-/singbox?config=vmess%3A%2F%2Fexample&selectedRules=%5B%22Ad%20Block%22%2C%22Private%22%5D
+/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
 ```
 
 #### Clash 配置
@@ -83,9 +80,7 @@ API 支持以下预定义规则集:
 
 这些可以在 Sing-Box 和 Clash 配置的 `selectedRules` 参数中使用。
 
-## 自定义规则
-
-除了使用预定义规则集,您还可以在 `selectedRules` 参数中提供自定义规则列表作为 JSON 数组。可用规则包括:
+下面是目前支持的预定义规则集：
 
 | Rule Name | Used Site Rules | Used IP Rules |
 |---|---|---|
@@ -108,7 +103,27 @@ API 支持以下预定义规则集:
 | Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
 
-> SingBox的规则集来自于[https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), 感谢lyc8503的贡献！
+Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), 感谢 lyc8503 的贡献!
+
+## 自定义规则
+
+除了使用预定义规则集,您还可以在 `customRules` 参数中提供自定义规则列表作为 JSON 数组。每个自定义规则应包含以下字段:
+
+- `sites`: 域名规则数组
+- `ips`: IP 规则数组
+- `outbound`: 出站名称
+
+示例:
+
+```json
+[
+  {
+    "sites": ["google", "anthropic"],
+    "ips": ["private", "cn"],
+    "outbound": "🤪 MyCustomRule"
+  }
+]
+```
 
 ## 错误处理
 
@@ -134,7 +149,7 @@ API 在出现问题时将返回适当的 HTTP 状态码和错误消息:
 
 2. 生成带有自定义规则的 Clash 配置:
    ```
-   /clash?config=vless%3A%2F%2Fexample&selectedRules=%5B%22Ad%20Block%22%2C%22Google%22%2C%22Streaming%22%5D
+   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
    ```
 
 3. 缩短 URL:

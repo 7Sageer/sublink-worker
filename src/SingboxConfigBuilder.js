@@ -3,9 +3,10 @@ import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
 export class ConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules) {
-        super(inputString, SING_BOX_CONFIG);
+    constructor(inputString, selectedRules, customRules) {
+      super(inputString, SING_BOX_CONFIG);
         this.selectedRules = selectedRules;
+        this.customRules = customRules;
     }
 
     addCustomItems(customItems) {
@@ -50,6 +51,14 @@ export class ConfigBuilder extends BaseConfigBuilder {
             }
         });
 
+        this.customRules.forEach(rule => {
+            this.config.outbounds.push({
+                type: "selector",
+                tag: rule.outbound,
+                outbounds: ['🚀 节点选择', ...proxyList]
+            });
+        });
+
         this.config.outbounds.push({
             type: "selector",
             tag: "🐟 漏网之鱼",
@@ -58,8 +67,8 @@ export class ConfigBuilder extends BaseConfigBuilder {
     }
 
     formatConfig() {
-        const rules = generateRules(this.selectedRules);
-        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules);
+        const rules = generateRules(this.selectedRules, this.customRules);
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules,this.customRules);
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 

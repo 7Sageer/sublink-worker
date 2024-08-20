@@ -1,8 +1,8 @@
 # Sublink Worker
 
-Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare Worker 上。它可以将各种代理协议的分享 URL 转换为不同客户端可用的订阅链接。
+Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare Worker 上。它可以将各种代理协议的分享 URL 转换为不同客户端可用的订阅链接。同时，它还提供了灵活的自定义规则与API支持。
 
-![image](/doc/main.png)
+![image](/doc/img/main.png)
 
 ## 功能特点
 
@@ -15,10 +15,10 @@ Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare
   - Xray/V2Ray
 - 支持短链接生成（基于 R2）
 - 浅色/深色主题切换
-- 用户友好的 Web 界面，提供主流自定义路由规则
 - 灵活的 API，支持脚本化操作
+- 用户友好的 Web 界面，灵活的自定义规则：
 
-![image](/doc/rules.png)
+![image](/doc/img/custom.png)
 
 ## 快速开始
 
@@ -41,26 +41,23 @@ Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare
 
 ## 最近更新
 
+### 2024-08-20
+
+- 新增：
+  - 自定义规则
+  - 自定义规则的 API 支持，详见 [API-doc.md](/doc/API-doc.md)
+
 ### 2024-08-19
 
 - 更新规则集：
   - `💬 AI 服务` 规则集增加 `Perplexity`
   - `💰 金融服务` 规则集增加 `Stripe`, `Wise`
 
-
 ### 2024-08-13
 
 - 优化 API 架构
 - 更新了文档，增加了详细的 API 说明
 - 修复 hy2 协议解析问题
-
-### 2024-08-10
-
-- 添加快速选择规则集
-- 细化规则集
-  - 增添更多分类
-  - 将 `💬 OpenAI` 改为 `💬 AI 服务`，包含 Claude，Jetbrains-AI 等规则
-  - 优化显示
 
 ## 项目结构
 

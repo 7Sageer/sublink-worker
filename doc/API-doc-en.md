@@ -2,11 +2,11 @@
 
 ## Overview
 
-Sublink Worker is a lightweight subscription conversion tool deployed on Cloudflare Workers. It converts various proxy protocol share URLs into subscription links usable by different clients. This document outlines the API endpoints and their usage.
+Sublink Worker is a lightweight subscription conversion tool deployed on Cloudflare Workers. It can convert sharing URLs of various proxy protocols into subscription links usable by different clients. This document outlines the API endpoints and their usage.
 
 ## Base URL
 
-All API requests should be made to:
+All API requests should be sent to:
 
 ```
 https://your-worker-domain.workers.dev
@@ -24,15 +24,12 @@ Replace `your-worker-domain` with your actual Cloudflare Workers domain.
 - **Method**: GET
 - **Parameters**:
   - `config` (required): URL-encoded string containing one or more proxy configurations
-  - `selectedRules` (optional): Either a predefined rule set name or a JSON array of custom rules
+  - `selectedRules` (optional): Name of predefined rule set or JSON array of custom rules
+  - `customRules` (optional): JSON array of custom rules
 
 **Example**:
 ```
-/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced
-```
-or
-```
-/singbox?config=vmess%3A%2F%2Fexample&selectedRules=%5B%22Ad%20Block%22%2C%22Private%22%5D
+/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
 ```
 
 #### Clash Configuration
@@ -53,7 +50,7 @@ or
 - **URL**: `/shorten`
 - **Method**: GET
 - **Parameters**:
-  - `url` (required): The original URL to be shortened
+  - `url` (required): Original URL to be shortened
 
 **Example**:
 ```
@@ -77,15 +74,13 @@ or
 
 The API supports the following predefined rule sets:
 
-- `minimal`: Basic set of rules
-- `balanced`: Moderate set of rules
-- `comprehensive`: Full set of rules
+- `minimal`: Basic rule set
+- `balanced`: Moderate rule set
+- `comprehensive`: Complete rule set
 
 These can be used in the `selectedRules` parameter for Sing-Box and Clash configurations.
 
-## Custom Rules
-
-Instead of using predefined rule sets, you can provide a custom list of rules as a JSON array in the `selectedRules` parameter. Available rules include:
+Below are the currently supported predefined rule sets:
 
 | Rule Name | Used Site Rules | Used IP Rules |
 |---|---|---|
@@ -108,33 +103,53 @@ Instead of using predefined rule sets, you can provide a custom list of rules as
 | Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
 
-The rule set of SingBox comes from [https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), thanks to lyc8503's contribution!
+Singbox rule sets are sourced from [https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), thanks to lyc8503's contribution!
+
+## Custom Rules
+
+In addition to using predefined rule sets, you can provide a list of custom rules in the `customRules` parameter as a JSON array. Each custom rule should include the following fields:
+
+- `sites`: Array of domain rules
+- `ips`: Array of IP rules
+- `outbound`: Outbound name
+
+Example:
+
+```json
+[
+  {
+    "sites": ["google", "anthropic"],
+    "ips": ["private", "cn"],
+    "outbound": "🤪 MyCustomRule"
+  }
+]
+```
 
 ## Error Handling
 
-The API will return appropriate HTTP status codes along with error messages in case of issues:
+The API will return appropriate HTTP status codes and error messages when issues occur:
 
 - 400 Bad Request: When required parameters are missing or invalid
-- 404 Not Found: When a requested resource (e.g., short URL) doesn't exist
-- 500 Internal Server Error: For server-side errors
+- 404 Not Found: When the requested resource (like a short URL) doesn't exist
+- 500 Internal Server Error: Server-side errors
 
 ## Usage Notes
 
 1. All proxy configurations in the `config` parameter should be URL-encoded.
-2. Multiple proxy configurations can be included in a single request by separating them with newline characters (`%0A`) in the URL-encoded `config` parameter.
-3. When using custom rules, ensure the rule names exactly match those listed in the Custom Rules section.
-4. The shortened URLs are meant to be temporary and may expire after a certain period.
+2. Multiple proxy configurations can be included in a single request by separating them with newlines (`%0A`) in the URL-encoded `config` parameter.
+3. When using custom rules, ensure that the rule names match exactly with those listed in the custom rules section.
+4. Shortened URLs are intended for temporary use and may expire after a certain period.
 
 ## Examples
 
-1. Generate a Sing-Box configuration with a balanced rule set:
+1. Generate a Sing-Box configuration with balanced rule set:
    ```
    /singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced
    ```
 
 2. Generate a Clash configuration with custom rules:
    ```
-   /clash?config=vless%3A%2F%2Fexample&selectedRules=%5B%22Ad%20Block%22%2C%22Google%22%2C%22Streaming%22%5D
+   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
    ```
 
 3. Shorten a URL:
@@ -144,6 +159,6 @@ The API will return appropriate HTTP status codes along with error messages in c
 
 ## Conclusion
 
-This API provides a flexible and powerful way to generate and manage proxy configurations. It supports multiple proxy protocols, various client types, and customizable routing rules. The URL shortening feature allows for easy sharing and management of complex configurations.
+Our API provides a flexible and powerful way to generate and manage proxy configurations. It supports multiple proxy protocols, various client types, and customizable routing rules. The URL shortening feature allows for easy sharing and management of complex configurations.
 
-For any issues or feature requests, please contact the repository maintainer.
+For any questions or feature requests, please contact the repository maintainer.

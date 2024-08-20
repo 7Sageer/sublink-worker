@@ -33,6 +33,7 @@ const generateStyles = () => `
     --input-bg: #ffffff;
     --input-border: #ced4da;
     --input-text: #495057;
+    --placeholder-color: #6c757d;
     --checkbox-bg: #ffffff;
     --checkbox-border: #ced4da;
     --checkbox-checked-bg: #6a11cb;
@@ -53,6 +54,7 @@ const generateStyles = () => `
     --input-bg: #3c3c3c;
     --input-border: #555555;
     --input-text: #e0e0e0;
+    --placeholder-color: #adb5bd;
     --checkbox-bg: #3c3c3c;
     --checkbox-border: #555555;
     --checkbox-checked-bg: #4a0e8f;
@@ -272,6 +274,31 @@ const generateStyles = () => `
     box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
   }
 
+  .form-control::placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+  }
+
+  .form-control::-webkit-input-placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+  }
+
+  .form-control::-moz-placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+  }
+
+  .form-control:-ms-input-placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+  }
+
+  .form-control::-ms-input-placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+  }
+
   #advancedOptions {
     max-height: 0;
     overflow: hidden;
@@ -391,9 +418,9 @@ const generateScripts = () => `
     ${applyPredefinedRulesFunction()}
     ${tooltipFunction()}
     ${submitFormFunction()}
+    ${customRuleFunctions}
   </script>
 `;
-
 
 const advancedOptionsToggleFunction = () => `
   document.getElementById('advancedToggle').addEventListener('change', function() {
@@ -527,6 +554,13 @@ const generateRuleSetSelection = () => `
         </div>
       `).join('')}
     </div>
+    <div class="mt-4">
+      <h4>Custom Rules</h4>
+      <div id="customRules">
+      <!-- Custom rules will be dynamically added here -->
+    </div>
+    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">Add Custom Rule</button>
+  </div>
   </div>
 `;
 
@@ -593,13 +627,56 @@ const submitFormFunction = () => `
     }
 
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\`;
 
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
   }
+`;
 
-  document.getElementById('encodeForm').addEventListener('submit', submitForm);
+const customRuleFunctions = `
+  let customRuleCount = 0;
+
+  function addCustomRule() {
+    const customRulesDiv = document.getElementById('customRules');
+    const newRuleDiv = document.createElement('div');
+    newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
+    newRuleDiv.innerHTML = \`
+      <div class="mb-2">
+        <label class="form-label">Geo-Site Rule Sets</label>
+        <span class="tooltip-icon">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            Site Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
+          </span>
+        </span>
+        <input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google, anthropic">
+        <small class="form-text text-muted">Enter a domain or use wildcards like *.example.com</small>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Geo-IP Rule Sets</label>
+        <span class="tooltip-icon">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            IP Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
+          </span>
+        </span>
+        <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private, cn">
+        <small class="form-text text-muted">Enter IP rules separated by commas</small>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Outbound Name</label>
+        <input type="text" class="form-control" name="customRuleName[]" placeholder="e.g., 🤪 Custom Rule" required>
+      </div>
+      <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeCustomRule(this)">Remove Rule</button>
+    \`;
+    customRulesDiv.appendChild(newRuleDiv);
+  }
+
+  function removeCustomRule(button) {
+    button.parentElement.remove();
+    customRuleCount--;
+  }
 `;

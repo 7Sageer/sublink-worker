@@ -21,6 +21,14 @@ async function handleRequest(request) {
       const formData = await request.formData();
       const inputString = formData.get('input');
       const selectedRules = formData.getAll('selectedRules');
+      const customRuleDomains = formData.getAll('customRuleSite[]');
+      const customRuleIPs = formData.getAll('customRuleIP[]');
+      const customRuleNames = formData.getAll('customRuleName[]');
+      const customRules = customRuleDomains.map((domains, index) => ({
+        sites: domains.split(',').map(site => site.trim()),
+        ips: customRuleIPs[index].split(',').map(ip => ip.trim()),
+        outbound: customRuleNames[index]
+      }));
     
       if (!inputString) {
         return new Response('Missing input parameter', { status: 400 });
@@ -30,8 +38,8 @@ async function handleRequest(request) {
       const rulesToUse = selectedRules.length > 0 ? selectedRules : ['广告拦截', '谷歌服务', '国外媒体', '电报消息'];
     
       const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
-      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}`;
-      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}`;
+      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}`;
+      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}`;
     
       return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl), {
         headers: { 'Content-Type': 'text/html' }
@@ -39,12 +47,13 @@ async function handleRequest(request) {
     } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash')) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
-    
+      let customRules = url.searchParams.get('customRules');
+  
       if (!inputString) {
         return new Response('Missing config parameter', { status: 400 });
       }
-    
-      // deal with predefined rule sets
+  
+      // 处理预定义规则集
       if (PREDEFINED_RULE_SETS[selectedRules]) {
         selectedRules = PREDEFINED_RULE_SETS[selectedRules];
       } else {
@@ -52,19 +61,27 @@ async function handleRequest(request) {
           selectedRules = JSON.parse(decodeURIComponent(selectedRules));
         } catch (error) {
           console.error('Error parsing selectedRules:', error);
-          selectedRules = PREDEFINED_RULE_SETS.minimal;  // 使用默认最小规则集
+          selectedRules = PREDEFINED_RULE_SETS.minimal;
         }
       }
-    
+  
+      // 处理自定义规则
+      try {
+        customRules = JSON.parse(decodeURIComponent(customRules));
+      } catch (error) {
+        console.error('Error parsing customRules:', error);
+        customRules = [];
+      }
+  
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new ConfigBuilder(inputString, selectedRules);
+        configBuilder = new ConfigBuilder(inputString, selectedRules, customRules);
       } else {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules);
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules);
       }
-    
+  
       const config = await configBuilder.build();
-    
+          
       return new Response(
         url.pathname.startsWith('/singbox') ? JSON.stringify(config, null, 2) : config,
         {
@@ -74,7 +91,8 @@ async function handleRequest(request) {
               : 'text/yaml; charset=utf-8' 
           }
         }
-      );
+      ); 
+      
     }  if (url.pathname === '/shorten') {
       const originalUrl = url.searchParams.get('url');
       if (!originalUrl) {

@@ -4,9 +4,10 @@ import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules) {
+    constructor(inputString, selectedRules, customRules) {
         super(inputString, CLASH_CONFIG);
         this.selectedRules = selectedRules;
+        this.customRules = customRules;
     }
 
     addCustomItems(customItems) {
@@ -57,6 +58,14 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             }
         });
 
+        this.customRules.forEach(rule => {
+            this.config['proxy-groups'].push({
+                type: "select",
+                name: rule.outbound,
+                proxies: ['🚀 节点选择', ...proxyList]
+            });
+        });
+
         this.config['proxy-groups'].push({
             type: "select",
             name: "🐟 漏网之鱼",
@@ -64,12 +73,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         });
     }
     formatConfig() {
-        const rules = generateRules(this.selectedRules);
+        const rules = generateRules(this.selectedRules, this.customRules);
 
-        this.config.rules = rules.flatMap(rule => [
-            ...rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`),
-            ...rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`)
-        ]);
+        this.config.rules = rules.flatMap(rule => {
+            const siteRules = rule.site_rules ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];
+            const ipRules = rule.ip_rules ? rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`) : [];
+            return [...siteRules, ...ipRules];
+        });
 
         // Add the final catch-all rule
         this.config.rules.push('MATCH,🐟 漏网之鱼');
