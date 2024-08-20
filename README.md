@@ -1,6 +1,6 @@
 # Sublink Worker
 
-Sublink Worker 是一个轻量级的订阅转换工具，可部署在 Cloudflare Worker 上。它可以将各种代理协议的分享 URL 转换为不同客户端可用的订阅链接。同时，它还提供了灵活的自定义规则与API支持。
+Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转换工具。它可以将各种代理协议的分享 URL 转换为不同客户端可用的订阅链接。同时还提供灵活的自定义规则与API支持。
 
 ![image](/doc/img/main.png)
 
