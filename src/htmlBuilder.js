@@ -653,7 +653,6 @@ const customRuleFunctions = `
           </span>
         </span>
         <input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google, anthropic">
-        <small class="form-text text-muted">Enter a domain or use wildcards like *.example.com</small>
       </div>
       <div class="mb-2">
         <label class="form-label">Geo-IP Rule Sets</label>
@@ -664,7 +663,6 @@ const customRuleFunctions = `
           </span>
         </span>
         <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private, cn">
-        <small class="form-text text-muted">Enter IP rules separated by commas</small>
       </div>
       <div class="mb-2">
         <label class="form-label">Outbound Name</label>
