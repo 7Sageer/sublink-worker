@@ -185,7 +185,6 @@ export function generateRules(selectedRules = [], customRules = []) {
 
 
 export function generateRuleSets(selectedRules = [], customRules = []) {
-  console.log(customRules[0]);
   if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
     selectedRules = PREDEFINED_RULE_SETS[selectedRules];
   }
