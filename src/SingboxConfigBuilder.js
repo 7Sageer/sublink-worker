@@ -74,12 +74,14 @@ export class ConfigBuilder extends BaseConfigBuilder {
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 
+        console.log(rules[7].ip_rules);
+
         this.config.route.rules = rules.map(rule => ({
-            rule_set: rule.site_rules[0] !== '' ? [...rule.site_rules, ...rule.ip_rules.map(ip => `${ip}-ip`)] : 
-                      rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `${ip}-ip`) : [],
+            rule_set: rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? 
+                      [...rule.site_rules, ...rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`)] : 
+                      rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`),
             outbound: rule.outbound
         }));
-
         // Add any default rules that should always be present
         this.config.route.rules.unshift(
             { protocol: 'dns', outbound: 'dns-out' },

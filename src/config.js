@@ -209,10 +209,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     }
   });
   
-  customRules.forEach(rule => {
-	rule.site.split(',').forEach(site => siteRuleSets.add(site.trim()));
-	siteRuleSets.add(rule.ip.trim());
-  });
+
 
   const site_rule_sets = Array.from(siteRuleSets).map(rule => ({
     tag: rule,
@@ -229,6 +226,31 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
     download_detour: '⚡ 自动选择'
   }));
+
+  customRules.forEach(rule => {
+	if(rule.site!=''){
+		rule.site.split(',').forEach(site => {
+			site_rule_sets.push({
+				tag: site.trim(),
+				type: 'remote',
+				format: 'binary',
+				url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
+				download_detour: '⚡ 自动选择'
+			});
+		});
+	}
+	if(rule.ip!=''){
+		rule.ip.split(',').forEach(ip => {
+			ip_rule_sets.push({
+				tag: `${ip.trim()}-ip`,
+				type: 'remote',
+				format: 'binary',
+				url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
+				download_detour: '⚡ 自动选择'
+			});
+		});
+	}
+  });
 
   ruleSets.push(...site_rule_sets, ...ip_rule_sets);
 
