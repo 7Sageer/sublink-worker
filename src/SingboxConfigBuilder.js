@@ -75,7 +75,8 @@ export class ConfigBuilder extends BaseConfigBuilder {
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 
         this.config.route.rules = rules.map(rule => ({
-            rule_set: [...rule.site_rules, ...rule.ip_rules.map(ip => `${ip}-ip`)],
+            rule_set: rule.site_rules[0] !== '' ? [...rule.site_rules, ...rule.ip_rules.map(ip => `${ip}-ip`)] : 
+                      rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `${ip}-ip`) : [],
             outbound: rule.outbound
         }));
 

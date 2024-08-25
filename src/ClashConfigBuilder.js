@@ -78,8 +78,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         const rules = generateRules(this.selectedRules, this.customRules);
 
         this.config.rules = rules.flatMap(rule => {
-            const siteRules = rule.site_rules ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];
-            const ipRules = rule.ip_rules ? rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`) : [];
+            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];
+            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`) : [];
             return [...siteRules, ...ipRules];
         });
 
