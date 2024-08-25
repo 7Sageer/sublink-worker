@@ -632,6 +632,13 @@ const submitFormFunction = () => `
         .map(checkbox => checkbox.value);
     }
 
+    // 收集自定义规则数据
+    const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
+      site: rule.querySelector('input[name="customRuleSite[]"]').value,
+      ip: rule.querySelector('input[name="customRuleIP[]"]').value,
+      name: rule.querySelector('input[name="customRuleName[]"]').value
+    }));
+
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
     const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\`;
     const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\`;
@@ -709,6 +716,7 @@ const customRuleFunctions = `
     const customRulesDiv = document.getElementById('customRules');
     const newRuleDiv = document.createElement('div');
     newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
+    newRuleDiv.dataset.ruleId = customRuleCount++;
     newRuleDiv.innerHTML = \`
       <div class="mb-2">
         <label class="form-label">Geo-Site Rule Sets</label>

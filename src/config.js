@@ -172,13 +172,15 @@ export function generateRules(selectedRules = [], customRules = []) {
 	  }
 	});
   
-	customRules.forEach(rule => {
-	  rules.push({
-		site_rules: rule.sites,
-		ip_rules: rule.ips,
-		outbound: rule.outbound
-	  });
-	});
+    if (customRules.length > 0) {
+      customRules.forEach((rule) => {
+        rules.push({
+          site_rules: rule.site.split(','),
+          ip_rules: rule.ip.split(','),
+          outbound: rule.name
+        });
+      });
+    }
   
 	return rules;
   }
@@ -206,10 +208,10 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
       rule.ip_rules.forEach(ipRule => ipRuleSets.add(ipRule));
     }
   });
-
+  
   customRules.forEach(rule => {
-    rule.sites.forEach(site => siteRuleSets.add(site));
-    rule.ips.forEach(ip => ipRuleSets.add(ip));
+	rule.site.split(',').forEach(site => siteRuleSets.add(site.trim()));
+	siteRuleSets.add(rule.ip.trim());
   });
 
   const site_rule_sets = Array.from(siteRuleSets).map(rule => ({

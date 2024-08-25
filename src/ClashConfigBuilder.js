@@ -58,13 +58,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             }
         });
 
-        this.customRules.forEach(rule => {
-            this.config['proxy-groups'].push({
-                type: "select",
-                name: rule.outbound,
-                proxies: ['🚀 节点选择', ...proxyList]
+        if (Array.isArray(this.customRules)) {
+            this.customRules.forEach(rule => {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: rule.name,
+                    proxies: ['🚀 节点选择', ...proxyList]
+                });
             });
-        });
+        }
 
         this.config['proxy-groups'].push({
             type: "select",

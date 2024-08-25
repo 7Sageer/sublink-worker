@@ -5,6 +5,7 @@ export class BaseConfigBuilder {
     constructor(inputString, baseConfig) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
+        this.customRules = [];
     }
 
     async build() {

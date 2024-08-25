@@ -51,13 +51,15 @@ export class ConfigBuilder extends BaseConfigBuilder {
             }
         });
 
-        this.customRules.forEach(rule => {
-            this.config.outbounds.push({
-                type: "selector",
-                tag: rule.outbound,
-                outbounds: ['🚀 节点选择', ...proxyList]
+        if (Array.isArray(this.customRules)) {
+            this.customRules.forEach(rule => {
+                this.config.outbounds.push({
+                    type: "selector",
+                    tag: rule.name,
+                    outbounds: ['🚀 节点选择', ...proxyList]
+                });
             });
-        });
+        }
 
         this.config.outbounds.push({
             type: "selector",
