@@ -192,22 +192,18 @@ const generateStyles = () => `
   .tooltip-content {
     visibility: hidden;
     opacity: 0;
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    background-color: var(--card-bg);
+    position: fixed; // 改为固定定位
     background-color: var(--card-bg);
     color: var(--text-color);
     border: 1px solid var(--input-border);
     border-radius: 6px;
     padding: 10px;
-    z-index: 1;
+    z-index: 1000; // 提高z-index值
     width: 300px;
-    max-width: 100vw;
+    max-width: 90vw; // 限制最大宽度
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: opacity 0.3s, visibility 0.3s;
-    white-space: normal;
-    text-align: left;
   }
 
   .tooltip-icon:hover .tooltip-content {
@@ -308,7 +304,7 @@ const generateStyles = () => `
   }
 
   #advancedOptions.show {
-    max-height: 2000px; /* Adjust this value based on your content */
+    max-height: none;
     opacity: 1;
     transform: translateY(0);
     transition: max-height 0.5s ease-in, opacity 0.5s ease-in, transform 0.5s ease-in;
@@ -377,6 +373,11 @@ const generateForm = () => `
     <div class="d-grid mt-4">
       <button type="submit" class="btn btn-primary btn-lg">
         <i class="fas fa-sync-alt me-2"></i>Convert
+      </button>
+    </div>
+    <div class="d-grid mt-2">
+      <button type="button" class="btn btn-secondary btn-lg" id="clearFormBtn">
+        <i class="fas fa-trash-alt me-2"></i>Clear Form
       </button>
     </div>
   </form>
@@ -617,6 +618,11 @@ const submitFormFunction = () => `
     const formData = new FormData(form);
     const inputString = formData.get('input');
     
+    // Save form data to localStorage
+    localStorage.setItem('inputTextarea', inputString);
+    localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
+    saveSelectedRules();
+    
     let selectedRules;
     const predefinedRules = document.getElementById('predefinedRules').value;
     if (predefinedRules !== 'custom') {
@@ -634,6 +640,66 @@ const submitFormFunction = () => `
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
   }
+
+  function loadSavedFormData() {
+    const savedInput = localStorage.getItem('inputTextarea');
+    if (savedInput) {
+      document.getElementById('inputTextarea').value = savedInput;
+    }
+
+    const advancedToggle = localStorage.getItem('advancedToggle');
+    if (advancedToggle) {
+      document.getElementById('advancedToggle').checked = advancedToggle === 'true';
+      if (advancedToggle === 'true') {
+        document.getElementById('advancedOptions').classList.add('show');
+      }
+    }
+
+    loadSelectedRules();
+  }
+
+  function saveSelectedRules() {
+    const selectedRules = Array.from(document.querySelectorAll('input[name="selectedRules"]:checked'))
+      .map(checkbox => checkbox.value);
+    localStorage.setItem('selectedRules', JSON.stringify(selectedRules));
+    localStorage.setItem('predefinedRules', document.getElementById('predefinedRules').value);
+  }
+
+  function loadSelectedRules() {
+    const savedRules = localStorage.getItem('selectedRules');
+    if (savedRules) {
+      const rules = JSON.parse(savedRules);
+      rules.forEach(rule => {
+        const checkbox = document.querySelector(\`input[name="selectedRules"][value="\${rule}"]\`);
+        if (checkbox) {
+          checkbox.checked = true;
+        }
+      });
+    }
+
+    const savedPredefinedRules = localStorage.getItem('predefinedRules');
+    if (savedPredefinedRules) {
+      document.getElementById('predefinedRules').value = savedPredefinedRules;
+    }
+  }
+
+  function clearFormData() {
+    localStorage.removeItem('inputTextarea');
+    localStorage.removeItem('advancedToggle');
+    localStorage.removeItem('selectedRules');
+    localStorage.removeItem('predefinedRules');
+    document.getElementById('inputTextarea').value = '';
+    document.getElementById('advancedToggle').checked = false;
+    document.getElementById('advancedOptions').classList.remove('show');
+    document.querySelectorAll('input[name="selectedRules"]').forEach(checkbox => checkbox.checked = false);
+    document.getElementById('predefinedRules').value = 'custom';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSavedFormData();
+    document.getElementById('encodeForm').addEventListener('submit', submitForm);
+    document.getElementById('clearFormBtn').addEventListener('click', clearFormData);
+  });
 `;
 
 const customRuleFunctions = `

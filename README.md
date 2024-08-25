@@ -41,6 +41,10 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 
 ## 最近更新
 
+### 2024-08-25
+
+- 优化web界面，修复部分显示错误
+
 ### 2024-08-20
 
 - 新增：
@@ -52,12 +56,6 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 - 更新规则集：
   - `💬 AI 服务` 规则集增加 `Perplexity`
   - `💰 金融服务` 规则集增加 `Stripe`, `Wise`
-
-### 2024-08-13
-
-- 优化 API 架构
-- 更新了文档，增加了详细的 API 说明
-- 修复 hy2 协议解析问题
 
 ## 项目结构
 
