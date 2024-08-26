@@ -632,7 +632,6 @@ const submitFormFunction = () => `
         .map(checkbox => checkbox.value);
     }
 
-    // 收集自定义规则数据
     const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
       site: rule.querySelector('input[name="customRuleSite[]"]').value,
       ip: rule.querySelector('input[name="customRuleIP[]"]').value,
@@ -726,7 +725,7 @@ const customRuleFunctions = `
             Site Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
           </span>
         </span>
-        <input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google, anthropic">
+        <input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google,anthropic">
       </div>
       <div class="mb-2">
         <label class="form-label">Geo-IP Rule Sets</label>
@@ -736,7 +735,7 @@ const customRuleFunctions = `
             IP Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
           </span>
         </span>
-        <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private, cn">
+        <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private,cn">
       </div>
       <div class="mb-2">
         <label class="form-label">Outbound Name</label>
