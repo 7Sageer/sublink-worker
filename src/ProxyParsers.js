@@ -170,15 +170,17 @@ export class ProxyParser {
       }
 
       class TuicParser {
+        //tuic://9a92c965-2c57-4040-8c83-330374e34424:9a92c965-2c57-4040-8c83-330374e34424@wawo33.qhr.icu:10876?sni=wawo33.qhr.icu&alpn=h3&congestion_control=bbr#HK-singbox_tuic
+
         parse(url) {
           const { addressPart, params, name } = parseUrlParams(url);
           const [userinfo, serverInfo] = addressPart.split('@');
           const { host, port } = parseServerInfo(serverInfo);
-      
           const tls = {
             enabled: true,
             server_name: params.sni,
             alpn: [params.alpn],
+            insecure: true,
           };
       
           return {

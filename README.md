@@ -41,6 +41,10 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 
 ## 最近更新
 
+### 2024-08-28
+
+- 修复 ClashMeta For Android 高于[v2.10.1]版本不显示规则集的问题
+
 ### 2024-08-25
 
 - 优化web界面，修复部分显示错误
