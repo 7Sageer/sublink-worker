@@ -195,6 +195,10 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     password: proxy.password,
                     'congestion-controller': proxy.congestion,
                     'skip-cert-verify': proxy.tls.insecure,
+                    'disable-sni': true,
+                    'alpn': proxy.tls.alpn,
+                    'sni': proxy.tls.server_name,
+                    'udp-relay-mode': 'native',
                 };
             default:
                 return proxy; // Return as-is if no specific conversion is defined
