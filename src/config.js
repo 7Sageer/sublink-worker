@@ -118,8 +118,8 @@ export const UNIFIED_RULES = [
 ];
 
 export const PREDEFINED_RULE_SETS = {
-	minimal: ['Ad Block', 'Location:CN', 'Private'],
-	balanced: ['Ad Block', 'Location:CN', 'Private', 'Google', 'Youtube', 'AI Services', 'Telegram'],
+	minimal: ['Location:CN', 'Private'],
+	balanced: ['Location:CN', 'Private', 'Google', 'Youtube', 'AI Services', 'Telegram'],
 	comprehensive: UNIFIED_RULES.map(rule => rule.name)
   };
   
