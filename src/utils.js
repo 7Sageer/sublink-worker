@@ -87,7 +87,7 @@ export function parseServerInfo(serverInfo) {
 	return {
 	  type: params.type,
 	  path: params.path ?? undefined,
-	  ...(params.host && { 'Headers': { 'Host': params.host } }),
+	  ...(params.host && { 'headers': { 'Host': params.host } }),
 	  service_name: params.serviceName ?? undefined,
 	};
   }
