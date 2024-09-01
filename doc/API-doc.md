@@ -29,7 +29,7 @@ https://your-worker-domain.workers.dev
 
 **示例**:
 ```
-/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
+/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
 ```
 
 #### Clash 配置
@@ -111,6 +111,8 @@ Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://g
 
 - `sites`: 域名规则数组
 - `ips`: IP 规则数组
+- `domain_suffix`: 域名后缀规则数组
+- `ip_cidr`: IP CIDR 规则数组
 - `outbound`: 出站名称
 
 示例:
@@ -120,6 +122,8 @@ Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://g
   {
     "sites": ["google", "anthropic"],
     "ips": ["private", "cn"],
+    "domain_suffix": [".com", ".org"],
+    "ip_cidr": ["192.168.0.0/16", "10.0.0.0/8"],
     "outbound": "🤪 MyCustomRule"
   }
 ]
@@ -149,7 +153,7 @@ API 在出现问题时将返回适当的 HTTP 状态码和错误消息:
 
 2. 生成带有自定义规则的 Clash 配置:
    ```
-   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
+   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
    ```
 
 3. 缩短 URL:
@@ -159,6 +163,6 @@ API 在出现问题时将返回适当的 HTTP 状态码和错误消息:
 
 ## 结论
 
-我们的 API 提供了一种灵活而强大的方式来生成和管理代理配置。它支持多种代理协议、各种客户端类型和可自定义的路由规则。URL 缩短功能允许轻松共享和管理复杂的配置。
+Sublink Worker API 提供了一种灵活而强大的方式来生成和管理代理配置。它支持多种代理协议、各种客户端类型和可自定义的路由规则。URL 缩短功能允许轻松共享和管理复杂的配置。
 
-如有任何问题或功能请求，欢迎联系仓库维护者。
+如有任何问题或功能请求，欢迎联系[@7Sageer](https://github.com/7Sageer)。
