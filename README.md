@@ -16,9 +16,10 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 - 支持短链接生成（基于 R2）
 - 浅色/深色主题切换
 - 灵活的 API，支持脚本化操作
-- 用户友好的 Web 界面，灵活的自定义规则：
+- 用户友好的 Web 界面，灵活的自定义规则
+  - 提供多种预定义规则集
+  - 可自建关于geo-site, geo-ip, ip-cidr和domain-suffix的自定义策略组
 
-![image](/doc/img/custom-1.png)
 
 ## 快速开始
 
