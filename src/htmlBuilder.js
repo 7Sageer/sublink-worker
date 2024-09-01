@@ -635,7 +635,9 @@ const submitFormFunction = () => `
     const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
       site: rule.querySelector('input[name="customRuleSite[]"]').value,
       ip: rule.querySelector('input[name="customRuleIP[]"]').value,
-      name: rule.querySelector('input[name="customRuleName[]"]').value
+      name: rule.querySelector('input[name="customRuleName[]"]').value,
+      domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value,
+      ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value
     }));
 
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
@@ -718,6 +720,10 @@ const customRuleFunctions = `
     newRuleDiv.dataset.ruleId = customRuleCount++;
     newRuleDiv.innerHTML = \`
       <div class="mb-2">
+        <label class="form-label">Outbound Name*</label>
+        <input type="text" class="form-control mb-2" name="customRuleName[]" placeholder="Rule Name" required>
+      </div>
+      <div class="mb-2">
         <label class="form-label">Geo-Site Rule Sets</label>
         <span class="tooltip-icon">
           <i class="fas fa-question-circle"></i>
@@ -738,10 +744,14 @@ const customRuleFunctions = `
         <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private,cn">
       </div>
       <div class="mb-2">
-        <label class="form-label">Outbound Name</label>
-        <input type="text" class="form-control" name="customRuleName[]" placeholder="e.g., 🤪 Custom Rule" required>
+        <label class="form-label">Domain Suffix</label>
+        <input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="Domain Suffix (comma separated)">
       </div>
-      <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeCustomRule(this)">Remove Rule</button>
+      <div class="mb-2">
+        <label class="form-label">IP CIDR</label>
+        <input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="IP CIDR (comma separated)">
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">Remove</button>
+      </div>
     \`;
     customRulesDiv.appendChild(newRuleDiv);
   }

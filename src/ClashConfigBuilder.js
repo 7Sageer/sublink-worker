@@ -80,7 +80,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         this.config.rules = rules.flatMap(rule => {
             const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];
             const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`) : [];
-            return [...siteRules, ...ipRules];
+            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${rule.outbound}`) : [];
+            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${rule.outbound}`) : [];
+            return [...siteRules, ...ipRules, ...domainSuffixRules, ...ipCidrRules];
         });
 
         // Add the final catch-all rule

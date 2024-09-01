@@ -172,15 +172,17 @@ export function generateRules(selectedRules = [], customRules = []) {
 	  }
 	});
   
-    if (customRules.length > 0) {
-      customRules.forEach((rule) => {
-        rules.push({
-          site_rules: rule.site.split(','),
-          ip_rules: rule.ip.split(','),
-          outbound: rule.name
-        });
-      });
-    }
+	if (customRules.length > 0) {
+		customRules.forEach((rule) => {
+		  rules.push({
+			site_rules: rule.site.split(','),
+			ip_rules: rule.ip.split(','),
+			domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
+			ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
+			outbound: rule.name
+		  });
+		});
+	}
   
 	return rules;
   }
