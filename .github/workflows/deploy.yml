@@ -36,15 +36,17 @@ jobs:
           KV_ID=$(echo "$LIST_OUTPUT" | jq -r '.[] | select(.title == "sublink-worker-'$KV_NAMESPACE'") | .id')
           
           if [ -z "$KV_ID" ]; then
-            echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
-            CREATE_OUTPUT=$(wrangler kv:namespace create "$KV_NAMESPACE")
-            echo "Create KV namespace output: $CREATE_OUTPUT"
-            KV_ID=$(echo "$CREATE_OUTPUT" | jq -r '.id')
-            if [ -z "$KV_ID" ]; then
-              echo "Failed to extract KV ID. Full output: $CREATE_OUTPUT"
-              exit 1
-            fi
-            echo "KV namespace $KV_NAMESPACE created successfully with ID: $KV_ID"
+              echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
+              CREATE_OUTPUT=$(wrangler kv:namespace create "$KV_NAMESPACE")
+              echo "Create KV namespace output: $CREATE_OUTPUT"
+              KV_ID=$(echo "$CREATE_OUTPUT" | grep -oP 'id = "\K[^"]+')
+              
+              if [ -z "$KV_ID" ]; then
+                  echo "Failed to extract KV ID. Full output: $CREATE_OUTPUT"
+                  exit 1
+              fi
+              
+              echo "KV namespace $KV_NAMESPACE created successfully with ID: $KV_ID"
           else
             echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
           fi
@@ -73,9 +75,3 @@ jobs:
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-        
-      - name: Display deployment logs
-        if: failure()
-        run: |
-          echo "Deployment failed. Displaying recent logs:"
-          wrangler tail --format pretty
