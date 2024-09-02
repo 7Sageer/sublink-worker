@@ -4,8 +4,6 @@ main = "src/index.js"
 compatibility_date = "2024-07-24"
 compatibility_flags = ["nodejs_compat"]
 
-# Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
-# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#r2-buckets
-[[r2_buckets]]
-binding = "R2_BUCKET"
-bucket_name = "sublink-worker"
+kv_namespaces = [
+  { binding = "SUBLINK_KV", id = "e55b046290924cb087f168a7085a4aee" }
+]

@@ -93,30 +93,28 @@ async function handleRequest(request) {
         }
       ); 
       
-    }  if (url.pathname === '/shorten') {
+    } else if (url.pathname === '/shorten') {
       const originalUrl = url.searchParams.get('url');
       if (!originalUrl) {
         return new Response('Missing URL parameter', { status: 400 });
       }
-  
+    
       const shortCode = GenerateWebPath();
-      await R2_BUCKET.put(`urls/${shortCode}`, originalUrl);
-  
+      await SUBLINK_KV.put(shortCode, originalUrl);
+    
       const shortUrl = `${url.origin}/s/${shortCode}`;
       return new Response(JSON.stringify({ shortUrl }), {
         headers: { 'Content-Type': 'application/json' }
       });
-    }
-  
-    if (url.pathname.startsWith('/s/')) {
+    } else if (url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
-      const originalUrl = await R2_BUCKET.get(`urls/${shortCode}`);
-  
+      const originalUrl = await SUBLINK_KV.get(shortCode);
+    
       if (originalUrl === null) {
         return new Response('Short URL not found', { status: 404 });
       }
-  
-      return Response.redirect(await originalUrl.text(), 302);
+    
+      return Response.redirect(originalUrl, 302);
     } else if (url.pathname.startsWith('/xray')) {
       // Handle Xray config requests
       const inputString = url.searchParams.get('config');

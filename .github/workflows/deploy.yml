@@ -1,4 +1,5 @@
 name: Deploy Worker
+
 on:
   workflow_dispatch:
   repository_dispatch:
@@ -17,27 +18,31 @@ jobs:
         with:
           node-version: '21'
       
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies and wrangler
+        run: |
+          npm install
+          npm install -g wrangler
       
-      - name: Install wrangler
-        run: npm install -g wrangler
-      
-      - name: Check and Create R2 Bucket
+      - name: Check and Create KV Namespace
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          BUCKET_NAME="sublink-worker"
-          if ! wrangler r2 bucket list | grep -q "$BUCKET_NAME"; then
-            echo "Bucket $BUCKET_NAME does not exist. Creating..."
-            wrangler r2 bucket create "$BUCKET_NAME"
-            echo "Bucket $BUCKET_NAME created successfully."
-          else
-            echo "Bucket $BUCKET_NAME already exists. Skipping creation."
+          KV_NAMESPACE="SUBLINK_KV"
+          KV_ID=$(wrangler kv:namespace list | jq -r '.[] | select(.title == "sublink-worker-'$KV_NAMESPACE'") | .id')
+          if [ -z "$KV_ID" ]; then
+            KV_ID=$(wrangler kv:namespace create "$KV_NAMESPACE" | jq -r '.id')
           fi
-        
+          echo "KV_ID=$KV_ID" >> $GITHUB_ENV
+      
+      - name: Update wrangler.toml
+        run: sed -i 's/id = "[^"]*"/id = "'$KV_ID'"/' wrangler.toml
+      
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
+      
+      - name: Display deployment logs
+        if: failure()
+        run: wrangler tail --format pretty
