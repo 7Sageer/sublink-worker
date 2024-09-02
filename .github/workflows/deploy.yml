@@ -57,7 +57,15 @@ jobs:
           
       - name: Update wrangler.toml
         run: |
-          sed -i 's/id = "[^"]*"/id = "'$KV_ID'"/' wrangler.toml
+          # Read the entire content of wrangler.toml
+          WRANGLER_CONTENT=$(cat wrangler.toml)
+          
+          # Update the KV namespace ID
+          UPDATED_CONTENT=$(echo "$WRANGLER_CONTENT" | sed 's/id = "[^"]*"/id = "'$KV_ID'"/')
+          
+          # Write the updated content back to wrangler.toml
+          echo "$UPDATED_CONTENT" > wrangler.toml
+          
           echo "Updated wrangler.toml content:"
           cat wrangler.toml
           
