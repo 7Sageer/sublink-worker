@@ -13,7 +13,7 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
   - Sing-Box
   - Clash
   - Xray/V2Ray
-- 支持短链接生成（基于 R2）
+- 支持短链接生成（基于 KV）
 - 浅色/深色主题切换
 - 灵活的 API，支持脚本化操作
 - 用户友好的 Web 界面，灵活的自定义规则：
@@ -26,7 +26,7 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker)
 
-> 注意：确保你的 Cloudflare 账户已经开通 R2 存储服务
+> 注意：9月2日之后，短连接服务由 R2 迁移到 KV，请确保API令牌有对应权限
 
 ## API 文档
 
@@ -40,6 +40,10 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 - `/shorten`：生成短链接
 
 ## 最近更新
+
+### 2024-09-02
+
+- 现在使用 KV 存储短链接，不再依赖 R2
 
 ### 2024-09-01
 
