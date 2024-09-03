@@ -750,14 +750,17 @@ const customRuleFunctions = `
       <div class="mb-2">
         <label class="form-label">IP CIDR</label>
         <input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="IP CIDR (comma separated)">
-        <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">Remove</button>
       </div>
+      <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">Remove</button>
     \`;
     customRulesDiv.appendChild(newRuleDiv);
   }
 
   function removeCustomRule(button) {
-    button.parentElement.remove();
-    customRuleCount--;
+    const ruleDiv = button.closest('.custom-rule');
+    if (ruleDiv) {
+      ruleDiv.remove();
+      customRuleCount--;
+    }
   }
 `;
