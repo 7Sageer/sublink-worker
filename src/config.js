@@ -99,7 +99,7 @@ export const UNIFIED_RULES = [
 	  {
 		name: 'Education',
 		outbound: '📚 教育资源',
-		site_rules: ['coursera', 'edx', 'udemy', 'khanacademy'],
+		site_rules: ['coursera', 'edx', 'udemy', 'khanacademy', 'category-scholar-!cn'],
 		ip_rules: []
 	  },
 	  {
@@ -167,6 +167,8 @@ export function generateRules(selectedRules = [], customRules = []) {
 		rules.push({
 		  site_rules: rule.site_rules,
 		  ip_rules: rule.ip_rules,
+		  domain_suffix: rule?.domain_suffix,
+		  ip_cidr: rule?.ip_cidr,
 		  outbound: rule.outbound
 		});
 	  }
