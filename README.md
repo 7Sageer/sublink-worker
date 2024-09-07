@@ -40,8 +40,8 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 
 ## 最近更新
 
-- 2024-09-03
-  - `📚 教育资源` 现在添加了 `geosite-category-scholar-!cn` 规则，包括主要学术资源网站
+- 2024-09-07
+  - (#16)修复了导入base64订阅时出现乱码的问题
 
 [查看更新日志](/doc/update-log.md)
 
