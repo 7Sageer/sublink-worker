@@ -209,8 +209,20 @@ export class ProxyParser {
                 let decodedText;
                 try {
                     decodedText = decodeBase64(text.trim());
+                    // Check if the decoded text needs URL decoding
+                    if (decodedText.includes('%')) {
+                        decodedText = decodeURIComponent(decodedText);
+                    }
                 } catch (e) {
                     decodedText = text;
+                    // Check if the original text needs URL decoding
+                    if (decodedText.includes('%')) {
+                        try {
+                            decodedText = decodeURIComponent(decodedText);
+                        } catch (urlError) {
+                            console.warn('Failed to URL decode the text:', urlError);
+                        }
+                    }
                 }
                 return decodedText.split('\n').filter(line => line.trim() !== '');
             } catch (error) {
