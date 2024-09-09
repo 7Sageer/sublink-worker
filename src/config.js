@@ -54,6 +54,12 @@ export const UNIFIED_RULES = [
 		ip_rules: ['telegram']
 	},
 	{
+		name: 'Github',
+		outbound: '🐱 Github',
+		site_rules: ['github', 'gitlab'],
+		ip_rules: []
+	},
+	{
 		name: 'Microsoft',
 		outbound: 'Ⓜ️ 微软服务',
 		site_rules: ['microsoft'],
@@ -88,12 +94,6 @@ export const UNIFIED_RULES = [
 		name: 'Gaming',
 		outbound: '🎮 游戏平台',
 		site_rules: ['steam', 'epicgames', 'ea', 'ubisoft', 'blizzard'],
-		ip_rules: []
-	  },
-	  {
-		name: 'Github',
-		outbound: '🐱 Github',
-		site_rules: ['github', 'gitlab'],
 		ip_rules: []
 	  },
 	  {
