@@ -130,7 +130,6 @@ async function handleRequest(request) {
             const text = await response.text();
             let decodedText;
             decodedText = decodeBase64(text.trim());
-            console.log(decodedText);
             // Check if the decoded text needs URL decoding
             if (decodedText.includes('%')) {
               decodedText = decodeURIComponent(decodedText);

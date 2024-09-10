@@ -3,6 +3,7 @@
 ## 2024-09-10
 
 - ([#25](https://github.com/7Sageer/sublink-worker/issues/25)) 修复了Base64无法转换多个HTTP的问题
+- 现在为生成的链接提供二维码
 
 ## 2024-09-09
 

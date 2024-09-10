@@ -17,6 +17,7 @@ const generateHead = () => `
     <title>Sublink Worker</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
       ${generateStyles()}
     </style>
@@ -320,6 +321,52 @@ const generateStyles = () => `
       margin-right: 10px;
   }
 
+    .qr-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000;
+  }
+
+  .qr-modal.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .qr-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+
+  .qr-modal.show .qr-card {
+    transform: scale(1);
+  }
+
+  .qr-card img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .qr-card p {
+    margin-top: 10px;
+    color: #333;
+    font-size: 16px;
+  }
+
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl) => `
@@ -406,6 +453,9 @@ const generateLinkInput = (label, id, value) => `
       <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('${id}')">
         <i class="fas fa-copy"></i>
       </button>
+      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')">
+        <i class="fas fa-qrcode"></i>
+      </button>
     </div>
   </div>
 `;
@@ -420,6 +470,7 @@ const generateScripts = () => `
     ${tooltipFunction()}
     ${submitFormFunction()}
     ${customRuleFunctions}
+    ${generateQRCodeFunction()}
   </script>
 `;
 
@@ -761,6 +812,68 @@ const customRuleFunctions = `
     if (ruleDiv) {
       ruleDiv.remove();
       customRuleCount--;
+    }
+  }
+`;
+
+const generateQRCodeFunction = () => `
+  function generateQRCode(id) {
+    const input = document.getElementById(id);
+    const text = input.value;
+    if (!text) {
+      alert('No link provided!');
+      return;
+    }
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+
+      const moduleCount = qr.getModuleCount();
+      const cellSize = Math.max(2, Math.min(8, Math.floor(300 / moduleCount)));
+      const margin = Math.floor(cellSize * 0.5);
+
+      const qrImage = qr.createDataURL(cellSize, margin);
+      
+      const modal = document.createElement('div');
+      modal.className = 'qr-modal';
+      modal.innerHTML = \`
+        <div class="qr-card">
+          <img src="\${qrImage}" alt="QR Code">
+          <p>Scan QR Code</p>
+        </div>
+      \`;
+
+      document.body.appendChild(modal);
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeQRModal();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeQRModal();
+        }
+      });
+
+      requestAnimationFrame(() => {
+        modal.classList.add('show');
+      });
+    } catch (error) {
+      console.error('Error in generating:', error);
+      alert('Try to use short links!');
+    }
+  }
+
+  function closeQRModal() {
+    const modal = document.querySelector('.qr-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.addEventListener('transitionend', () => {
+        document.body.removeChild(modal);
+      }, { once: true });
     }
   }
 `;
