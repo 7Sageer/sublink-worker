@@ -27,7 +27,7 @@ export class ProxyParser {
             let [base64, serverPart] = mainPart.split('@');
             let [method, password] = atob(base64).split(':');
         
-            // 匹配 IPv6 地址
+            // Match IPv6 address
             let match = serverPart.match(/\[([^\]]+)\]:(\d+)/);
             let server, server_port;
         

@@ -1,7 +1,7 @@
 import { ConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
-import { encodeBase64, GenerateWebPath} from './utils.js';
+import { encodeBase64, decodeBase64, GenerateWebPath } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
 
 addEventListener('fetch', event => {
@@ -17,7 +17,7 @@ async function handleRequest(request) {
       return new Response(generateHtml('', '', ''), {
         headers: { 'Content-Type': 'text/html' }
       });
-    }  else if (request.method === 'POST' && url.pathname === '/') {
+    } else if (request.method === 'POST' && url.pathname === '/') {
       const formData = await request.formData();
       const inputString = formData.get('input');
       const selectedRules = formData.getAll('selectedRules');
@@ -29,18 +29,18 @@ async function handleRequest(request) {
         ips: customRuleIPs[index].split(',').map(ip => ip.trim()),
         outbound: customRuleNames[index]
       }));
-    
+
       if (!inputString) {
         return new Response('Missing input parameter', { status: 400 });
       }
-    
+
       // If no rules are selected, use the default rules
       const rulesToUse = selectedRules.length > 0 ? selectedRules : ['广告拦截', '谷歌服务', '国外媒体', '电报消息'];
-    
+
       const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
       const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}`;
       const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}`;
-    
+
       return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl), {
         headers: { 'Content-Type': 'text/html' }
       });
@@ -48,12 +48,12 @@ async function handleRequest(request) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
-  
+
       if (!inputString) {
         return new Response('Missing config parameter', { status: 400 });
       }
-  
-      // 处理预定义规则集
+
+      // Deal with predefined rules
       if (PREDEFINED_RULE_SETS[selectedRules]) {
         selectedRules = PREDEFINED_RULE_SETS[selectedRules];
       } else {
@@ -64,44 +64,44 @@ async function handleRequest(request) {
           selectedRules = PREDEFINED_RULE_SETS.minimal;
         }
       }
-  
-      // 处理自定义规则
+
+      // Deal with custom rules
       try {
         customRules = JSON.parse(decodeURIComponent(customRules));
       } catch (error) {
         console.error('Error parsing customRules:', error);
         customRules = [];
       }
-  
+
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
         configBuilder = new ConfigBuilder(inputString, selectedRules, customRules);
       } else {
         configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules);
       }
-  
+
       const config = await configBuilder.build();
-          
+
       return new Response(
         url.pathname.startsWith('/singbox') ? JSON.stringify(config, null, 2) : config,
         {
-          headers: { 
-            'content-type': url.pathname.startsWith('/singbox') 
-              ? 'application/json; charset=utf-8' 
-              : 'text/yaml; charset=utf-8' 
+          headers: {
+            'content-type': url.pathname.startsWith('/singbox')
+              ? 'application/json; charset=utf-8'
+              : 'text/yaml; charset=utf-8'
           }
         }
-      ); 
-      
+      );
+
     } else if (url.pathname === '/shorten') {
       const originalUrl = url.searchParams.get('url');
       if (!originalUrl) {
         return new Response('Missing URL parameter', { status: 400 });
       }
-    
+
       const shortCode = GenerateWebPath();
       await SUBLINK_KV.put(shortCode, originalUrl);
-    
+
       const shortUrl = `${url.origin}/s/${shortCode}`;
       return new Response(JSON.stringify({ shortUrl }), {
         headers: { 'Content-Type': 'application/json' }
@@ -109,26 +109,53 @@ async function handleRequest(request) {
     } else if (url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
       const originalUrl = await SUBLINK_KV.get(shortCode);
-    
+
       if (originalUrl === null) {
         return new Response('Short URL not found', { status: 404 });
       }
-    
+
       return Response.redirect(originalUrl, 302);
     } else if (url.pathname.startsWith('/xray')) {
       // Handle Xray config requests
       const inputString = url.searchParams.get('config');
+      const proxylist = inputString.split('\n');
 
-      if (!inputString) {
+      const finalProxyList = [];
+
+      for (const proxy of proxylist) {
+        console.log(proxy);
+        if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
+          try {
+            const response = await fetch(proxy)
+            const text = await response.text();
+            let decodedText;
+            decodedText = decodeBase64(text.trim());
+            console.log(decodedText);
+            // Check if the decoded text needs URL decoding
+            if (decodedText.includes('%')) {
+              decodedText = decodeURIComponent(decodedText);
+            }
+            finalProxyList.push(...decodedText.split('\n'));
+          } catch (e) {
+            console.warn('Failed to fetch the proxy:', e);
+          }
+        } else {
+          finalProxyList.push(proxy);
+        }
+      }
+
+      const finalString = finalProxyList.join('\n');
+
+      if (!finalString) {
         return new Response('Missing config parameter', { status: 400 });
       }
 
-      return new Response(encodeBase64(inputString), {
+      return new Response(encodeBase64(finalString), {
         headers: { 'content-type': 'application/json; charset=utf-8' }
       });
     } else if (url.pathname === '/favicon.ico') {
-    return Response.redirect('https://cravatar.cn/avatar/9240d78bbea4cf05fb04f2b86f22b18d?s=160&d=retro&r=g', 301)
-  }
+      return Response.redirect('https://cravatar.cn/avatar/9240d78bbea4cf05fb04f2b86f22b18d?s=160&d=retro&r=g', 301)
+    }
 
     return new Response('Not Found', { status: 404 });
   } catch (error) {
