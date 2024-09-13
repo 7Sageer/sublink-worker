@@ -26,7 +26,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
 
         const proxyList = this.config.outbounds.filter(outbound => outbound?.server != undefined).map(outbound => outbound.tag);
         
-        this.config.outbounds.push({
+        this.config.outbounds.unshift({
             type: "urltest",
             tag: "⚡ 自动选择",
             outbounds: DeepCopy(proxyList),
@@ -43,7 +43,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
                     outbounds: ['🚀 节点选择', ...proxyList]
                 });
             } else {
-                this.config.outbounds.push({
+                this.config.outbounds.unshift({
                     type: "selector",
                     tag: outbound,
                     outbounds: proxyList
