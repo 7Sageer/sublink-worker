@@ -1,5 +1,5 @@
-export const SITE_RULE_SET_BASE_URL = 'https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat/';
-export const IP_RULE_SET_BASE_URL = 'https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat/';
+export const SITE_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/tree/rule-set-geosite/';
+export const IP_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/tree/rule-set-geoip/';
 // Custom rules
 export const CUSTOM_RULES = [];
 // Unified rule structure
