@@ -1,5 +1,9 @@
 # 更新日志
 
+## 2024-09-13
+
+- ([#27](https://github.com/7Sageer/sublink-worker/issues/27)) 优化了出站选择排布
+
 ## 2024-09-10
 
 - ([#25](https://github.com/7Sageer/sublink-worker/issues/25)) 修复了Base64无法转换多个HTTP的问题

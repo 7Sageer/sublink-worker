@@ -50,7 +50,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     proxies: ['🚀 节点选择', ...proxyList]
                 });
             } else {
-                this.config['proxy-groups'].push({
+                this.config['proxy-groups'].unshift({
                     type: "select",
                     name: outbound,
                     proxies: proxyList
