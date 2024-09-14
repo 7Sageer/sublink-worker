@@ -1,5 +1,5 @@
-export const SITE_RULE_SET_BASE_URL = 'https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs/';
-export const IP_RULE_SET_BASE_URL = 'https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs/';
+export const SITE_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/raw/rule-set-geosite/';
+export const IP_RULE_SET_BASE_URL = 'https://github.com/lyc8503/sing-box-rules/raw/rule-set-geoip/';
 // Custom rules
 export const CUSTOM_RULES = [];
 // Unified rule structure
