@@ -3,6 +3,7 @@
 ## 2024-09-15
 
 - ([#31](https://github.com/7Sageer/sublink-worker/issues/31),[#25](https://github.com/7Sageer/sublink-worker/issues/25)) 现在可以自定义短链接路径
+- 优化了前端显示，简化操作流程
 
 ## 2024-09-13
 

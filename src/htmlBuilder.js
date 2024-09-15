@@ -321,7 +321,7 @@ const generateStyles = () => `
       margin-right: 10px;
   }
 
-    .qr-modal {
+  .qr-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -367,6 +367,33 @@ const generateStyles = () => `
     font-size: 16px;
   }
 
+  .base-url-label {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  #subscribeLinksContainer {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+  }
+
+  #subscribeLinksContainer.show {
+    max-height: 1000px;
+    opacity: 1;
+  }
+
+  #subscribeLinksContainer.hide {
+    max-height: 0;
+    opacity: 0;
+  }
+
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
@@ -378,7 +405,9 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
         ${generateCardHeader()}
         <div class="card-body">
           ${generateForm()}
-          ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+          <div id="subscribeLinksContainer">
+            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+          </div>
         </div>
       </div>
     </div>
@@ -436,8 +465,8 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     <div class="mb-3">
       <label for="customShortCode" class="form-label">Custom Path (optional):</label>
-      <div class="input-group">
-        <span class="input-group-text" id="basic-addon3">${baseUrl}/s/</span>
+      <div class="d-flex align-items-center">
+        <span class="base-url-label me-2">${baseUrl}/s/</span>
         <input type="text" class="form-control" id="customShortCode" placeholder="Enter custom short code">
       </div>
     </div>
@@ -701,6 +730,14 @@ const submitFormFunction = () => `
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
+
+    // Show the subscribe part
+    const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
+    subscribeLinksContainer.classList.remove('hide');
+    subscribeLinksContainer.classList.add('show');
+
+    // Scroll to the subscribe part
+    subscribeLinksContainer.scrollIntoView({ behavior: 'smooth' });
   }
 
   function loadSavedFormData() {
@@ -755,6 +792,19 @@ const submitFormFunction = () => `
     document.getElementById('advancedOptions').classList.remove('show');
     document.querySelectorAll('input[name="selectedRules"]').forEach(checkbox => checkbox.checked = false);
     document.getElementById('predefinedRules').value = 'custom';
+
+    const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
+    subscribeLinksContainer.classList.remove('show');
+    subscribeLinksContainer.classList.add('hide');
+
+    document.getElementById('xrayLink').value = '';
+    document.getElementById('singboxLink').value = '';
+    document.getElementById('clashLink').value = '';
+
+    // wait to reset the container
+    setTimeout(() => {
+      subscribeLinksContainer.classList.remove('hide');
+    }, 500);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
