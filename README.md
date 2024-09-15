@@ -40,8 +40,8 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上轻量级的订阅转�
 
 ## 最近更新
 
-- 2024-09-13
-  - [#27](https://github.com/7Sageer/sublink-worker/issues/27) 优化了出站选择排布
+- 2024-09-15
+  - [#31](https://github.com/7Sageer/sublink-worker/issues/31),[#25](https://github.com/7Sageer/sublink-worker/issues/25) 现在可以自定义短链接路径
 
 [查看更新日志](/doc/update-log.md)
 
