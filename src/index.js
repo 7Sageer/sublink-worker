@@ -14,7 +14,7 @@ async function handleRequest(request) {
 
     if (request.method === 'GET' && url.pathname === '/') {
       // Return the HTML form for GET requests
-      return new Response(generateHtml('', '', ''), {
+      return new Response(generateHtml('', '', '', url.origin), {
         headers: { 'Content-Type': 'text/html' }
       });
     } else if (request.method === 'POST' && url.pathname === '/') {
@@ -48,6 +48,8 @@ async function handleRequest(request) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
+
+      console.log(customRules);
 
       if (!inputString) {
         return new Response('Missing config parameter', { status: 400 });
@@ -106,9 +108,54 @@ async function handleRequest(request) {
       return new Response(JSON.stringify({ shortUrl }), {
         headers: { 'Content-Type': 'application/json' }
       });
+
+    } else if (url.pathname === '/shorten-v2'){
+      const originalUrl = url.searchParams.get('url');
+      let shortCode = url.searchParams.get('shortCode');
+
+      if (!originalUrl) {
+        return new Response('Missing URL parameter', { status: 400 });
+      }
+      
+      // 创建一个 URL 对象来正确解析原始 URL
+      const parsedUrl = new URL(originalUrl);
+      const queryString = parsedUrl.search;
+      
+      if (!shortCode) {
+        shortCode = GenerateWebPath();
+      }
+
+      await SUBLINK_KV.put(shortCode, queryString);
+      
+      console.log(JSON.stringify(shortCode));
+      
+      return new Response(shortCode, {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+
     } else if (url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
       const originalUrl = await SUBLINK_KV.get(shortCode);
+
+      if (originalUrl === null) {
+        return new Response('Short URL not found', { status: 404 });
+      }
+
+      return Response.redirect(originalUrl, 302);
+    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/')) {
+      const shortCode = url.pathname.split('/')[2];
+      const originalParam = await SUBLINK_KV.get(shortCode);
+      let originalUrl;
+
+      if (url.pathname.startsWith('/b/')) {
+        originalUrl = `${url.origin}/singbox${originalParam}`;
+      } else if (url.pathname.startsWith('/c/')) {
+        originalUrl = `${url.origin}/clash${originalParam}`;
+      } else if (url.pathname.startsWith('/x/')) {
+        originalUrl = `${url.origin}/xray${originalParam}`;
+      }
+
+      console.log(originalUrl);
 
       if (originalUrl === null) {
         return new Response('Short URL not found', { status: 404 });

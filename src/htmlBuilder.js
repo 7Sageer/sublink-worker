@@ -1,11 +1,11 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 
-export function generateHtml(xrayUrl, singboxUrl, clashUrl) {
+export function generateHtml(xrayUrl, singboxUrl, clashUrl, baseUrl) {
   return `
     <!DOCTYPE html>
     <html lang="en">
       ${generateHead()}
-      ${generateBody(xrayUrl, singboxUrl, clashUrl)}
+      ${generateBody(xrayUrl, singboxUrl, clashUrl, baseUrl)}
     </html>
   `;
 }
@@ -369,7 +369,7 @@ const generateStyles = () => `
 
 `;
 
-const generateBody = (xrayUrl, singboxUrl, clashUrl) => `
+const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
     ${generateGithubLink()}
@@ -378,7 +378,7 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl) => `
         ${generateCardHeader()}
         <div class="card-body">
           ${generateForm()}
-          ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl)}
+          ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, baseUrl)}
         </div>
       </div>
     </div>
@@ -417,25 +417,30 @@ const generateForm = () => `
     <div id="advancedOptions">
       ${generateRuleSetSelection()}
     </div>
-    <div class="d-grid mt-4">
-      <button type="submit" class="btn btn-primary btn-lg">
-        <i class="fas fa-sync-alt me-2"></i>Convert
-      </button>
-    </div>
-    <div class="d-grid mt-2">
-      <button type="button" class="btn btn-secondary btn-lg" id="clearFormBtn">
-        <i class="fas fa-trash-alt me-2"></i>Clear Form
-      </button>
-    </div>
+  <div class="d-flex mt-4">
+    <button type="submit" class="btn btn-primary btn-lg me-2" style="flex: 6;">
+      <i class="fas fa-sync-alt me-2"></i>Convert
+    </button>
+    <button type="button" class="btn btn-secondary btn-lg" id="clearFormBtn" style="flex: 4;">
+      <i class="fas fa-trash-alt me-2"></i>Clear Form
+    </button>
+  </div>
   </form>
 `;
 
-const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl) => `
+const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
   <div class="mt-5">
     <h2 class="mb-4">Your subscribe links:</h2>
     ${generateLinkInput('Xray Link:', 'xrayLink', xrayUrl)}
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
+    <div class="mb-3">
+      <label for="customShortCode" class="form-label">Custom Path (optional):</label>
+      <div class="input-group">
+        <span class="input-group-text" id="basic-addon3">${baseUrl}/s/</span>
+        <input type="text" class="form-control" id="customShortCode" placeholder="Enter custom short code">
+      </div>
+    </div>
     <div class="d-grid">
       <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
         <i class="fas fa-compress-alt me-2"></i>Shorten Links
@@ -505,11 +510,11 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
-  async function shortenUrl(url) {
-    const response = await fetch(\`/shorten?url=\${encodeURIComponent(url)}\`);
+  async function shortenUrl(url, customShortCode) {
+    const response = await fetch(\`/shorten-v2?url=\${encodeURIComponent(url)}&shortCode=\${encodeURIComponent(customShortCode || '')}\`);
     if (response.ok) {
-      const data = await response.json();
-      return data.shortUrl;
+      const data = await response.text();
+      return data;
     }
     throw new Error('Failed to shorten URL');
   }
@@ -523,18 +528,16 @@ const shortenAllUrlsFunction = () => `
       const xrayLink = document.getElementById('xrayLink');
       const singboxLink = document.getElementById('singboxLink');
       const clashLink = document.getElementById('clashLink');
+      const customShortCode = document.getElementById('customShortCode').value;
 
-      const [xrayShortUrl, singboxShortUrl, clashShortUrl] = await Promise.all([
-        shortenUrl(xrayLink.value),
-        shortenUrl(singboxLink.value),
-        shortenUrl(clashLink.value)
-      ]);
+      const shortCode = await shortenUrl(singboxLink.value, customShortCode);
 
-      xrayLink.value = xrayShortUrl;
-      singboxLink.value = singboxShortUrl;
-      clashLink.value = clashShortUrl;
+      xrayLink.value = window.location.origin + '/x/' + shortCode;
+      singboxLink.value = window.location.origin + '/b/' + shortCode;
+      clashLink.value = window.location.origin + '/c/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
+      alert('Failed to shorten URLs. Please try again.');
     } finally {
       shortenButton.disabled = false;
       shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
