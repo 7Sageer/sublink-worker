@@ -2,16 +2,7 @@
 
 Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅转换工具。可以将各种代理协议的分享 URL 转换为不同客户端可用的订阅链接。同时还提供灵活的自定义规则与API支持。
 
-<!-- 演示站点：[https://sublink-worker.seven7-ade.workers.dev/](https://sublink-worker.seven7-ade.workers.dev/) -->
-
-<div style="max-width: 400px; margin: 20px 0; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
-  <img src="/doc/img/main-1.png" alt="Demo Site Preview" style="width: 100%; height: auto;" />
-  <div style="padding: 15px;">
-    <h3 style="margin: 0 0 10px;">Sublink Worker</h3>
-    <p style="margin: 0 0 15px;">一个基于 Cloudflare Workers 的订阅转换工具</p>
-    <a href="https://sublink-worker.seven7-ade.workers.dev/" target="_blank" style="display: inline-block; padding: 10px 15px; background-color: #0366d6; color: white; text-decoration: none; border-radius: 3px;">访问演示站点</a>
-  </div>
-</div>
+演示站点：[https://sublink-worker.seven7-ade.workers.dev/](https://sublink-worker.seven7-ade.workers.dev/)
 
 ## 功能特点
 
