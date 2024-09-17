@@ -25,7 +25,9 @@ export class ProxyParser {
             let tag = parts[1];
         
             let [base64, serverPart] = mainPart.split('@');
-            let [method, password] = atob(base64).split(':');
+            let decodedParts = atob(base64).split(':');
+            let method = decodedParts[0];
+            let password = decodedParts.slice(1).join(':');
         
             // Match IPv6 address
             let match = serverPart.match(/\[([^\]]+)\]:(\d+)/);

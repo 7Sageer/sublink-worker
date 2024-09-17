@@ -451,7 +451,7 @@ const generateForm = () => `
       <i class="fas fa-sync-alt me-2"></i>Convert
     </button>
     <button type="button" class="btn btn-secondary btn-lg" id="clearFormBtn" style="flex: 4;">
-      <i class="fas fa-trash-alt me-2"></i>Clear Form
+      <i class="fas fa-trash-alt me-2"></i>Clear
     </button>
   </div>
   </form>
@@ -465,9 +465,11 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     <div class="mb-3">
       <label for="customShortCode" class="form-label">Custom Path (optional):</label>
-      <div class="d-flex align-items-center">
-        <span class="base-url-label me-2">${baseUrl}/s/</span>
-        <input type="text" class="form-control" id="customShortCode" placeholder="Enter custom short code">
+      <div class="input-group flex-nowrap">
+        <span class="input-group-text text-truncate" style="max-width: 200px;" title="${baseUrl}/s/">
+          ${baseUrl}/s/
+        </span>
+        <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
       </div>
     </div>
     <div class="d-grid">
