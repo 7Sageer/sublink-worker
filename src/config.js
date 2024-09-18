@@ -174,7 +174,7 @@ export function generateRules(selectedRules = [], customRules = []) {
 	  }
 	});
   
-	if (customRules.length > 0) {
+	if (customRules && customRules.length > 0) {
 		customRules.forEach((rule) => {
 		  rules.push({
 			site_rules: rule.site.split(','),
@@ -231,30 +231,32 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     download_detour: '⚡ 自动选择'
   }));
 
-  customRules.forEach(rule => {
-	if(rule.site!=''){
-		rule.site.split(',').forEach(site => {
-			site_rule_sets.push({
-				tag: site.trim(),
-				type: 'remote',
-				format: 'binary',
-				url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
-				download_detour: '⚡ 自动选择'
+  if(customRules){
+	customRules.forEach(rule => {
+		if(rule.site!=''){
+			rule.site.split(',').forEach(site => {
+				site_rule_sets.push({
+					tag: site.trim(),
+					type: 'remote',
+					format: 'binary',
+					url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
+					download_detour: '⚡ 自动选择'
+				});
 			});
-		});
-	}
-	if(rule.ip!=''){
-		rule.ip.split(',').forEach(ip => {
-			ip_rule_sets.push({
-				tag: `${ip.trim()}-ip`,
-				type: 'remote',
-				format: 'binary',
-				url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
-				download_detour: '⚡ 自动选择'
+		}
+		if(rule.ip!=''){
+			rule.ip.split(',').forEach(ip => {
+				ip_rule_sets.push({
+					tag: `${ip.trim()}-ip`,
+					type: 'remote',
+					format: 'binary',
+					url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
+					download_detour: '⚡ 自动选择'
+				});
 			});
-		});
+		}
+	});
 	}
-  });
 
   ruleSets.push(...site_rule_sets, ...ip_rule_sets);
 
