@@ -80,7 +80,7 @@ export class ProxyParser {
                 "server_port": parseInt(vmessConfig.port),
                 "uuid": vmessConfig.id,
                 "alter_id": parseInt(vmessConfig.aid),
-                "security": vmessConfig.scy,
+                "security": vmessConfig.scy || "auto",
                 "network": "tcp",
                 "tcp_fast_open": false,
                 "transport": transport,
