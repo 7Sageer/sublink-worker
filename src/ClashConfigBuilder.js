@@ -22,7 +22,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         let outbounds;
         if (typeof this.selectedRules === 'string' && PREDEFINED_RULE_SETS[this.selectedRules]) {
             outbounds = getOutbounds(PREDEFINED_RULE_SETS[this.selectedRules]);
-        } else if(this.selectedRules) {
+        } else if(this.selectedRules && Object.keys(this.selectedRules).length > 0) {
             outbounds = getOutbounds(this.selectedRules);
         } else {
             outbounds = getOutbounds(PREDEFINED_RULE_SETS.minimal);

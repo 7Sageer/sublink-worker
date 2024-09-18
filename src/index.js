@@ -49,8 +49,6 @@ async function handleRequest(request) {
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
 
-      console.log(customRules);
-
       if (!inputString) {
         return new Response('Missing config parameter', { status: 400 });
       }
@@ -127,8 +125,6 @@ async function handleRequest(request) {
 
       await SUBLINK_KV.put(shortCode, queryString);
       
-      console.log(JSON.stringify(shortCode));
-      
       return new Response(shortCode, {
         headers: { 'Content-Type': 'text/plain' }
       });
@@ -155,8 +151,6 @@ async function handleRequest(request) {
         originalUrl = `${url.origin}/xray${originalParam}`;
       }
 
-      console.log(originalUrl);
-
       if (originalUrl === null) {
         return new Response('Short URL not found', { status: 404 });
       }
@@ -170,7 +164,6 @@ async function handleRequest(request) {
       const finalProxyList = [];
 
       for (const proxy of proxylist) {
-        console.log(proxy);
         if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
           try {
             const response = await fetch(proxy)
