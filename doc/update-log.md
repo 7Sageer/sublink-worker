@@ -1,5 +1,10 @@
 # 更新日志
 
+## 2024-09-18
+
+- ([#35](https://github.com/7Sageer/sublink-worker/issues/35)) 确保Vmess转换时security选项存在
+- 修复了默认配置缺乏出站的问题
+
 ## 2024-09-15
 
 - ([#31](https://github.com/7Sageer/sublink-worker/issues/31),[#25](https://github.com/7Sageer/sublink-worker/issues/25)) 现在可以自定义短链接路径
