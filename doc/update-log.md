@@ -1,5 +1,9 @@
 # 更新日志
 
+## 2024 09-20
+
+- 在公共站点启用新域名(https://sublink-worker.sageer.me)
+
 ## 2024-09-18
 
 - ([#35](https://github.com/7Sageer/sublink-worker/issues/35)) 确保Vmess转换时security选项存在

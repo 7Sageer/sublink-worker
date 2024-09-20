@@ -38,9 +38,7 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 
 ## 最近更新
 
-- 2024-09-18
-  - ([#35](https://github.com/7Sageer/sublink-worker/issues/35)) 确保Vmess转换时security选项存在
-  - 修复了默认配置缺乏出站的问题
+- 2024-09-20 在公共站点启用新域名(https://sublink-worker.sageer.me)
 
 [查看更新日志](/doc/update-log.md)
 
