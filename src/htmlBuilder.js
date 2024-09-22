@@ -14,7 +14,9 @@ const generateHead = () => `
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sublink Worker</title>
+    <meta name="description" content="Sublink Worker - 一个强大的订阅链接转换工具,支持多种代理协议和自定义规则">
+    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线转换, 机场, 节点">
+    <title>Sublink Worker - 轻量高效的订阅链接转换工具</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
