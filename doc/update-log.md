@@ -1,6 +1,10 @@
 # 更新日志
 
-## 2024 09-20
+## 2024-09-23
+
+- ([#37](https://github.com/7Sageer/sublink-worker/issues/37)) 修复了VMess和Shadowsocks url中文可能出现乱码的问题
+
+## 2024-09-20
 
 - 在公共站点启用新域名(https://sublink-worker.sageer.me)
 

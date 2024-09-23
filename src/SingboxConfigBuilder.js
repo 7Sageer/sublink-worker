@@ -25,8 +25,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
         }
 
         const proxyList = this.config.outbounds.filter(outbound => outbound?.server != undefined).map(outbound => outbound.tag);
-        
-        console.log(proxyList);
+
         this.config.outbounds.unshift({
             type: "urltest",
             tag: "⚡ 自动选择",
