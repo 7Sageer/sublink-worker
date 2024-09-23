@@ -23,9 +23,12 @@ export class ProxyParser {
             let parts = url.replace('ss://', '').split('#');
             let mainPart = parts[0];
             let tag = parts[1];
+            if (tag.includes('%')) {
+                tag = decodeURIComponent(tag);
+            }
         
             let [base64, serverPart] = mainPart.split('@');
-            let decodedParts = atob(base64).split(':');
+            let decodedParts = decodeBase64(base64).split(':');
             let method = decodedParts[0];
             let password = decodedParts.slice(1).join(':');
         
@@ -56,7 +59,7 @@ export class ProxyParser {
 	class VmessParser {
 		parse(url) {
             let base64 = url.replace('vmess://', '')
-            let vmessConfig = JSON.parse(atob(base64))
+            let vmessConfig = JSON.parse(decodeBase64(base64))
             let tls = { "enabled": false }
             let transport = {}
             if (vmessConfig.net === 'ws') {
@@ -172,8 +175,7 @@ export class ProxyParser {
       }
 
       class TuicParser {
-        //tuic://9a92c965-2c57-4040-8c83-330374e34424:9a92c965-2c57-4040-8c83-330374e34424@wawo33.qhr.icu:10876?sni=wawo33.qhr.icu&alpn=h3&congestion_control=bbr#HK-singbox_tuic
-
+        
         parse(url) {
           const { addressPart, params, name } = parseUrlParams(url);
           const [userinfo, serverInfo] = addressPart.split('@');
