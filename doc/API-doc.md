@@ -102,6 +102,7 @@ API 支持以下预定义规则集:
 | Education | coursera, edx, udemy, khanacademy |  |
 | Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
+| FCM | googlefcm |  |
 
 Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), 感谢 lyc8503 的贡献!
 

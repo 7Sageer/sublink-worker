@@ -77,7 +77,6 @@ export const UNIFIED_RULES = [
 		site_rules: ['bahamut'],
 		ip_rules: []
 	},
-
 	{
 		name: 'Social Media',
 		outbound: '🌐 社交媒体',
@@ -112,6 +111,12 @@ export const UNIFIED_RULES = [
 		name: 'Cloud Services',
 		outbound: '☁️ 云服务',
 		site_rules: ['aws', 'azure', 'digitalocean', 'heroku', 'dropbox'],
+		ip_rules: []
+	  },
+	  {
+		name: 'FCM',
+		outbound: '📣 FCM',
+		site_rules: ['googlefcm'],
 		ip_rules: []
 	  }
 

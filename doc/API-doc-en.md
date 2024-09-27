@@ -102,6 +102,7 @@ Here are the currently supported predefined rule sets:
 | Education | coursera, edx, udemy, khanacademy |  |
 | Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
+| FCM | googlefcm |  |
 
 The rule sets for Singbox are from [https://github.com/lyc8503/sing-box-rules](https://github.com/lyc8503/sing-box-rules), thanks to lyc8503 for the contribution!
 
