@@ -724,6 +724,7 @@ const submitFormFunction = () => `
       ip: rule.querySelector('input[name="customRuleIP[]"]').value,
       name: rule.querySelector('input[name="customRuleName[]"]').value,
       domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value,
+      domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value,
       ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value
     }));
 
@@ -854,6 +855,10 @@ const customRuleFunctions = `
       <div class="mb-2">
         <label class="form-label">Domain Suffix</label>
         <input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="Domain Suffix (comma separated)">
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Domain Keyword</label>
+        <input type="text" class="form-control mb-2" name="customRuleDomainKeyword[]" placeholder="Domain Keyword (comma separated)">
       </div>
       <div class="mb-2">
         <label class="form-label">IP CIDR</label>

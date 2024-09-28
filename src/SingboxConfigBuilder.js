@@ -80,6 +80,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
               ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
             ],
             domain_suffix: rule.domain_suffix,
+            domain_keyword: rule.domain_keyword,
             ip_cidr: rule.ip_cidr,
             outbound: rule.outbound
         }));
