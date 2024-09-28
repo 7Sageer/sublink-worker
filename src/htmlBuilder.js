@@ -644,6 +644,10 @@ const generateRuleSetSelection = () => `
     </div>
     <div class="mt-4">
       <h4>Custom Rules</h4>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="crpinToggle">
+        <label class="form-check-label" for="crpinToggle">Pin Custom Rules</label>
+      </div>
       <div id="customRules">
       <!-- Custom rules will be dynamically added here -->
     </div>
@@ -708,6 +712,7 @@ const submitFormFunction = () => `
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
+    localStorage.setItem('crpinToggle', document.getElementById('crpinToggle').checked);
     saveSelectedRules();
     
     let selectedRules;
@@ -718,6 +723,8 @@ const submitFormFunction = () => `
       selectedRules = Array.from(document.querySelectorAll('input[name="selectedRules"]:checked'))
         .map(checkbox => checkbox.value);
     }
+    
+    let pin = document.getElementById('crpinToggle').checked;
 
     const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
       site: rule.querySelector('input[name="customRuleSite[]"]').value,
@@ -729,8 +736,8 @@ const submitFormFunction = () => `
     }));
 
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\`;
 
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
