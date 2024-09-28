@@ -804,6 +804,7 @@ const submitFormFunction = () => `
     document.getElementById('advancedOptions').classList.remove('show');
     document.querySelectorAll('input[name="selectedRules"]').forEach(checkbox => checkbox.checked = false);
     document.getElementById('predefinedRules').value = 'custom';
+    document.getElementById('crpinToggle').checked = false;
 
     const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
     subscribeLinksContainer.classList.remove('show');
