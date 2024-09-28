@@ -112,6 +112,7 @@ In addition to using predefined rule sets, you can provide a list of custom rule
 - `sites`: Array of domain rules
 - `ips`: Array of IP rules
 - `domain_suffix`: Array of domain suffix rules
+- `domain_keyword`: Array of domain keyword rules
 - `ip_cidr`: Array of IP CIDR rules
 - `outbound`: Outbound name
 
@@ -123,11 +124,13 @@ Example:
     "sites": ["google", "anthropic"],
     "ips": ["private", "cn"],
     "domain_suffix": [".com", ".org"],
+    "domain_keyword": ["Mijia Cloud", "push.apple"],
     "ip_cidr": ["192.168.0.0/16", "10.0.0.0/8"],
     "outbound": "🤪 MyCustomRule"
   }
 ]
 ```
+You can also use the `pin` parameter to place a custom rule on top of a predefined rule in order for the custom rule to take effect.
 
 ## Error Handling
 
@@ -151,9 +154,9 @@ The API will return appropriate HTTP status codes and error messages when proble
    /singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced
    ```
 
-2. Generate a Clash configuration with custom rules:
+2. Generate a Clash configuration with custom rules of the top:
    ```
-   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
+   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22domain_keyword%22%3A%5B%22Mijia%20Cloud%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D&pin=true
    ```
 
 3. Shorten a URL:
