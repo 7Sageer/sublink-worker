@@ -1,5 +1,11 @@
 # 更新日志
 
+## 2024-09-28
+
+- ([#41](https://github.com/7Sageer/sublink-worker/pull/41)) (by [@Wikeolf](https://github.com/Wikeolf))
+  - 添加自定义域名关键词支持
+  - 现在可以决定自定义规则的顺序
+
 ## 2024-09-23
 
 - ([#37](https://github.com/7Sageer/sublink-worker/issues/37)) 修复了VMess和Shadowsocks url中文可能出现乱码的问题
