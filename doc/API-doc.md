@@ -130,6 +130,7 @@ Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://g
   }
 ]
 ```
+您还可以使用 `pin` 参数将自定义规则置于预定义规则之上，以便自定义规则生效。
 
 ## 错误处理
 
@@ -153,9 +154,9 @@ API 在出现问题时将返回适当的 HTTP 状态码和错误消息:
    /singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced
    ```
 
-2. 生成带有自定义规则的 Clash 配置:
+2. 生成带有置顶自定义规则的 Clash 配置:
    ```
-   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22domain_keyword%22%3A%5B%22Mijia%20Cloud%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
+   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22domain_keyword%22%3A%5B%22Mijia%20Cloud%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D&pin=true
    ```
 
 3. 缩短 URL:
