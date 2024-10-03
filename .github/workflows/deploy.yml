@@ -10,10 +10,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '21'
       
@@ -30,14 +30,14 @@ jobs:
         run: |
           KV_NAMESPACE="SUBLINK_KV"
           echo "Checking for KV namespace: $KV_NAMESPACE"
-          LIST_OUTPUT=$(wrangler kv:namespace list)
+          LIST_OUTPUT=$(wrangler kv namespace list)
           echo "KV namespace list output: $LIST_OUTPUT"
           
           KV_ID=$(echo "$LIST_OUTPUT" | jq -r '.[] | select(.title == "sublink-worker-'$KV_NAMESPACE'") | .id')
           
           if [ -z "$KV_ID" ]; then
               echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
-              CREATE_OUTPUT=$(wrangler kv:namespace create "$KV_NAMESPACE")
+              CREATE_OUTPUT=$(wrangler kv namespace create "$KV_NAMESPACE")
               echo "Create KV namespace output: $CREATE_OUTPUT"
               KV_ID=$(echo "$CREATE_OUTPUT" | grep -oP 'id = "\K[^"]+')
               
@@ -50,12 +50,7 @@ jobs:
           else
             echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
           fi
-          
-          echo "Final KV_ID: $KV_ID"
           echo "KV_ID=$KV_ID" >> $GITHUB_ENV
-          
-      - name: Display wrangler.toml before update
-        run: cat wrangler.toml
           
       - name: Update wrangler.toml
         run: |
@@ -75,3 +70,4 @@ jobs:
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
+          command: deploy

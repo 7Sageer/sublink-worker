@@ -14,9 +14,13 @@ const generateHead = () => `
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sublink Worker - 一个强大的订阅链接转换工具,支持多种代理协议和自定义规则">
-    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线转换, 机场, 节点">
-    <title>Sublink Worker - 轻量高效的订阅链接转换工具</title>
+    <meta name="description" content="Sublink Worker是一款强大的在线订阅链接转换工具,支持V2Ray/Xray、SingBox、Clash等多种客户端，提供自定义规则和高效转换，帮助您轻松管理和优化代理节点。">
+    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线, 订阅转换, 机场订阅, 节点管理, 节点解析">
+    <title>Sublink Worker - 轻量高效的订阅转换工具 | 支持V2Ray/Xray、SingBox、Clash</title>
+    <meta property="og:title" content="Sublink Worker - 轻量高效的订阅链接转换工具">
+    <meta property="og:description" content="强大的在线订阅链接转换工具,支持多种代理协议和自定义规则">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sublink-worker.sageer.me/">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -468,10 +472,16 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
     <div class="mb-3">
       <label for="customShortCode" class="form-label">Custom Path (optional):</label>
       <div class="input-group flex-nowrap">
-        <span class="input-group-text text-truncate" style="max-width: 200px;" title="${baseUrl}/s/">
+        <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
           ${baseUrl}/s/
         </span>
         <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
+        <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
+          <option value="">Saved paths</option>
+        </select>
+        <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
+          <i class="fas fa-trash-alt"></i>
+        </button>
       </div>
     </div>
     <div class="d-grid">
@@ -509,7 +519,59 @@ const generateScripts = () => `
     ${submitFormFunction()}
     ${customRuleFunctions}
     ${generateQRCodeFunction()}
+    ${customPathFunctions()}
   </script>
+`;
+
+const customPathFunctions = () => `
+  function saveCustomPath() {
+    const customPath = document.getElementById('customShortCode').value;
+    if (customPath) {
+      let savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
+      if (!savedPaths.includes(customPath)) {
+        savedPaths.push(customPath);
+        localStorage.setItem('savedCustomPaths', JSON.stringify(savedPaths));
+        updateSavedPathsDropdown();
+      }
+    }
+  }
+
+  function updateSavedPathsDropdown() {
+    const savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
+    const dropdown = document.getElementById('savedCustomPaths');
+    dropdown.innerHTML = '<option value="">Saved paths</option>';
+    savedPaths.forEach(path => {
+      const option = document.createElement('option');
+      option.value = path;
+      option.textContent = path;
+      dropdown.appendChild(option);
+    });
+  }
+
+  function loadSavedCustomPath() {
+    const dropdown = document.getElementById('savedCustomPaths');
+    const customShortCode = document.getElementById('customShortCode');
+    if (dropdown.value) {
+      customShortCode.value = dropdown.value;
+    }
+  }
+
+  function deleteSelectedPath() {
+    const dropdown = document.getElementById('savedCustomPaths');
+    const selectedPath = dropdown.value;
+    if (selectedPath) {
+      let savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
+      savedPaths = savedPaths.filter(path => path !== selectedPath);
+      localStorage.setItem('savedCustomPaths', JSON.stringify(savedPaths));
+      updateSavedPathsDropdown();
+      document.getElementById('customShortCode').value = '';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    updateSavedPathsDropdown();
+    document.getElementById('savedCustomPaths').addEventListener('change', loadSavedCustomPath);
+  });
 `;
 
 const advancedOptionsToggleFunction = () => `
@@ -544,6 +606,7 @@ const copyToClipboardFunction = () => `
 
 const shortenAllUrlsFunction = () => `
   async function shortenUrl(url, customShortCode) {
+    saveCustomPath();
     const response = await fetch(\`/shorten-v2?url=\${encodeURIComponent(url)}&shortCode=\${encodeURIComponent(customShortCode || '')}\`);
     if (response.ok) {
       const data = await response.text();
@@ -765,6 +828,11 @@ const submitFormFunction = () => `
         document.getElementById('advancedOptions').classList.add('show');
       }
     }
+    
+    const savedCustomPath = localStorage.getItem('customPath');
+    if (savedCustomPath) {
+      document.getElementById('customShortCode').value = savedCustomPath;
+    }
 
     loadSelectedRules();
   }
@@ -805,6 +873,9 @@ const submitFormFunction = () => `
     document.querySelectorAll('input[name="selectedRules"]').forEach(checkbox => checkbox.checked = false);
     document.getElementById('predefinedRules').value = 'custom';
     document.getElementById('crpinToggle').checked = false;
+
+    localStorage.removeItem('customPath');
+    document.getElementById('customShortCode').value = '';
 
     const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
     subscribeLinksContainer.classList.remove('show');

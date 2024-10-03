@@ -1,5 +1,9 @@
 # 更新日志
 
+## 2024-10-03
+
+- 现在可以保存并管理自定义短链接
+
 ## 2024-09-28
 
 - ([#41](https://github.com/7Sageer/sublink-worker/pull/41)) (by [@Wikeolf](https://github.com/Wikeolf))
