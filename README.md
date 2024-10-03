@@ -19,9 +19,16 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
   - 提供多种预定义规则集
   - 可自建关于geo-site, geo-ip, ip-cidr和domain-suffix的自定义策略组
 
-## 快速部署
+## 部署
 
+### 快速部署 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker)
+
+### 手动部署
+- 克隆项目仓库：`git clone https://github.com/7Sageer/sublink-worker.git`
+- 安装依赖：`npm install`
+- 配置 Cloudflare 账户凭证
+- 使用 Wrangler 部署：`wrangler deploy`
 
 ## API 文档
 
