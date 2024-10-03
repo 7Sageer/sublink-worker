@@ -50,6 +50,7 @@ jobs:
           else
             echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
           fi
+          echo "KV_ID=$KV_ID" >> $GITHUB_ENV
           
       - name: Update wrangler.toml
         run: |
