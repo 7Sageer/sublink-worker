@@ -50,8 +50,8 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 
 ## 最近更新
 
-- 2024-10-3
-  - 现在可以保存并管理自定义短链接
+- 2024-10-15
+  - 添加了[FAQ文档](/doc/FAQ.md)
 
 [查看更新日志](/doc/update-log.md)
 
