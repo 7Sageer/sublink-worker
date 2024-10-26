@@ -3,6 +3,7 @@ import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig
 
 export class ProxyParser {
 	static parse(url) {
+		url = url.trim();
 		const type = url.split('://')[0];
 		switch(type) {
 			case 'ss': return new ShadowsocksParser().parse(url);
