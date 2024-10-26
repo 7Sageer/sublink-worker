@@ -18,7 +18,9 @@
 
 ### 如何获取 Worker Account ID 和 API token？
 
-**获取 Worker Account ID**1. 打开 [Cloudflare Dashboard](https://dash.cloudflare.com/)
+**获取 Worker Account ID**
+
+1. 打开 [Cloudflare Dashboard](https://dash.cloudflare.com/)
 2. 点击左侧的 **Workers 和 Pages**
 3. 在右栏即可看到你的账户 ID
 
