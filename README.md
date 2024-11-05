@@ -35,11 +35,11 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 
 ## 常见问题
 
-如果您在使用过程中遇到任何问题，请查看 [FAQ文档](/doc/FAQ.md)。
+如果您在使用过程中遇到任何问题，请查看 [FAQ文档](/docs/FAQ.md)。
 
 ## API 文档
 
-详细的 API 文档可以在 [API-doc.md](/doc/API-doc.md) 中找到。
+详细的 API 文档可以在 [API-doc.md](/docs/API-doc.md) 中找到。
 
 主要端点包括：
 
@@ -54,7 +54,7 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
   - [新功能] 现在可以保存自定义基础配置
   - 优化了UI
 
-[查看更新日志](/doc/update-log.md)
+[查看更新日志](/docs/update-log.md)
 
 ## 项目结构
 
@@ -68,7 +68,7 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 ├── utils.js                 # 提供各种实用函数
 ├── htmlBuilder.js           # 生成 Web 界面的 HTML
 ├── config.js                # 保存配置信息
-└── doc/
+└── docs/
     ├── API-doc.md           # API 文档
     ├── update-log.md        # 更新日志
     └── FAQ.md               # 常见问题解答
