@@ -174,6 +174,11 @@ const generateStyles = () => `
     font-weight: 600;
   }
 
+  h5 {
+    color: var(--text-color);
+    font-weight: 500;
+  }
+
   .form-label {
     font-weight: 500;
     color: var(--text-color);
@@ -581,10 +586,25 @@ const generateStyles = () => `
     animation: slideIn 0.3s var(--transition-timing) forwards;
   }
 
+  .custom-rule.removing {
+    animation: slideOut 0.3s var(--transition-timing) forwards;
+  }
+
   @keyframes slideIn {
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
     }
   }
 
@@ -665,7 +685,6 @@ const generateForm = () => `
 
     <div id="advancedOptions">
       <div class="form-section">
-        <div class="form-section-title">Rule Configuration</div>
         ${generateRuleSetSelection()}
       </div>
 
@@ -680,14 +699,12 @@ const generateForm = () => `
           </span>
         </div>
         <div class="mb-3">
-          <label for="configType" class="form-label">Config Type:</label>
           <select class="form-select" id="configType">
             <option value="singbox">SingBox (JSON)</option>
             <option value="clash">Clash (YAML)</option>
           </select>
         </div>
         <div class="mb-3">
-          <label for="configEditor" class="form-label">Custom Base Config:</label>
           <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
         </div>
         <div class="d-flex gap-2">
@@ -936,7 +953,6 @@ const generateRuleSetSelection = () => `
     </div>
 
     <div class="content-container mb-3">
-      <label for="predefinedRules" class="form-label">Rule Sets:</label>
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
         <option value="custom">Custom</option>
         <option value="minimal">Minimal</option>
@@ -955,7 +971,7 @@ const generateRuleSetSelection = () => `
       `).join('')}
     </div>
     <div class="mt-4">
-      <h4>Custom Rules</h4>
+      <h5>Custom Rules</h5>
       <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" id="crpinToggle">
         <label class="form-check-label" for="crpinToggle">Pin Custom Rules</label>
@@ -1219,8 +1235,11 @@ const customRuleFunctions = `
   function removeCustomRule(button) {
     const ruleDiv = button.closest('.custom-rule');
     if (ruleDiv) {
-      ruleDiv.remove();
-      customRuleCount--;
+      ruleDiv.classList.add('removing');
+      ruleDiv.addEventListener('animationend', () => {
+        ruleDiv.remove();
+        customRuleCount--;
+      }, { once: true });
     }
   }
 `;
