@@ -46,10 +46,10 @@
 - 配置 Cloudflare 账户凭证
 - 使用 Wrangler 部署：`wrangler deploy`
 
-
-## 常见问题
-
-如果您在使用过程中遇到任何问题，请查看 [FAQ文档](/docs/FAQ.md)。
+### 新手？
+#### [社区贡献视频教程](https://www.youtube.com/watch?v=7abmWqCXPR8)
+> 💡 这是由社区成员制作的教程视频，部分内容可能与我们的见解不同，同时可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+#### [官方FAQ](/docs/FAQ.md)
 
 ## API 文档
 
