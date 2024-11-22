@@ -41,15 +41,19 @@ const generateStyles = () => `
     --input-border: #ced4da;
     --input-text: #495057;
     --placeholder-color: #6c757d;
-    --checkbox-bg: #ffffff;
-    --checkbox-border: #ced4da;
-    --checkbox-checked-bg: #6a11cb;
-    --checkbox-checked-border: #6a11cb;
-    --explanation-bg: #e9ecef;
-    --explanation-text: #495057;
+    --section-border: rgba(0, 0, 0, 0.1);
+    --section-bg: rgba(0, 0, 0, 0.02);
     --select-bg: #ffffff;
     --select-text: #495057;
     --select-border: #ced4da;
+    --dropdown-bg: #ffffff;
+    --dropdown-text: #495057;
+    --dropdown-hover-bg: #f8f9fa;
+    --dropdown-hover-text: #495057;
+    --switch-bg: #e9ecef;
+    --switch-checked-bg: #6a11cb;
+    --transition-speed: 0.3s;
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   [data-theme="dark"] {
@@ -62,15 +66,17 @@ const generateStyles = () => `
     --input-border: #555555;
     --input-text: #e0e0e0;
     --placeholder-color: #adb5bd;
-    --checkbox-bg: #3c3c3c;
-    --checkbox-border: #555555;
-    --checkbox-checked-bg: #4a0e8f;
-    --checkbox-checked-border: #4a0e8f;
-    --explanation-bg: #383838;
-    --explanation-text: #b0b0b0;
+    --section-border: rgba(255, 255, 255, 0.1);
+    --section-bg: rgba(255, 255, 255, 0.02);
     --select-bg: #3c3c3c;
     --select-text: #e0e0e0;
     --select-border: #555555;
+    --dropdown-bg: #2c2c2c;
+    --dropdown-text: #e0e0e0;
+    --dropdown-hover-bg: #3c3c3c;
+    --dropdown-hover-text: #e0e0e0;
+    --switch-bg: #555555;
+    --switch-checked-bg: #4a0e8f;
   }
 
   .container { max-width: 800px; }
@@ -79,7 +85,7 @@ const generateStyles = () => `
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s var(--transition-timing), color 0.3s var(--transition-timing);
   }
 
   .card {
@@ -87,28 +93,66 @@ const generateStyles = () => `
     border: none;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: background-color 0.3s ease;
+    margin-bottom: 2rem;
   }
 
   .card-header {
     background: var(--card-header-bg);
     color: white;
     border-radius: 15px 15px 0 0;
+    padding: 2.5rem 2rem;
+    border-bottom: 1px solid var(--section-border);
+  }
+
+  .card-body {
     padding: 2rem;
   }
 
-  .card-body { padding: 2rem; }
+  .form-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--section-border);
+    border-radius: 10px;
+    background: var(--section-bg);
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .input-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-control, .form-select {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
 
   .btn-primary {
     background: var(--btn-primary-bg);
     border: none;
-    transition: all 0.3s ease;
   }
 
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
   }
 
   .input-group-text, .form-control {
@@ -128,6 +172,11 @@ const generateStyles = () => `
   h2, h4 {
     color: var(--text-color);
     font-weight: 600;
+  }
+
+  h5 {
+    color: var(--text-color);
+    font-weight: 500;
   }
 
   .form-label {
@@ -304,17 +353,18 @@ const generateStyles = () => `
 
   #advancedOptions {
     max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out, opacity 0.5s ease-out, transform 0.5s ease-out;
     opacity: 0;
-    transform: translateY(-10px);
+    overflow: hidden;
+    transform: translateY(-20px);
+    transition: max-height 0.5s var(--transition-timing),
+                opacity 0.3s var(--transition-timing),
+                transform 0.3s var(--transition-timing);
   }
 
   #advancedOptions.show {
-    max-height: none;
+    max-height: 2000px;
     opacity: 1;
     transform: translateY(0);
-    transition: max-height 0.5s ease-in, opacity 0.5s ease-in, transform 0.5s ease-in;
   }
 
   .header-container {
@@ -339,7 +389,8 @@ const generateStyles = () => `
     align-items: center;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity 0.3s var(--transition-timing),
+                visibility 0.3s var(--transition-timing);
     z-index: 1000;
   }
 
@@ -354,12 +405,12 @@ const generateStyles = () => `
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s var(--transition-timing);
   }
 
   .qr-modal.show .qr-card {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 
   .qr-card img {
@@ -385,14 +436,17 @@ const generateStyles = () => `
 
   #subscribeLinksContainer {
     max-height: 0;
-    overflow: hidden;
     opacity: 0;
-    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+    transform: translateY(20px);
+    transition: max-height 0.5s var(--transition-timing),
+                opacity 0.3s var(--transition-timing),
+                transform 0.3s var(--transition-timing);
   }
 
   #subscribeLinksContainer.show {
     max-height: 1000px;
     opacity: 1;
+    transform: translateY(0);
   }
 
   #subscribeLinksContainer.hide {
@@ -400,6 +454,181 @@ const generateStyles = () => `
     opacity: 0;
   }
 
+  .form-select option {
+    background-color: var(--dropdown-bg);
+    color: var(--dropdown-text);
+  }
+
+  .form-select option:hover {
+    background-color: var(--dropdown-hover-bg);
+    color: var(--dropdown-hover-text);
+  }
+
+  .form-check-input {
+    background-color: var(--switch-bg);
+    border-color: var(--switch-border);
+  }
+
+  .form-check-input:checked {
+    background-color: var(--switch-checked-bg);
+    border-color: var(--switch-checked-bg);
+  }
+
+  .dropdown-menu {
+    background-color: var(--dropdown-bg);
+    border-color: var(--select-border);
+  }
+
+  .dropdown-item {
+    color: var(--dropdown-text);
+  }
+
+  .dropdown-item:hover,
+  .dropdown-item:focus {
+    background-color: var(--dropdown-hover-bg);
+    color: var(--dropdown-hover-text);
+  }
+
+  /* 通用过渡效果 */
+  .card,
+  .btn,
+  .form-control,
+  .form-select,
+  .input-group,
+  .tooltip-content,
+  .github-link,
+  .qr-modal,
+  .qr-card {
+    transition: all var(--transition-speed) var(--transition-timing);
+  }
+
+  /* 高级选项展开/收起动画 */
+  #advancedOptions {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-20px);
+    transition: max-height 0.5s var(--transition-timing),
+                opacity 0.3s var(--transition-timing),
+                transform 0.3s var(--transition-timing);
+  }
+
+  #advancedOptions.show {
+    max-height: 2000px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 订阅链接容器动画 */
+  #subscribeLinksContainer {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: max-height 0.5s var(--transition-timing),
+                opacity 0.3s var(--transition-timing),
+                transform 0.3s var(--transition-timing);
+  }
+
+  #subscribeLinksContainer.show {
+    max-height: 1000px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 按钮悬停动画 */
+  .btn {
+    transform: translateY(0);
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 复制按钮成功动画 */
+  @keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .btn-success {
+    animation: successPulse 0.3s var(--transition-timing);
+  }
+
+  /* QR码模态框动画 */
+  .qr-modal {
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s var(--transition-timing),
+                visibility 0.3s var(--transition-timing);
+  }
+
+  .qr-modal.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .qr-card {
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s var(--transition-timing);
+  }
+
+  .qr-modal.show .qr-card {
+    transform: scale(1) translateY(0);
+  }
+
+  /* 自定义规则添加/删除动画 */
+  .custom-rule {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.3s var(--transition-timing) forwards;
+  }
+
+  .custom-rule.removing {
+    animation: slideOut 0.3s var(--transition-timing) forwards;
+  }
+
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  /* 暗色模式切换动画 */
+  body {
+    transition: background-color 0.3s var(--transition-timing),
+                color 0.3s var(--transition-timing);
+  }
+
+  /* 工具提示动画 */
+  .tooltip-content {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.3s var(--transition-timing),
+                visibility 0.3s var(--transition-timing),
+                transform 0.3s var(--transition-timing);
+  }
+
+  .tooltip-icon:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
@@ -418,6 +647,9 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
       </div>
     </div>
     ${generateScripts()}
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "67ed5892c109479cb0baddfaa9249c4e"}'></script>
+    <!-- End Cloudflare Web Analytics -->
   </body>
 `;
 
@@ -441,25 +673,57 @@ const generateCardHeader = () => `
 
 const generateForm = () => `
   <form method="POST" id="encodeForm">
-    <div class="mb-4">
-      <label for="inputTextarea" class="form-label">Enter Your Share URLs:</label>
+    <div class="form-section">
+      <div class="form-section-title">Share URLs</div>
       <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
     </div>
+
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="advancedToggle">
       <label class="form-check-label" for="advancedToggle">Advanced Options</label>
     </div>
+
     <div id="advancedOptions">
-      ${generateRuleSetSelection()}
+      <div class="form-section">
+        ${generateRuleSetSelection()}
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title d-flex align-items-center">
+          Base Config Settings(Optional)
+          <span class="tooltip-icon ms-2">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              This feature is experimental and may not work as expected. You can paste your own base config here. Go to <a href="https://github.com/7Sageer/sublink-worker/blob/main/docs/base-config.md" target="_blank">docs</a> for more information.
+            </span>
+          </span>
+        </div>
+        <div class="mb-3">
+          <select class="form-select" id="configType">
+            <option value="singbox">SingBox (JSON)</option>
+            <option value="clash">Clash (YAML)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-secondary" onclick="saveConfig()">Save Config</button>
+          <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
+            <i class="fas fa-trash-alt me-2"></i>Clear Config
+          </button>
+        </div>
+      </div>
     </div>
-  <div class="d-flex mt-4">
-    <button type="submit" class="btn btn-primary btn-lg me-2" style="flex: 6;">
-      <i class="fas fa-sync-alt me-2"></i>Convert
-    </button>
-    <button type="button" class="btn btn-secondary btn-lg" id="clearFormBtn" style="flex: 4;">
-      <i class="fas fa-trash-alt me-2"></i>Clear
-    </button>
-  </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary flex-grow-1">
+        <i class="fas fa-sync-alt me-2"></i>Convert
+      </button>
+      <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
+        <i class="fas fa-trash-alt me-2"></i>Clear
+      </button>
+    </div>
   </form>
 `;
 
@@ -520,6 +784,8 @@ const generateScripts = () => `
     ${customRuleFunctions}
     ${generateQRCodeFunction()}
     ${customPathFunctions()}
+    ${saveConfig()}
+    ${clearConfig()}
   </script>
 `;
 
@@ -687,7 +953,6 @@ const generateRuleSetSelection = () => `
     </div>
 
     <div class="content-container mb-3">
-      <label for="predefinedRules" class="form-label">Rule Sets:</label>
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
         <option value="custom">Custom</option>
         <option value="minimal">Minimal</option>
@@ -706,7 +971,7 @@ const generateRuleSetSelection = () => `
       `).join('')}
     </div>
     <div class="mt-4">
-      <h4>Custom Rules</h4>
+      <h5>Custom Rules</h5>
       <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" id="crpinToggle">
         <label class="form-check-label" for="crpinToggle">Pin Custom Rules</label>
@@ -776,7 +1041,10 @@ const submitFormFunction = () => `
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
     localStorage.setItem('crpinToggle', document.getElementById('crpinToggle').checked);
-    saveSelectedRules();
+    
+    // 保存 configEditor 和 configType 到 localStorage
+    localStorage.setItem('configEditor', document.getElementById('configEditor').value);
+    localStorage.setItem('configType', document.getElementById('configType').value);
     
     let selectedRules;
     const predefinedRules = document.getElementById('predefinedRules').value;
@@ -788,6 +1056,8 @@ const submitFormFunction = () => `
     }
     
     let pin = document.getElementById('crpinToggle').checked;
+    const configEditor = document.getElementById('configEditor');
+    const configId = new URLSearchParams(window.location.search).get('configId') || '';
 
     const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
       site: rule.querySelector('input[name="customRuleSite[]"]').value,
@@ -798,9 +1068,10 @@ const submitFormFunction = () => `
       ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value
     }));
 
-    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\`;
+    const configParam = configId ? \`&configId=\${configId}\` : '';
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
 
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
@@ -827,6 +1098,17 @@ const submitFormFunction = () => `
       if (advancedToggle === 'true') {
         document.getElementById('advancedOptions').classList.add('show');
       }
+    }
+    
+    // 加载 configEditor 和 configType
+    const savedConfig = localStorage.getItem('configEditor');
+    const savedConfigType = localStorage.getItem('configType');
+    
+    if (savedConfig) {
+      document.getElementById('configEditor').value = savedConfig;
+    }
+    if (savedConfigType) {
+      document.getElementById('configType').value = savedConfigType;
     }
     
     const savedCustomPath = localStorage.getItem('customPath');
@@ -867,13 +1149,15 @@ const submitFormFunction = () => `
     localStorage.removeItem('advancedToggle');
     localStorage.removeItem('selectedRules');
     localStorage.removeItem('predefinedRules');
+    localStorage.removeItem('configEditor');  // 添加清除 configEditor
+    localStorage.removeItem('configType');    // 添加清除 configType
+    
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
-    document.querySelectorAll('input[name="selectedRules"]').forEach(checkbox => checkbox.checked = false);
-    document.getElementById('predefinedRules').value = 'custom';
-    document.getElementById('crpinToggle').checked = false;
-
+    document.getElementById('configEditor').value = '';
+    document.getElementById('configType').value = 'singbox';  // 重置为默认值
+    
     localStorage.removeItem('customPath');
     document.getElementById('customShortCode').value = '';
 
@@ -951,8 +1235,11 @@ const customRuleFunctions = `
   function removeCustomRule(button) {
     const ruleDiv = button.closest('.custom-rule');
     if (ruleDiv) {
-      ruleDiv.remove();
-      customRuleCount--;
+      ruleDiv.classList.add('removing');
+      ruleDiv.addEventListener('animationend', () => {
+        ruleDiv.remove();
+        customRuleCount--;
+      }, { once: true });
     }
   }
 `;
@@ -1016,5 +1303,53 @@ const generateQRCodeFunction = () => `
         document.body.removeChild(modal);
       }, { once: true });
     }
+  }
+`;
+
+const saveConfig = () => `
+  function saveConfig() {
+    const configEditor = document.getElementById('configEditor');
+    const configType = document.getElementById('configType').value;
+    const config = configEditor.value;
+    
+    // 保存到 localStorage
+    localStorage.setItem('configEditor', config);
+    localStorage.setItem('configType', configType);
+    
+    fetch('/config?type=' + configType, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: configType,
+        content: config
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to save configuration');
+      }
+      return response.text();
+    })
+    .then(configId => {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('configId', configId);
+      window.history.pushState({}, '', currentUrl);
+      alert('Configuration saved successfully!');
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+`;
+
+const clearConfig = () => `
+  function clearConfig() {
+    document.getElementById('configEditor').value = '';
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.delete('configId');
+    window.history.pushState({}, '', currentUrl);
+    localStorage.removeItem('configEditor');
   }
 `;
