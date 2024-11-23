@@ -871,6 +871,8 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
+  let isShortening = false; // Add flag to track shortening status
+
   async function shortenUrl(url, customShortCode) {
     saveCustomPath();
     const response = await fetch(\`/shorten-v2?url=\${encodeURIComponent(url)}&shortCode=\${encodeURIComponent(customShortCode || '')}\`);
@@ -882,17 +884,31 @@ const shortenAllUrlsFunction = () => `
   }
 
   async function shortenAllUrls() {
-    const shortenButton = document.querySelector('button[onclick="shortenAllUrls()"]');
-    shortenButton.disabled = true;
-    shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
+    // Prevent multiple clicks
+    if (isShortening) {
+      return;
+    }
 
+    const shortenButton = document.querySelector('button[onclick="shortenAllUrls()"]');
+    
     try {
-      const xrayLink = document.getElementById('xrayLink');
+      isShortening = true;
+      shortenButton.disabled = true;
+      shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
+
       const singboxLink = document.getElementById('singboxLink');
-      const clashLink = document.getElementById('clashLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
+      // Check if links are already shortened
+      if (singboxLink.value.includes('/b/')) {
+        alert('Links are already shortened!');
+        return;
+      }
+
       const shortCode = await shortenUrl(singboxLink.value, customShortCode);
+
+      const xrayLink = document.getElementById('xrayLink');
+      const clashLink = document.getElementById('clashLink');
 
       xrayLink.value = window.location.origin + '/x/' + shortCode;
       singboxLink.value = window.location.origin + '/b/' + shortCode;
@@ -901,6 +917,7 @@ const shortenAllUrlsFunction = () => `
       console.error('Error:', error);
       alert('Failed to shorten URLs. Please try again.');
     } finally {
+      isShortening = false;
       shortenButton.disabled = false;
       shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
     }
