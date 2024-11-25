@@ -47,8 +47,9 @@
 - 使用 Wrangler 部署：`wrangler deploy`
 
 ### 新手？
-#### [社区贡献视频教程](https://www.youtube.com/watch?v=7abmWqCXPR8)
-> 💡 这是由社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+#### [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
+#### [视频教程2](https://www.youtube.com/watch?v=7abmWqCXPR8)
+> 💡 这些是由社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
 #### [官方FAQ](/docs/FAQ.md)
 
 ## API 文档
