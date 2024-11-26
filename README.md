@@ -80,7 +80,8 @@
 ├── ClashConfigBuilder.js    # 构建 Clash 配置
 ├── ProxyParsers.js          # 解析各种代理协议的 URL
 ├── utils.js                 # 提供各种实用函数
-├── htmlBuilder.js           # 生成 Web 界面的 HTML
+├── htmlBuilder.js           # 生成 Web 界面
+├── style.js                 # 生成 Web 界面的 CSS
 ├── config.js                # 保存配置信息
 └── docs/
     ├── API-doc.md           # API 文档
