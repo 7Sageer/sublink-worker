@@ -26,6 +26,8 @@ https://your-worker-domain.workers.dev
   - `config` (必需): URL 编码的字符串,包含一个或多个代理配置
   - `selectedRules` (可选): 预定义规则集名称或自定义规则的 JSON 数组
   - `customRules` (可选): 自定义规则的 JSON 数组
+  - `pin` (可选): 布尔值，是否将自定义规则置于预定义规则之上
+  - `configId` (可选): 字符串，使用保存的配置ID。详见[保存自定义配置](#4-保存自定义配置)
 
 **示例**:
 ```
@@ -70,6 +72,50 @@ https://your-worker-domain.workers.dev
 - **方法**: GET
 - **描述**: 重定向到与短代码关联的原始 URL
 
+### 4. 保存自定义配置
+
+- **URL**: `/config`
+- **方法**: POST
+- **Content-Type**: application/json
+- **请求体**:
+
+  ```json
+  {
+    "type": "clash" | "singbox",  // 配置类型
+    "content": "配置内容"  // 字符串格式的配置内容
+  }
+  ```
+
+- **响应**: 
+  - 成功: 返回配置ID (字符串)
+  - 失败: 返回错误信息 (400 状态码)
+
+**说明**:
+- 配置内容会进行格式验证
+- Clash配置支持YAML和JSON格式
+- SingBox配置必须是有效的JSON格式
+- 配置将保存30天
+- 配置ID可以通过URL参数`configId`使用
+
+**示例**:
+
+``` bash
+curl -X POST https://your-worker-domain.workers.dev/config \
+-H "Content-Type: application/json" \
+-d '{
+"type": "clash",
+"content": "port: 7890\nallow-lan: false\nmode: Rule"
+}'
+```
+
+**使用保存的配置**:
+将返回的配置ID添加到URL参数中即可使用保存的配置：
+```
+https://your-worker-domain.workers.dev/clash?config=vmess://xxx&configId=clash_abc123
+```
+
+详情请参考[使用说明](#使用说明)
+
 ## 预定义规则集
 
 API 支持以下预定义规则集:
@@ -99,7 +145,7 @@ API 支持以下预定义规则集:
 | Streaming | netflix, hulu, disney, hbo, amazon |  |
 | Gaming | steam, epicgames, ea, ubisoft, blizzard |  |
 | Github | github, gitlab |  |
-| Education | coursera, edx, udemy, khanacademy |  |
+| Education | coursera, edx, udemy, khanacademy, category-scholar-!cn |  |
 | Financial | paypal, visa, mastercard, stripe, wise |  |
 | Cloud Services | aws, azure, digitalocean, heroku, dropbox |  |
 

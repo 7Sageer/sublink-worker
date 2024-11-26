@@ -1,4 +1,5 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
+import { generateStyles } from './style.js';
 
 export function generateHtml(xrayUrl, singboxUrl, clashUrl, baseUrl) {
   return `
@@ -30,377 +31,7 @@ const generateHead = () => `
   </head>
 `;
 
-const generateStyles = () => `
-  :root {
-    --bg-color: #f0f2f5;
-    --text-color: #495057;
-    --card-bg: #ffffff;
-    --card-header-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    --btn-primary-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    --input-bg: #ffffff;
-    --input-border: #ced4da;
-    --input-text: #495057;
-    --placeholder-color: #6c757d;
-    --checkbox-bg: #ffffff;
-    --checkbox-border: #ced4da;
-    --checkbox-checked-bg: #6a11cb;
-    --checkbox-checked-border: #6a11cb;
-    --explanation-bg: #e9ecef;
-    --explanation-text: #495057;
-    --select-bg: #ffffff;
-    --select-text: #495057;
-    --select-border: #ced4da;
-  }
 
-  [data-theme="dark"] {
-    --bg-color: #1a1a1a;
-    --text-color: #e0e0e0;
-    --card-bg: #2c2c2c;
-    --card-header-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
-    --btn-primary-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
-    --input-bg: #3c3c3c;
-    --input-border: #555555;
-    --input-text: #e0e0e0;
-    --placeholder-color: #adb5bd;
-    --checkbox-bg: #3c3c3c;
-    --checkbox-border: #555555;
-    --checkbox-checked-bg: #4a0e8f;
-    --checkbox-checked-border: #4a0e8f;
-    --explanation-bg: #383838;
-    --explanation-text: #b0b0b0;
-    --select-bg: #3c3c3c;
-    --select-text: #e0e0e0;
-    --select-border: #555555;
-  }
-
-  .container { max-width: 800px; }
-
-  body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  .card {
-    background-color: var(--card-bg);
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: background-color 0.3s ease;
-  }
-
-  .card-header {
-    background: var(--card-header-bg);
-    color: white;
-    border-radius: 15px 15px 0 0;
-    padding: 2rem;
-  }
-
-  .card-body { padding: 2rem; }
-
-  .btn-primary {
-    background: var(--btn-primary-bg);
-    border: none;
-    transition: all 0.3s ease;
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .input-group-text, .form-control {
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-    color: var(--input-text);
-  }
-
-  .form-control:focus {
-    background-color: var(--input-bg);
-    color: var(--input-text);
-    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
-  }
-
-  .input-group { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04); }
-
-  h2, h4 {
-    color: var(--text-color);
-    font-weight: 600;
-  }
-
-  .form-label {
-    font-weight: 500;
-    color: var(--text-color);
-  }
-
-  .btn-outline-secondary {
-    color: var(--text-color);
-    border-color: var(--input-border);
-  }
-
-  .btn-outline-secondary:hover {
-    background-color: var(--input-bg);
-    color: var(--text-color);
-  }
-
-  .btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: white;
-  }
-
-  .btn-success:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-  }
-
-  #darkModeToggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-  }
-
-  .github-link {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    font-size: 2rem;
-    color: var(--text-color);
-    transition: color 0.3s ease;
-  }
-
-  .github-link:hover { color: #6a11cb; }
-  
-  .tooltip-icon {
-    cursor: pointer;
-    margin-left: 5px;
-    color: var(--text-color);
-    position: relative;
-    display: inline-block;
-    vertical-align: super;
-    font-size: 1em;
-  }
-
-  .question-mark {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
-    text-align: center;
-    border-radius: 50%;
-    background-color: var(--text-color);
-    color: var(--card-bg);
-  }
-
-  .tooltip-content {
-    visibility: hidden;
-    opacity: 0;
-    background-color: var(--card-bg);
-    position: fixed; // 改为固定定位
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border: 1px solid var(--input-border);
-    border-radius: 6px;
-    padding: 10px;
-    z-index: 1000; // 提高z-index值
-    width: 300px;
-    max-width: 90vw; // 限制最大宽度
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.3s, visibility 0.3s;
-  }
-
-  .tooltip-icon:hover .tooltip-content {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  @media (max-width: 768px) {
-    .tooltip-content {
-      width: 250px;
-      left: auto;
-      right: 0;
-      transform: none;
-    }
-  }
-
-  .form-check-input {
-    background-color: var(--checkbox-bg);
-    border-color: var(--checkbox-border);
-  }
-
-  .form-check-input:checked {
-    background-color: var(--checkbox-checked-bg);
-    border-color: var(--checkbox-checked-border);
-  }
-
-  .form-check-label {
-    color: var(--text-color);
-  }
-  .explanation-text {
-    background-color: var(--explanation-bg);
-    color: var(--explanation-text);
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  .form-select {
-    background-color: var(--select-bg);
-    color: var(--select-text);
-    border-color: var(--select-border);
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23495057' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1em;
-    padding-right: 2.5em;
-  }
-
-  [data-theme="dark"] .form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  }
-
-  .form-select:focus {
-    background-color: var(--select-bg);
-    color: var(--select-text);
-    border-color: var(--checkbox-checked-border);
-    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
-  }
-
-  .form-control::placeholder {
-    color: var(--placeholder-color);
-    opacity: 1;
-  }
-
-  .form-control::-webkit-input-placeholder {
-    color: var(--placeholder-color);
-    opacity: 1;
-  }
-
-  .form-control::-moz-placeholder {
-    color: var(--placeholder-color);
-    opacity: 1;
-  }
-
-  .form-control:-ms-input-placeholder {
-    color: var(--placeholder-color);
-    opacity: 1;
-  }
-
-  .form-control::-ms-input-placeholder {
-    color: var(--placeholder-color);
-    opacity: 1;
-  }
-
-  #advancedOptions {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out, opacity 0.5s ease-out, transform 0.5s ease-out;
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  #advancedOptions.show {
-    max-height: none;
-    opacity: 1;
-    transform: translateY(0);
-    transition: max-height 0.5s ease-in, opacity 0.5s ease-in, transform 0.5s ease-in;
-  }
-
-  .header-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-  }
-  .header-title {
-      margin: 0;
-      margin-right: 10px;
-  }
-
-  .qr-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 1000;
-  }
-
-  .qr-modal.show {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .qr-card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-  }
-
-  .qr-modal.show .qr-card {
-    transform: scale(1);
-  }
-
-  .qr-card img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .qr-card p {
-    margin-top: 10px;
-    color: #333;
-    font-size: 16px;
-  }
-
-  .base-url-label {
-    background-color: var(--input-bg);
-    color: var(--input-text);
-    border: 1px solid var(--input-border);
-    border-radius: 0.25rem;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-
-  #subscribeLinksContainer {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
-  }
-
-  #subscribeLinksContainer.show {
-    max-height: 1000px;
-    opacity: 1;
-  }
-
-  #subscribeLinksContainer.hide {
-    max-height: 0;
-    opacity: 0;
-  }
-
-`;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
   <body>
@@ -444,25 +75,57 @@ const generateCardHeader = () => `
 
 const generateForm = () => `
   <form method="POST" id="encodeForm">
-    <div class="mb-4">
-      <label for="inputTextarea" class="form-label">Enter Your Share URLs:</label>
+    <div class="form-section">
+      <div class="form-section-title">Share URLs</div>
       <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
     </div>
+
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="advancedToggle">
       <label class="form-check-label" for="advancedToggle">Advanced Options</label>
     </div>
+
     <div id="advancedOptions">
-      ${generateRuleSetSelection()}
+      <div class="form-section">
+        ${generateRuleSetSelection()}
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title d-flex align-items-center">
+          Base Config Settings(Optional)
+          <span class="tooltip-icon ms-2">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              This feature is experimental and may not work as expected. You can paste your own base config here. Go to <a href="https://github.com/7Sageer/sublink-worker/blob/main/docs/base-config.md" target="_blank">docs</a> for more information.
+            </span>
+          </span>
+        </div>
+        <div class="mb-3">
+          <select class="form-select" id="configType">
+            <option value="singbox">SingBox (JSON)</option>
+            <option value="clash">Clash (YAML)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-secondary" onclick="saveConfig()">Save Config</button>
+          <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
+            <i class="fas fa-trash-alt me-2"></i>Clear Config
+          </button>
+        </div>
+      </div>
     </div>
-  <div class="d-flex mt-4">
-    <button type="submit" class="btn btn-primary btn-lg me-2" style="flex: 6;">
-      <i class="fas fa-sync-alt me-2"></i>Convert
-    </button>
-    <button type="button" class="btn btn-secondary btn-lg" id="clearFormBtn" style="flex: 4;">
-      <i class="fas fa-trash-alt me-2"></i>Clear
-    </button>
-  </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary flex-grow-1">
+        <i class="fas fa-sync-alt me-2"></i>Convert
+      </button>
+      <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
+        <i class="fas fa-trash-alt me-2"></i>Clear
+      </button>
+    </div>
   </form>
 `;
 
@@ -523,6 +186,8 @@ const generateScripts = () => `
     ${customRuleFunctions}
     ${generateQRCodeFunction()}
     ${customPathFunctions()}
+    ${saveConfig()}
+    ${clearConfig()}
   </script>
 `;
 
@@ -608,6 +273,8 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
+  let isShortening = false; // Add flag to track shortening status
+
   async function shortenUrl(url, customShortCode) {
     saveCustomPath();
     const response = await fetch(\`/shorten-v2?url=\${encodeURIComponent(url)}&shortCode=\${encodeURIComponent(customShortCode || '')}\`);
@@ -619,17 +286,31 @@ const shortenAllUrlsFunction = () => `
   }
 
   async function shortenAllUrls() {
-    const shortenButton = document.querySelector('button[onclick="shortenAllUrls()"]');
-    shortenButton.disabled = true;
-    shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
+    // Prevent multiple clicks
+    if (isShortening) {
+      return;
+    }
 
+    const shortenButton = document.querySelector('button[onclick="shortenAllUrls()"]');
+    
     try {
-      const xrayLink = document.getElementById('xrayLink');
+      isShortening = true;
+      shortenButton.disabled = true;
+      shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
+
       const singboxLink = document.getElementById('singboxLink');
-      const clashLink = document.getElementById('clashLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
+      // Check if links are already shortened
+      if (singboxLink.value.includes('/b/')) {
+        alert('Links are already shortened!');
+        return;
+      }
+
       const shortCode = await shortenUrl(singboxLink.value, customShortCode);
+
+      const xrayLink = document.getElementById('xrayLink');
+      const clashLink = document.getElementById('clashLink');
 
       xrayLink.value = window.location.origin + '/x/' + shortCode;
       singboxLink.value = window.location.origin + '/b/' + shortCode;
@@ -638,6 +319,7 @@ const shortenAllUrlsFunction = () => `
       console.error('Error:', error);
       alert('Failed to shorten URLs. Please try again.');
     } finally {
+      isShortening = false;
       shortenButton.disabled = false;
       shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
     }
@@ -690,7 +372,6 @@ const generateRuleSetSelection = () => `
     </div>
 
     <div class="content-container mb-3">
-      <label for="predefinedRules" class="form-label">Rule Sets:</label>
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
         <option value="custom">Custom</option>
         <option value="minimal">Minimal</option>
@@ -709,7 +390,7 @@ const generateRuleSetSelection = () => `
       `).join('')}
     </div>
     <div class="mt-4">
-      <h4>Custom Rules</h4>
+      <h5>Custom Rules</h5>
       <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" id="crpinToggle">
         <label class="form-check-label" for="crpinToggle">Pin Custom Rules</label>
@@ -779,7 +460,10 @@ const submitFormFunction = () => `
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
     localStorage.setItem('crpinToggle', document.getElementById('crpinToggle').checked);
-    saveSelectedRules();
+    
+    // 保存 configEditor 和 configType 到 localStorage
+    localStorage.setItem('configEditor', document.getElementById('configEditor').value);
+    localStorage.setItem('configType', document.getElementById('configType').value);
     
     let selectedRules;
     const predefinedRules = document.getElementById('predefinedRules').value;
@@ -791,6 +475,8 @@ const submitFormFunction = () => `
     }
     
     let pin = document.getElementById('crpinToggle').checked;
+    const configEditor = document.getElementById('configEditor');
+    const configId = new URLSearchParams(window.location.search).get('configId') || '';
 
     const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
       site: rule.querySelector('input[name="customRuleSite[]"]').value,
@@ -801,9 +487,10 @@ const submitFormFunction = () => `
       ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value
     }));
 
-    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\`;
+    const configParam = configId ? \`&configId=\${configId}\` : '';
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
 
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
@@ -830,6 +517,17 @@ const submitFormFunction = () => `
       if (advancedToggle === 'true') {
         document.getElementById('advancedOptions').classList.add('show');
       }
+    }
+    
+    // 加载 configEditor 和 configType
+    const savedConfig = localStorage.getItem('configEditor');
+    const savedConfigType = localStorage.getItem('configType');
+    
+    if (savedConfig) {
+      document.getElementById('configEditor').value = savedConfig;
+    }
+    if (savedConfigType) {
+      document.getElementById('configType').value = savedConfigType;
     }
     
     const savedCustomPath = localStorage.getItem('customPath');
@@ -870,13 +568,15 @@ const submitFormFunction = () => `
     localStorage.removeItem('advancedToggle');
     localStorage.removeItem('selectedRules');
     localStorage.removeItem('predefinedRules');
+    localStorage.removeItem('configEditor');  // 添加清除 configEditor
+    localStorage.removeItem('configType');    // 添加清除 configType
+    
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
-    document.querySelectorAll('input[name="selectedRules"]').forEach(checkbox => checkbox.checked = false);
-    document.getElementById('predefinedRules').value = 'custom';
-    document.getElementById('crpinToggle').checked = false;
-
+    document.getElementById('configEditor').value = '';
+    document.getElementById('configType').value = 'singbox';  // 重置为默认值
+    
     localStorage.removeItem('customPath');
     document.getElementById('customShortCode').value = '';
 
@@ -954,8 +654,11 @@ const customRuleFunctions = `
   function removeCustomRule(button) {
     const ruleDiv = button.closest('.custom-rule');
     if (ruleDiv) {
-      ruleDiv.remove();
-      customRuleCount--;
+      ruleDiv.classList.add('removing');
+      ruleDiv.addEventListener('animationend', () => {
+        ruleDiv.remove();
+        customRuleCount--;
+      }, { once: true });
     }
   }
 `;
@@ -1019,5 +722,52 @@ const generateQRCodeFunction = () => `
         document.body.removeChild(modal);
       }, { once: true });
     }
+  }
+`;
+
+const saveConfig = () => `
+  function saveConfig() {
+    const configEditor = document.getElementById('configEditor');
+    const configType = document.getElementById('configType').value;
+    const config = configEditor.value;
+
+    localStorage.setItem('configEditor', config);
+    localStorage.setItem('configType', configType);
+    
+    fetch('/config?type=' + configType, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: configType,
+        content: config
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to save configuration');
+      }
+      return response.text();
+    })
+    .then(configId => {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('configId', configId);
+      window.history.pushState({}, '', currentUrl);
+      alert('Configuration saved successfully!');
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }
+`;
+
+const clearConfig = () => `
+  function clearConfig() {
+    document.getElementById('configEditor').value = '';
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.delete('configId');
+    window.history.pushState({}, '', currentUrl);
+    localStorage.removeItem('configEditor');
   }
 `;

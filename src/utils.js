@@ -25,10 +25,10 @@ export function DeepCopy(obj) {
 	return newObj;
 }
 
-export function GenerateWebPath() {
+export function GenerateWebPath(length = PATH_LENGTH) {
 	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 	let result = ''
-	for (let i = 0; i < PATH_LENGTH; i++) {
+	for (let i = 0; i < length; i++) {
 		result += characters.charAt(Math.floor(Math.random() * characters.length))
 	}
 	return result

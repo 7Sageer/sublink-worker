@@ -1,8 +1,22 @@
-# Sublink Worker
+<div align="center">
+  <h1>
+    <b>Sublink Worker</b>
+  </h1>
+</div>
 
-Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅转换工具。可以将各种代理协议的分享 URL 转换为不同客户端可用的订阅链接。同时还提供灵活的自定义规则与API支持。
 
-演示站点：[https://sublink-worker.sageer.me](https://sublink-worker.sageer.me)
+<div align="center">
+  <h5>
+    <i>Serverless 自部署订阅转换工具最佳实践</i>
+  </h5>
+</div>
+
+<div align="center">
+  <href>
+    https://sublink-worker.sageer.me
+  </href>
+</div>
+
 ## 功能特点
 
 - 支持协议：ShadowSocks, VMess, VLESS, Hysteria2, Trojan, TUIC
@@ -32,14 +46,15 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 - 配置 Cloudflare 账户凭证
 - 使用 Wrangler 部署：`wrangler deploy`
 
-
-## 常见问题
-
-如果您在使用过程中遇到任何问题，请查看 [FAQ文档](/doc/FAQ.md)。
+### 新手？
+#### [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
+#### [视频教程2](https://www.youtube.com/watch?v=7abmWqCXPR8)
+> 💡 这些是由社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+#### [官方FAQ](/docs/FAQ.md)
 
 ## API 文档
 
-详细的 API 文档可以在 [API-doc.md](/doc/API-doc.md) 中找到。
+详细的 API 文档可以在 [API-doc.md](/docs/API-doc.md) 中找到。
 
 主要端点包括：
 
@@ -50,10 +65,10 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 
 ## 最近更新
 
-- 2024-10-15
-  - 添加了[FAQ文档](/doc/FAQ.md)
+- 2024-11-23
+  - 修复重复点击生成按钮时，可能导致无法访问短链的问题
 
-[查看更新日志](/doc/update-log.md)
+[查看更新日志](/docs/update-log.md)
 
 ## 项目结构
 
@@ -65,9 +80,10 @@ Sublink Worker 是一个可部署在 Cloudflare Worker 上，小而美的订阅�
 ├── ClashConfigBuilder.js    # 构建 Clash 配置
 ├── ProxyParsers.js          # 解析各种代理协议的 URL
 ├── utils.js                 # 提供各种实用函数
-├── htmlBuilder.js           # 生成 Web 界面的 HTML
+├── htmlBuilder.js           # 生成 Web 界面
+├── style.js                 # 生成 Web 界面的 CSS
 ├── config.js                # 保存配置信息
-└── doc/
+└── docs/
     ├── API-doc.md           # API 文档
     ├── update-log.md        # 更新日志
     └── FAQ.md               # 常见问题解答

@@ -72,13 +72,6 @@ export const UNIFIED_RULES = [
 		ip_rules: []
 	},
 	{
-		name: 'Bahamut',
-		outbound: '🎮 巴哈姆特',
-		site_rules: ['bahamut'],
-		ip_rules: []
-	},
-
-	{
 		name: 'Social Media',
 		outbound: '🌐 社交媒体',
 		site_rules: ['facebook', 'instagram', 'twitter', 'tiktok', 'linkedin'],
@@ -87,7 +80,7 @@ export const UNIFIED_RULES = [
 	  {
 		name: 'Streaming',
 		outbound: '🎬 流媒体',
-		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon'],
+		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon','bahamut'],
 		ip_rules: []
 	  },
 	  {
@@ -113,13 +106,19 @@ export const UNIFIED_RULES = [
 		outbound: '☁️ 云服务',
 		site_rules: ['aws', 'azure', 'digitalocean', 'heroku', 'dropbox'],
 		ip_rules: []
+	  },
+	  {
+		name: 'Non-China',
+		outbound: '🌐 非中国',
+		site_rules: ['geolocation-!cn'],
+		ip_rules: []
 	  }
 
 ];
 
 export const PREDEFINED_RULE_SETS = {
-	minimal: ['Location:CN', 'Private'],
-	balanced: ['Location:CN', 'Private', 'Google', 'Youtube', 'AI Services', 'Telegram'],
+	minimal: ['Location:CN', 'Private', 'Non-China'],
+	balanced: ['Location:CN', 'Private', 'Non-China', 'Google', 'Youtube', 'AI Services', 'Telegram'],
 	comprehensive: UNIFIED_RULES.map(rule => rule.name)
   };
   
@@ -242,8 +241,18 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     type: 'remote',
     format: 'binary',
     url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
-    download_detour: '⚡ 自动选择'
+    	download_detour: '⚡ 自动选择'
   }));
+
+  if(!selectedRules.includes('Non-China')){
+	site_rule_sets.push({
+		tag: 'geolocation-!cn',
+		type: 'remote',
+		format: 'binary',
+		url: `${SITE_RULE_SET_BASE_URL}geosite-geolocation-!cn.srs`,
+		download_detour: '⚡ 自动选择'
+	});
+  }
 
   if(customRules){
 	customRules.forEach(rule => {
@@ -279,30 +288,77 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 
 // Singbox configuration
 export const SING_BOX_CONFIG = {
-	log: {
-		disabled: false,
-		level: 'info',
-		timestamp: true,
-	},
 	dns: {
 		servers: [
-			{ tag: 'dns_proxy', address: 'tls://1.1.1.1', address_resolver: 'dns_resolver' },
-			{ tag: 'dns_direct', address: 'h3://dns.alidns.com/dns-query', address_resolver: 'dns_resolver', detour: 'DIRECT' },
-			{ tag: 'dns_fakeip', address: 'fakeip' },
-			{ tag: 'dns_resolver', address: '223.5.5.5', detour: 'DIRECT' },
-			{ tag: 'block', address: 'rcode://success' }
+			{
+				tag: "dns_proxy",
+				address: "tcp://1.1.1.1",
+				address_resolver: "dns_resolver",
+				strategy: "ipv4_only",
+				detour: "🚀 节点选择"
+			},
+			{
+				tag: "dns_direct", 
+				address: "https://dns.alidns.com/dns-query",
+				address_resolver: "dns_resolver",
+				strategy: "ipv4_only",
+				detour: "DIRECT"
+			},
+			{
+				tag: "dns_resolver",
+				address: "223.5.5.5",
+				detour: "DIRECT"
+			},
+			{
+				tag: "dns_success",
+				address: "rcode://success"
+			},
+			{
+				tag: "dns_refused",
+				address: "rcode://refused"
+			},
+			{
+				tag: "dns_fakeip",
+				address: "fakeip"
+			}
 		],
 		rules: [
-			{ outbound: ['any'], server: 'dns_resolver' },
-			{ geosite: ['category-ads-all'], server: 'dns_block', disable_cache: true },
-			{ geosite: ['geolocation-!cn'], query_type: ['A', 'AAAA'], server: 'dns_fakeip' },
-			{ geosite: ['geolocation-!cn'], server: 'dns_proxy' }
+			{
+				outbound: "any",
+				server: "dns_resolver"
+			},
+			{
+				rule_set: "geolocation-!cn",
+				query_type: [
+					"A",
+					"AAAA"
+				],
+				server: "dns_fakeip"
+			},
+			{
+				rule_set: "geolocation-!cn",
+				query_type: [
+					"CNAME"
+				],
+				server: "dns_proxy"
+			},
+			{
+				query_type: [
+					"A",
+					"AAAA",
+					"CNAME"
+				],
+				invert: true,
+				server: "dns_refused",
+				disable_cache: true
+			}
 		],
-		final: 'dns_direct',
+		final: "dns_direct",
 		independent_cache: true,
 		fakeip: {
 			enabled: true,
-			inet4_range: '198.18.0.0/15'
+			inet4_range: "198.18.0.0/15",
+			inet6_range: "fc00::/18"
 		}
 	},
 	ntp: {
@@ -322,6 +378,20 @@ export const SING_BOX_CONFIG = {
 		{ type: 'dns', tag: 'dns-out' }
 	],
 	route : {
+		"rule_set": [
+            {
+                "tag": "geosite-geolocation-!cn",
+                "type": "local",
+                "format": "binary",
+                "path": "geosite-geolocation-!cn.srs"
+            }
+		],
+		rules: [
+			{
+				"outbound": "any",
+				"server": "dns_resolver"
+			}
+		]
 	},
 	experimental: {
 		cache_file: {
@@ -343,8 +413,27 @@ export const CLASH_CONFIG = {
 	'log-level': 'info',
 	dns: {
 		enable: true,
-		nameserver: ['119.29.29.29', '223.5.5.5'],
-		fallback: ['8.8.8.8', '8.8.4.4', 'tls://1.0.0.1:853', 'tls://dns.google:853'],
+		ipv6: true,
+		'respect-rules': true,
+		'enhanced-mode': 'fake-ip',
+		nameserver: [
+			'https://120.53.53.53/dns-query',
+			'https://223.5.5.5/dns-query'
+		],
+		'proxy-server-nameserver': [
+			'https://120.53.53.53/dns-query',
+			'https://223.5.5.5/dns-query'
+		],
+		'nameserver-policy': {
+			'geosite:cn,private': [
+				'https://120.53.53.53/dns-query',
+				'https://223.5.5.5/dns-query'
+			],
+			'geosite:geolocation-!cn': [
+				'https://dns.cloudflare.com/dns-query',
+				'https://dns.google/dns-query'
+			]
+		}
 	},
 	proxies: [],
 	'proxy-groups': [],
