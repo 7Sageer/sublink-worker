@@ -9,10 +9,12 @@ export class ProxyParser {
 			case 'ss': return new ShadowsocksParser().parse(url);
 			case 'vmess': return new VmessParser().parse(url);
 			case 'vless': return new VlessParser().parse(url);
-      case 'hysteria2': return new Hysteria2Parser().parse(url);
+      case 'hysteria2': 
+      case 'hy2':
+        return new Hysteria2Parser().parse(url);
       case 'http':
       case 'https':
-      return HttpParser.parse(url);
+        return HttpParser.parse(url);
       case 'trojan': return new TrojanParser().parse(url);
       case 'tuic': return new TuicParser().parse(url);
 		}
