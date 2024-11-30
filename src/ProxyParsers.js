@@ -23,39 +23,63 @@ export class ProxyParser {
 
 	class ShadowsocksParser {
 		parse(url) {
-            let parts = url.replace('ss://', '').split('#');
-            let mainPart = parts[0];
-            let tag = parts[1];
-            if (tag.includes('%')) {
-                tag = decodeURIComponent(tag);
-            }
-        
-            let [base64, serverPart] = mainPart.split('@');
-            let decodedParts = decodeBase64(base64).split(':');
-            let method = decodedParts[0];
-            let password = decodedParts.slice(1).join(':');
-        
-            // Match IPv6 address
-            let match = serverPart.match(/\[([^\]]+)\]:(\d+)/);
-            let server, server_port;
-        
-            if (match) {
-                server = match[1];
-                server_port = match[2];
-            } else {
-                [server, server_port] = serverPart.split(':');
-            }
-        
-            return {
-                "tag": tag,
-                "type": 'shadowsocks',
-                "server": server,
-                "server_port": parseInt(server_port),
-                "method": method,
-                "password": password,
-                "network": 'tcp',
-                "tcp_fast_open": false
-            }
+			let parts = url.replace('ss://', '').split('#');
+			let mainPart = parts[0];
+			let tag = parts[1];
+			if (tag && tag.includes('%')) {
+				tag = decodeURIComponent(tag);
+			}
+
+			// Try new format first
+			try {
+				let [base64, serverPart] = mainPart.split('@');
+				// If no @ symbol found, try legacy format
+				if (!serverPart) {
+					// Decode the entire mainPart for legacy format
+					let decodedLegacy = decodeBase64(mainPart);
+					// Legacy format: method:password@server:port
+					let [methodAndPass, serverInfo] = decodedLegacy.split('@');
+					let [method, password] = methodAndPass.split(':');
+					let [server, server_port] = this.parseServer(serverInfo);
+					
+					return this.createConfig(tag, server, server_port, method, password);
+				}
+
+				// Continue with new format parsing
+				let decodedParts = decodeBase64(base64).split(':');
+				let method = decodedParts[0];
+				let password = decodedParts.slice(1).join(':');
+				let [server, server_port] = this.parseServer(serverPart);
+
+				return this.createConfig(tag, server, server_port, method, password);
+			} catch (e) {
+				console.error('Failed to parse shadowsocks URL:', e);
+				return null;
+			}
+		}
+
+		// Helper method to parse server info
+		parseServer(serverPart) {
+			// Match IPv6 address
+			let match = serverPart.match(/\[([^\]]+)\]:(\d+)/);
+			if (match) {
+				return [match[1], match[2]];
+			}
+			return serverPart.split(':');
+		}
+
+		// Helper method to create config object
+		createConfig(tag, server, server_port, method, password) {
+			return {
+				"tag": tag || "Shadowsocks",
+				"type": 'shadowsocks',
+				"server": server,
+				"server_port": parseInt(server_port),
+				"method": method,
+				"password": password,
+				"network": 'tcp',
+				"tcp_fast_open": false
+			};
 		}
 	}
 
