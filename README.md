@@ -9,7 +9,24 @@
   <p>
     <a href="https://sublink-worker.sageer.me">https://sublink-worker.sageer.me</a>
   </p>
+
+  <p>
+    <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
+      <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
+    </a>
+  </p>
 </div>
+
+## 🚀 快速开始
+
+### 一键部署
+只需点击上方按钮，即可快速部署您的专属订阅转换服务。
+
+### 新手指南
+- [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
+- [视频教程2](https://www.youtube.com/watch?v=7abmWqCXPR8)
+
+> 💡 这些是由社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
 
 ## ✨ 功能特点
 
@@ -38,34 +55,6 @@
 - 提供多种预定义规则集
 - 可自建关于 geo-site、geo-ip、ip-cidr 和 domain-suffix 的自定义策略组
 
-## 🚀 部署指南
-
-### 推荐：自动部署
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker)
-
-### 手动部署
-1. 克隆项目仓库：
-   ```bash
-   git clone https://github.com/7Sageer/sublink-worker.git
-   ```
-2. 安装依赖：
-   ```bash
-   npm install
-   ```
-3. 配置 Cloudflare 账户凭证
-4. 使用 Wrangler 部署：
-   ```bash
-   wrangler deploy
-   ```
-
-### 新手指南
-- [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
-- [视频教程2](https://www.youtube.com/watch?v=7abmWqCXPR8)
-
-> 💡 这些是由社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
-
-- [官方FAQ](/docs/FAQ.md)
-
 ## 📖 API 文档
 
 详细的 API 文档请参考 [API-doc.md](/docs/API-doc.md)
@@ -78,9 +67,8 @@
 
 ## 📝 最近更新
 
-### 2024-11-23
-- 修复重复点击生成按钮时，可能导致无法访问短链的问题
-
+### 2024-11-30
+- 添加对 Shadowsocks 旧式 URL 的支持
 [查看完整更新日志](/docs/update-log.md)
 
 ## 🔧 项目结构
