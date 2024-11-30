@@ -6,9 +6,9 @@
     <img src="https://trendshift.io/api/badge/repositories/12291" alt="7Sageer%2Fsublink-worker | Trendshift" width="250" height="55"/>
   </a>
   
-  <p>
+  <!-- <p>
     <a href="https://sublink-worker.sageer.me">https://sublink-worker.sageer.me</a>
-  </p>
+  </p> -->
 
   <p>
     <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
@@ -20,7 +20,7 @@
 ## 🚀 快速开始
 
 ### 一键部署
-点击上方的 "Deploy to Cloudflare Workers" 按钮，即可快速部署您的专属订阅转换服务。
+点击上方的 "Deploy to Workers" 按钮，即可快速部署您的专属订阅转换服务。
 
 ### 新手指南
 - [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
