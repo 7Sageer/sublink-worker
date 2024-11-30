@@ -41,7 +41,7 @@
 - TUIC
 
 ### 核心功能
-- 支持导入 Base64 的 http/https 订阅链接
+- 支持导入 Base64 的 http/https 订阅链接以及多种协议的分享URL
 - 一键部署，Vanilla JS + Cloudflare Worker，无需后端
 - 支持固定/随机短链接生成（基于 KV）
 - 浅色/深色主题切换
