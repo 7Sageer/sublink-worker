@@ -20,7 +20,7 @@
 ## 🚀 快速开始
 
 ### 一键部署
-只需点击上方按钮，即可快速部署您的专属订阅转换服务。
+点击上方的 "Deploy to Cloudflare Workers" 按钮，即可快速部署您的专属订阅转换服务。
 
 ### 新手指南
 - [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
