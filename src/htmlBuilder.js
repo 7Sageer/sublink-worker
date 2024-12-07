@@ -665,10 +665,10 @@ const customRuleFunctions = `
         <span class="tooltip-icon">
           <i class="fas fa-question-circle"></i>
           <span class="tooltip-content">
-            Protocol rules for specific traffic types (e.g., dns, http, tls)
+            Protocol rules for specific traffic types. More details: https://sing-box.sagernet.org/configuration/route/sniff/
           </span>
         </span>
-        <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="Protocol (comma separated, e.g., dns,http,tls)">
+        <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="Protocol (comma separated, e.g, http,ssh,dns)">
       </div>
       <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">Remove</button>
     \`;
