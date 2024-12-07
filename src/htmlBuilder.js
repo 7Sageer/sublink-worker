@@ -425,6 +425,19 @@ const applyPredefinedRulesFunction = () => `
       }
     });
   }
+
+  // Add event listeners to checkboxes
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.rule-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const predefinedSelect = document.getElementById('predefinedRules');
+        if (predefinedSelect.value !== 'custom') {
+          predefinedSelect.value = 'custom';
+        }
+      });
+    });
+  });
 `;
 
 const tooltipFunction = () => `
