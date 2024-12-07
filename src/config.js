@@ -181,6 +181,7 @@ export function generateRules(selectedRules = [], customRules = [], pin) {
 			domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
 			domain_keyword: rule.domain_keyword ? rule.domain_keyword.split(',') : [],
 			ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
+			protocol: rule.protocol ? rule.protocol.split(',') : [],
 			outbound: rule.name
 		  });
 		});
@@ -194,6 +195,7 @@ export function generateRules(selectedRules = [], customRules = [], pin) {
 			  domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
 			  domain_keyword: rule.domain_keyword ? rule.domain_keyword.split(',') : [],
 			  ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
+			  protocol: rule.protocol ? rule.protocol.split(',') : [],
 			  outbound: rule.name
 			});
 		  });
