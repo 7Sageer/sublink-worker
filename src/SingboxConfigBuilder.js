@@ -86,6 +86,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
             domain_suffix: rule.domain_suffix,
             domain_keyword: rule.domain_keyword,
             ip_cidr: rule.ip_cidr,
+            protocol: rule.protocol,
             outbound: rule.outbound
         }));
         // Add any default rules that should always be present
