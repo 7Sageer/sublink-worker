@@ -25,9 +25,10 @@
 
 ### 新手指南
 - [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
-- [视频教程2](https://www.youtube.com/watch?v=7abmWqCXPR8)
+- [视频教程2](https://www.youtube.com/watch?v=_1BfM2Chn7w)
+- [视频教程3](https://www.youtube.com/watch?v=7abmWqCXPR8)
 
-> 💡 这些是由社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+> 💡 这些是由Youtube社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
 
 ## ✨ 功能特点
 
@@ -40,7 +41,7 @@
 - TUIC
 
 ### 核心功能
-- 支持导入 Base64 的 http/https 订阅链接
+- 支持导入 Base64 的 http/https 订阅链接以及多种协议的分享URL
 - 一键部署，Vanilla JS + Cloudflare Worker，无需后端
 - 支持固定/随机短链接生成（基于 KV）
 - 浅色/深色主题切换
