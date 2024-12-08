@@ -30,16 +30,26 @@ jobs:
         run: |
           KV_NAMESPACE="SUBLINK_KV"
           echo "Checking for KV namespace: $KV_NAMESPACE"
-          LIST_OUTPUT=$(wrangler kv namespace list)
-          echo "KV namespace list output: $LIST_OUTPUT"
+          if ! LIST_OUTPUT=$(wrangler kv namespace list 2>&1); then
+            echo "Error getting KV namespace list: $LIST_OUTPUT"
+            exit 1
+          fi
+          
+          LIST_OUTPUT=$(echo "$LIST_OUTPUT" | grep -v "Cloudflare collects" | grep -v "telemetry")
+          echo "Cleaned KV namespace list output: $LIST_OUTPUT"
+          
+          if ! echo "$LIST_OUTPUT" | jq empty; then
+            echo "Invalid JSON output from wrangler"
+            exit 1
+          fi
           
           KV_ID=$(echo "$LIST_OUTPUT" | jq -r '.[] | select(.title == "sublink-worker-'$KV_NAMESPACE'") | .id')
           
           if [ -z "$KV_ID" ]; then
               echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
-              CREATE_OUTPUT=$(wrangler kv namespace create "$KV_NAMESPACE")
+              CREATE_OUTPUT=$(wrangler kv namespace create "$KV_NAMESPACE" 2>&1)
               echo "Create KV namespace output: $CREATE_OUTPUT"
-              KV_ID=$(echo "$CREATE_OUTPUT" | grep -oP 'id = "\K[^"]+')
+              KV_ID=$(echo "$CREATE_OUTPUT" | grep -o '[0-9a-f]\{32\}')
               
               if [ -z "$KV_ID" ]; then
                   echo "Failed to extract KV ID. Full output: $CREATE_OUTPUT"
@@ -48,7 +58,7 @@ jobs:
               
               echo "KV namespace $KV_NAMESPACE created successfully with ID: $KV_ID"
           else
-            echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
+              echo "KV namespace $KV_NAMESPACE already exists with ID: $KV_ID"
           fi
           echo "KV_ID=$KV_ID" >> $GITHUB_ENV
           
