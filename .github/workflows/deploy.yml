@@ -18,9 +18,7 @@ jobs:
           node-version: '21'
       
       - name: Install dependencies
-        run: |
-          npm config set registry https://registry.npmmirror.com
-          npm install
+        run: npm install
       
       - name: Install wrangler
         run: npm install -g wrangler
