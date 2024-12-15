@@ -1,14 +1,84 @@
 const PATH_LENGTH = 7;
 
-export function decodeBase64(str) {
-	const binString = atob(str);
-	const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
-	return new TextDecoder().decode(bytes);
-}
-export function encodeBase64(str) {
-	return btoa(str);
+
+// Base64 编码函数
+export function encodeBase64(input) {
+	const encoder = new TextEncoder();
+	const utf8Array = encoder.encode(input);
+	let binaryString = '';
+	for (const byte of utf8Array) {
+		binaryString += String.fromCharCode(byte);
+	}
+	return base64FromBinary(binaryString);
 }
 
+// Base64 解码函数
+export function decodeBase64(input) {
+	const binaryString = base64ToBinary(input);
+	const bytes = new Uint8Array(binaryString.length);
+	for (let i = 0; i < binaryString.length; i++) {
+		bytes[i] = binaryString.charCodeAt(i);
+	}
+	const decoder = new TextDecoder();
+	return decoder.decode(bytes);
+}
+
+// 将二进制字符串转换为 Base64（编码）
+export function base64FromBinary(binaryString) {
+	const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+	let base64String = '';
+	let padding = '';
+
+	const remainder = binaryString.length % 3;
+	if (remainder > 0) {
+		padding = '='.repeat(3 - remainder);
+		binaryString += '\0'.repeat(3 - remainder);
+	}
+
+	for (let i = 0; i < binaryString.length; i += 3) {
+		const bytes = [
+			binaryString.charCodeAt(i),
+			binaryString.charCodeAt(i + 1),
+			binaryString.charCodeAt(i + 2)
+		];
+		const base64Index1 = bytes[0] >> 2;
+		const base64Index2 = ((bytes[0] & 3) << 4) | (bytes[1] >> 4);
+		const base64Index3 = ((bytes[1] & 15) << 2) | (bytes[2] >> 6);
+		const base64Index4 = bytes[2] & 63;
+
+		base64String += base64Chars[base64Index1] +
+			base64Chars[base64Index2] +
+			base64Chars[base64Index3] +
+			base64Chars[base64Index4];
+	}
+
+	return base64String.slice(0, base64String.length - padding.length) + padding;
+}
+
+// 将 Base64 转换为二进制字符串（解码）
+export function base64ToBinary(base64String) {
+	const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+	let binaryString = '';
+	base64String = base64String.replace(/=+$/, ''); // 去掉末尾的 '='
+
+	for (let i = 0; i < base64String.length; i += 4) {
+		const bytes = [
+			base64Chars.indexOf(base64String[i]),
+			base64Chars.indexOf(base64String[i + 1]),
+			base64Chars.indexOf(base64String[i + 2]),
+			base64Chars.indexOf(base64String[i + 3])
+		];
+		const byte1 = (bytes[0] << 2) | (bytes[1] >> 4);
+		const byte2 = ((bytes[1] & 15) << 4) | (bytes[2] >> 2);
+		const byte3 = ((bytes[2] & 3) << 6) | bytes[3];
+
+		if (bytes[1] !== -1) binaryString += String.fromCharCode(byte1);
+		if (bytes[2] !== -1) binaryString += String.fromCharCode(byte2);
+		if (bytes[3] !== -1) binaryString += String.fromCharCode(byte3);
+	}
+
+	return binaryString;
+}
 export function DeepCopy(obj) {
 	if (obj === null || typeof obj !== 'object') {
 		return obj;
