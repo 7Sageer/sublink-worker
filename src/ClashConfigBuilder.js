@@ -33,6 +33,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         }
 
         const proxyList = this.config.proxies.map(proxy => proxy.name);
+
+        const chainProxies = this.config.proxies.map(proxy => ({
+            ...proxy,
+            name: proxy.name + '-chain',
+            'dialer-proxy': '🔗 中转站'
+          }));
+        
+        this.config.proxies.unshift(...chainProxies);
+        const chainProxyList = chainProxies.map(proxy => proxy.name);
         
         this.config['proxy-groups'].push({
             name: '⚡ 自动选择',
@@ -57,7 +66,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 this.config['proxy-groups'].unshift({
                     type: "select",
                     name: outbound,
-                    proxies: proxyList
+                    proxies: [...proxyList, '🔓 链式落地']
                 });
             }
         });
@@ -76,6 +85,18 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             type: "select",
             name: "🐟 漏网之鱼",
             proxies: ['🚀 节点选择', ...proxyList]
+        });
+
+        this.config['proxy-groups'].push({
+            type: "select",
+            name: "🔓 链式落地",
+            proxies: [...chainProxyList]
+        });
+
+        this.config['proxy-groups'].push({
+            type: "select",
+            name: "🔗 中转站",
+            proxies: [...proxyList]
         });
     }
     formatConfig() {
