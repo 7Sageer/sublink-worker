@@ -24,6 +24,7 @@ https://your-worker-domain.workers.dev
 - **方法**: GET
 - **参数**:
   - `config` (必需): URL 编码的字符串,包含一个或多个代理配置
+  - `filters` (可选): 一个或多个关键词,用逗号分隔,用于过滤包含关键词的节点,不支持正则表达式
   - `selectedRules` (可选): 预定义规则集名称或自定义规则的 JSON 数组
   - `customRules` (可选): 自定义规则的 JSON 数组
   - `pin` (可选): 布尔值，是否将自定义规则置于预定义规则之上
