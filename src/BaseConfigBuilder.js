@@ -2,20 +2,21 @@ import { ProxyParser } from './ProxyParsers.js';
 import { DeepCopy } from './utils.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig) {
+    constructor(inputString, filters, baseConfig) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
+        this.filters = filters;
     }
 
     async build() {
-        const customItems = await this.parseCustomItems();
+        const customItems = await this.parseCustomItems(this.filters);
         this.addCustomItems(customItems);
         this.addSelectors();
         return this.formatConfig();
     }
 
-    async parseCustomItems() {
+    async parseCustomItems(filters) {
         const urls = this.inputString.split('\n').filter(url => url.trim() !== '');
         const parsedItems = [];
 
@@ -24,11 +25,11 @@ export class BaseConfigBuilder {
             if (Array.isArray(result)) {
                 for (const subUrl of result) {
                     const subResult = await ProxyParser.parse(subUrl);
-                    if (subResult) {
+                    if (subResult && !filters.some(filter => subResult.tag.includes(filter))) {
                         parsedItems.push(subResult);
                     }
                 }
-            } else if (result) {
+            } else if (result && !filters.some(filter => result.tag.includes(filter))) {
                 parsedItems.push(result);
             }
         }

@@ -4,11 +4,14 @@ import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, pin, baseConfig) {
+    constructor(inputString, filters, selectedRules, customRules, pin, baseConfig) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG
         }
-        super(inputString, baseConfig);
+        if (!filters) {
+            filters = [];
+        }
+        super(inputString, filters ,baseConfig);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.pin = pin;
