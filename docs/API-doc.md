@@ -160,6 +160,7 @@ Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://g
 - `domain_suffix`: 域名后缀规则数组
 - `domain_keyword`: 域名关键词规则数组
 - `ip_cidr`: IP CIDR 规则数组
+- `protocol`: 协议规则数组
 - `outbound`: 出站名称
 
 示例:
@@ -172,6 +173,7 @@ Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://g
     "domain_suffix": [".com", ".org"],
     "domain_keyword": ["Mijia Cloud", "push.apple"],
     "ip_cidr": ["192.168.0.0/16", "10.0.0.0/8"],
+    "protocol": ["http", "tls", "dns"],
     "outbound": "🤪 MyCustomRule"
   }
 ]
