@@ -42,7 +42,7 @@
 
 ### 核心功能
 - 支持导入 Base64 的 http/https 订阅链接以及多种协议的分享URL
-- 一键部署，Vanilla JS + Cloudflare Worker，无需后端
+- 纯JavaScript + Cloudflare Worker实现，一键部署，开箱即用
 - 支持固定/随机短链接生成（基于 KV）
 - 浅色/深色主题切换
 - 灵活的 API，支持脚本化操作
