@@ -137,7 +137,7 @@ export function parseServerInfo(serverInfo) {
 	if (params.security === 'xtls' || params.security === 'tls' || params.security === 'reality') {
 	  tls = {
 		enabled: true,
-		server_name: params.sni,
+		server_name: params.sni || params.host,
 		insecure: false,
 		utls: {
 		  enabled: true,
