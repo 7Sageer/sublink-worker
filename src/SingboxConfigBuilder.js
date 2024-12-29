@@ -36,34 +36,46 @@ export class ConfigBuilder extends BaseConfigBuilder {
             outbounds: DeepCopy(proxyList),
         });
 
-        proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
-        outbounds.unshift('🚀 节点选择','GLOBAL');
-        
-        outbounds.forEach(outbound => {
-            if (outbound !== '🚀 节点选择') {
-                this.config.outbounds.push({
-                    type: "selector",
-                    tag: outbound,
-                    outbounds: ['🚀 节点选择', ...proxyList]
-                });
-            } else {
-                this.config.outbounds.unshift({
-                    type: "selector",
-                    tag: outbound,
-                    outbounds: proxyList
-                });
-            }
+proxyList.unshift('⚡ 自动选择', 'DIRECT');
+outbounds.unshift('🚀 节点选择','GLOBAL');
+
+outbounds.forEach(outbound => {
+    if (outbound !== '🚀 节点选择') {
+        this.config.outbounds.push({
+            type: "selector",
+            tag: outbound,
+            outbounds: ['🚀 节点选择', ...proxyList]
         });
+    } else {
+        this.config.outbounds.unshift({
+            type: "selector",
+            tag: outbound,
+            outbounds: proxyList
+        });
+    }
+});
 
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config.outbounds.push({
                     type: "selector",
                     tag: rule.name,
-                    outbounds: ['🚀 节点选择', ...proxyList]
+                    outbounds: [...proxyList, '🚀 节点选择']
                 });
             });
         }
+
+        this.config.outbounds.push({
+            type: "selector",
+            tag: "🔒 国内服务",
+            outbounds: ['DIRECT', '🚀 节点选择'] // DIRECT 优先
+        });
+
+        this.config.outbounds.push({
+            type: "selector",
+            tag: "🏠 私有网络",
+            outbounds: ['DIRECT', '🚀 节点选择']
+        });
 
         this.config.outbounds.push({
             type: "selector",
@@ -91,10 +103,18 @@ export class ConfigBuilder extends BaseConfigBuilder {
         }));
         // Add any default rules that should always be present
         this.config.route.rules.unshift(
-            { protocol: 'dns', outbound: 'dns-out' },
-            { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: 'GLOBAL' }
+            { action: 'sniff' },
+            { action: 'hijack-dns', protocol: 'dns' },
+            { action: 'hijack-dns', port: 53 },
+            { "clash_mode":"Ad-block","rule_set":"category-ads-all","action":"reject","method":"default" },
+            { clash_mode: 'Globl', outbound: 'GLOBAL' }
         );
+        //添加了强化国内兜底
+        this.config.route.rules.push(
+            { action: "resolve" },
+            { rule_set: "cn-ip", outbound: "DIRECT" }
+        );
+
 
         this.config.route.auto_detect_interface = true;
         this.config.route.final = '🐟 漏网之鱼';
