@@ -21,6 +21,7 @@ async function handleRequest(request) {
     } else if (request.method === 'POST' && url.pathname === '/') {
       const formData = await request.formData();
       const inputString = formData.get('input');
+      const filters = formData.getAll('filters[]');
       const selectedRules = formData.getAll('selectedRules');
       const customRuleDomains = formData.getAll('customRuleSite[]');
       const customRuleIPs = formData.getAll('customRuleIP[]');
@@ -40,14 +41,15 @@ async function handleRequest(request) {
       const rulesToUse = selectedRules.length > 0 ? selectedRules : ['广告拦截', '谷歌服务', '国外媒体', '电报消息'];
 
       const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
-      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
-      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
+      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&filters=${encodeURIComponent(JSON.stringify(filters))}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
+      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&filters=${encodeURIComponent(JSON.stringify(filters))}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
 
       return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl), {
         headers: { 'Content-Type': 'text/html' }
       });
     } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash')) {
       const inputString = url.searchParams.get('config');
+      let filters = JSON.parse(url.searchParams.get('filters'));
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
       let pin = url.searchParams.get('pin');
@@ -89,9 +91,9 @@ async function handleRequest(request) {
       // Env pin is use to pin customRules to top
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new ConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+        configBuilder = new ConfigBuilder(inputString, filters, selectedRules, customRules, pin, baseConfig);
       } else {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+        configBuilder = new ClashConfigBuilder(inputString, filters, selectedRules, customRules, pin, baseConfig);
       }
 
       const config = await configBuilder.build();
