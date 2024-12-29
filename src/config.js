@@ -4,12 +4,7 @@ export const IP_RULE_SET_BASE_URL = 'https://raw.githubusercontent.com/lyc8503/s
 export const CUSTOM_RULES = [];
 // Unified rule structure
 export const UNIFIED_RULES = [
-	{
-		name: 'Ad Block',
-		outbound: '🛑 广告拦截',
-		site_rules: ['category-ads-all'],
-		ip_rules: []
-	},
+
 	{
 		name: 'AI Services',
 		outbound: '💬 AI 服务',
@@ -246,6 +241,16 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     	download_detour: '⚡ 自动选择'
   }));
 
+
+// 添加 ad 规则集
+	site_rule_sets.push({
+		tag: 'category-ads-all',
+		type: 'remote',
+		format: 'binary',
+		url: `${SITE_RULE_SET_BASE_URL}geosite-category-ads-all.srs`,
+		download_detour: '⚡ 自动选择'
+	});
+  
   if(!selectedRules.includes('Non-China')){
 	site_rule_sets.push({
 		tag: 'geolocation-!cn',
@@ -312,14 +317,6 @@ export const SING_BOX_CONFIG = {
 				detour: "DIRECT"
 			},
 			{
-				tag: "dns_success",
-				address: "rcode://success"
-			},
-			{
-				tag: "dns_refused",
-				address: "rcode://refused"
-			},
-			{
 				tag: "dns_fakeip",
 				address: "fakeip"
 			}
@@ -328,34 +325,22 @@ export const SING_BOX_CONFIG = {
 			{
 				outbound: "any",
 				server: "dns_resolver"
+			},      
+			{
+				rule_set: "geolocation-cn",
+				server: "dns_direct"
 			},
 			{
-				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
 					"AAAA"
 				],
+				rewrite_ttl: 1,
 				server: "dns_fakeip"
-			},
-			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"CNAME"
-				],
-				server: "dns_proxy"
-			},
-			{
-				query_type: [
-					"A",
-					"AAAA",
-					"CNAME"
-				],
-				invert: true,
-				server: "dns_refused",
-				disable_cache: true
 			}
 		],
-		final: "dns_direct",
+		strategy: "ipv4_only",
+		final: "dns_proxy",
 		independent_cache: true,
 		fakeip: {
 			enabled: true,
@@ -371,13 +356,10 @@ export const SING_BOX_CONFIG = {
 		detour: 'DIRECT'
 	},
 	inbounds: [
-		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
+{"type":"mixed","tag":"mixed-in","listen":"0.0.0.0","listen_port":8888},{"type":"tun","tag":"tun-in","mtu":9000,"address":"172.18.0.1/30","auto_route":true,"strict_route":true,"stack":"mixed","platform":{"http_proxy":{"enabled":true,"server":"127.0.0.1","server_port":8888}}}
 	],
 	outbounds: [
-		{ type: 'direct', tag: 'DIRECT' },
-		{ type: 'block', tag: 'REJECT' },
-		{ type: 'dns', tag: 'dns-out' }
+		{ type: 'direct', tag: 'DIRECT' }
 	],
 	route : {
 		"rule_set": [
@@ -404,7 +386,12 @@ export const SING_BOX_CONFIG = {
 			external_controller: '127.0.0.1:9090',
 			external_ui: 'dashboard'
 		}
-	}
+	},
+	  log: {
+    disabled: false,
+    level: "error",
+    output: "",
+  }
 };
 
 export const CLASH_CONFIG = {
