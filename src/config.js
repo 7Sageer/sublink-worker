@@ -380,6 +380,7 @@ export const SING_BOX_CONFIG = {
 	experimental: {
 		cache_file: {
 			enabled: true,
+			path: 'cache000.db',
 			store_fakeip: true
 		},
 		clash_api: {
