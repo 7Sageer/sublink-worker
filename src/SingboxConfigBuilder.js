@@ -104,12 +104,11 @@ outbounds.forEach(outbound => {
         // Add any default rules that should always be present
         this.config.route.rules.unshift(
             { action: 'sniff' },
-            { action: 'hijack-dns', protocol: 'dns' },
-            { action: 'hijack-dns', port: 53 },
+            { type:'logical',mode:'or',rules:[{protocol:'dns'},{port:53}],action:'hijack-dns' },
             { "clash_mode":"Ad-block","rule_set":"category-ads-all","action":"reject","method":"default" },
             { clash_mode: 'Globl', outbound: 'GLOBAL' }
         );
-        //添加了强化国内兜底
+        //漏网域名解析为 IP ，若为国内 IP 则走直连
         this.config.route.rules.push(
             { action: "resolve" },
             { rule_set: "cn-ip", outbound: "DIRECT" }
