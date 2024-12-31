@@ -16,7 +16,7 @@ const generateHead = () => `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sublink Worker是一款强大的在线订阅链接转换工具,支持V2Ray/Xray、SingBox、Clash等多种客户端，提供自定义规则和高效转换，帮助您轻松管理和优化代理节点。">
-    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线, 订阅转换, 机场订阅, 节点管理, 节点解析">
+    <meta name="keywords" content="Sublink, Worker, sing-box 1.11 配置生成, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线, 订阅转换, 机场订阅, 节点管理, 节点解析">
     <title>Sublink Worker - 轻量高效的订阅转换工具 | 支持V2Ray/Xray、SingBox、Clash</title>
     <meta property="og:title" content="Sublink Worker - 轻量高效的订阅链接转换工具">
     <meta property="og:description" content="强大的在线订阅链接转换工具,支持多种代理协议和自定义规则">
@@ -69,20 +69,21 @@ const generateGithubLink = () => `
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Sublink Worker</h1>
+    <h1 class="display-4 mb-0">sing-box 1.11 配置</h1>
   </div>
 `;
 
 const generateForm = () => `
   <form method="POST" id="encodeForm">
     <div class="form-section">
-      <div class="form-section-title">Share URLs</div>
+      <div class="form-section-title">支持导入 Base64 的 http/s 订阅链接以及多种协议的分享URL</div>
+      <div class="form-section-title">留意：sing-box APP 首次下载规则集较容易报错，可多试几次</div>
       <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
     </div>
 
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="advancedToggle">
-      <label class="form-check-label" for="advancedToggle">Advanced Options</label>
+      <label class="form-check-label" for="advancedToggle">Advanced Options 高级选项</label>
     </div>
 
     <div id="advancedOptions">
@@ -107,7 +108,7 @@ const generateForm = () => `
           </select>
         </div>
         <div class="mb-3">
-          <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
+          <textarea class="form-control" id="configEditor" rows="3" placeholder="此部分暂不建议使用"></textarea>
         </div>
         <div class="d-flex gap-2">
           <button type="button" class="btn btn-secondary" onclick="saveConfig()">Save Config</button>
@@ -120,7 +121,7 @@ const generateForm = () => `
 
     <div class="d-flex gap-2 mt-4">
       <button type="submit" class="btn btn-primary flex-grow-1">
-        <i class="fas fa-sync-alt me-2"></i>Convert
+        <i class="fas fa-sync-alt me-2"></i>Convert 生成
       </button>
       <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
         <i class="fas fa-trash-alt me-2"></i>Clear
@@ -152,7 +153,7 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
     </div>
     <div class="d-grid">
       <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-        <i class="fas fa-compress-alt me-2"></i>Shorten Links
+        <i class="fas fa-compress-alt me-2"></i>Shorten Links 短链
       </button>
     </div>
   </div>
@@ -321,7 +322,7 @@ const shortenAllUrlsFunction = () => `
     } finally {
       isShortening = false;
       shortenButton.disabled = false;
-      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
+      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links 短链';
     }
   }
 `;
