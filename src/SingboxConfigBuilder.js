@@ -40,7 +40,13 @@ proxyList.unshift('⚡ 自动选择', 'DIRECT');
 outbounds.unshift('🚀 节点选择','GLOBAL');
 
 outbounds.forEach(outbound => {
-    if (outbound !== '🚀 节点选择') {
+    if (outbound === '🔒 国内服务' || outbound === '🏠 私有网络') {
+        this.config.outbounds.push({
+            type: "selector",
+            tag: outbound,
+            outbounds: ['DIRECT', '🚀 节点选择'] // DIRECT 优先
+        });
+    } else if (outbound !== '🚀 节点选择') {
         this.config.outbounds.push({
             type: "selector",
             tag: outbound,
@@ -60,22 +66,10 @@ outbounds.forEach(outbound => {
                 this.config.outbounds.push({
                     type: "selector",
                     tag: rule.name,
-                    outbounds: [...proxyList, '🚀 节点选择']
+                    outbounds: ['DIRECT', '🚀 节点选择'] // DIRECT 优先
                 });
             });
         }
-
-        this.config.outbounds.push({
-            type: "selector",
-            tag: "🔒 国内服务",
-            outbounds: ['DIRECT', '🚀 节点选择'] // DIRECT 优先
-        });
-
-        this.config.outbounds.push({
-            type: "selector",
-            tag: "🏠 私有网络",
-            outbounds: ['DIRECT', '🚀 节点选择']
-        });
 
         this.config.outbounds.push({
             type: "selector",
