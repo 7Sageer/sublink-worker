@@ -99,6 +99,7 @@ outbounds.forEach(outbound => {
         this.config.route.rules.unshift(
             { action: 'sniff' },
             { type:'logical',mode:'or',rules:[{protocol:'dns'},{port:53}],action:'hijack-dns' },
+            { ip_is_private:true,outbound:'DIRECT' },
             { "clash_mode":"Ad-block","rule_set":"category-ads-all","action":"reject","method":"default" },
             { clash_mode: 'Globl', outbound: 'GLOBAL' }
         );
