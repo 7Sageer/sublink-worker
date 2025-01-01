@@ -92,10 +92,6 @@
     └── FAQ.md             # 常见问题解答
 ```
 
-## 🤝 贡献
-
-欢迎提交 Issues 和 Pull Requests 来改进这个项目。
-
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
