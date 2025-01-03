@@ -372,7 +372,7 @@ export const SING_BOX_CONFIG = {
 	},
 	inbounds: [
 		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', inet4_address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
+		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
 	],
 	outbounds: [
 		{ type: 'direct', tag: 'DIRECT' },
