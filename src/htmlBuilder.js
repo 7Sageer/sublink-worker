@@ -76,9 +76,9 @@ const generateCardHeader = () => `
 const generateForm = () => `
   <form method="POST" id="encodeForm">
     <div class="form-section">
-      <div class="form-section-title">支持导入 Base64 的 http/s 订阅链接以及多种协议的分享URL</div>
-      <div class="form-section-title">留意：sing-box APP 首次下载规则集较容易报错，可多试几次</div>
-      <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
+      <div class="form-section-title">注意：sing-box APP 首次下载规则集较容易报错，可多试几次</div>
+      <div class="form-section-title">注意：第一个节点的连通性是否通畅是规则集下载成功的关键！</div>
+      <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd...支持填入 Base64 的 http/s 订阅链接以及多种协议的分享URL" rows="3"></textarea>
     </div>
 
     <div class="form-check form-switch mb-3">
