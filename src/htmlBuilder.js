@@ -2,13 +2,13 @@ import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
 
 export function generateHtml(xrayUrl, singboxUrl, clashUrl, baseUrl) {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      ${generateHead()}
-      ${generateBody(xrayUrl, singboxUrl, clashUrl, baseUrl)}
-    </html>
-  `;
+return `
+<!DOCTYPE html>
+<html lang="en">
+${generateHead()}
+${generateBody(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+</html>
+`;
 }
 
 const generateHead = () => `
@@ -56,33 +56,33 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
 `;
 
 const generateDarkModeToggle = () => `
-  <button id="darkModeToggle" class="btn btn-outline-secondary">
-    <i class="fas fa-moon"></i>
-  </button>
+<button id="darkModeToggle" class="btn btn-outline-secondary">
+<i class="fas fa-moon"></i>
+</button>
 `;
 
 const generateGithubLink = () => `
-  <a href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer" class="github-link">
-    <i class="fab fa-github"></i>
-  </a>
+<a href="https://github.com/yixiu001/sublink-worker" target="_blank" rel="noopener noreferrer" class="github-link">
+<i class="fab fa-github"></i>
+</a>
 `;
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Sublink Worker</h1>
+    <h1 class="display-4 mb-0">Sublink Worker 汉化版</h1>
   </div>
 `;
 
 const generateForm = () => `
   <form method="POST" id="encodeForm">
     <div class="form-section">
-      <div class="form-section-title">Share URLs</div>
+      <div class="form-section-title">订阅链接</div>
       <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
     </div>
 
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="advancedToggle">
-      <label class="form-check-label" for="advancedToggle">Advanced Options</label>
+      <label class="form-check-label" for="advancedToggle">高级选项</label>
     </div>
 
     <div id="advancedOptions">
@@ -92,11 +92,11 @@ const generateForm = () => `
 
       <div class="form-section">
         <div class="form-section-title d-flex align-items-center">
-          Base Config Settings(Optional)
+          基本配置设置（可选）
           <span class="tooltip-icon ms-2">
             <i class="fas fa-question-circle"></i>
             <span class="tooltip-content">
-              This feature is experimental and may not work as expected. You can paste your own base config here. Go to <a href="https://github.com/7Sageer/sublink-worker/blob/main/docs/base-config.md" target="_blank">docs</a> for more information.
+              此功能是实验性的，可能无法按预期工作。您可以在此处粘贴自己的基本配置。转到 <a href="https://github.com/yixiu001/sublink-worker/blob/main/docs/base-config.md" target="_blank">文档</a> 了解更多信息。
             </span>
           </span>
         </div>
@@ -107,12 +107,12 @@ const generateForm = () => `
           </select>
         </div>
         <div class="mb-3">
-          <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
+          <textarea class="form-control" id="configEditor" rows="3" placeholder="将您的自定义配置粘贴到此处..."></textarea>
         </div>
         <div class="d-flex gap-2">
-          <button type="button" class="btn btn-secondary" onclick="saveConfig()">Save Config</button>
+          <button type="button" class="btn btn-secondary" onclick="saveConfig()">保存配置</button>
           <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
-            <i class="fas fa-trash-alt me-2"></i>Clear Config
+            <i class="fas fa-trash-alt me-2"></i>清除配置
           </button>
         </div>
       </div>
@@ -120,10 +120,10 @@ const generateForm = () => `
 
     <div class="d-flex gap-2 mt-4">
       <button type="submit" class="btn btn-primary flex-grow-1">
-        <i class="fas fa-sync-alt me-2"></i>Convert
+        <i class="fas fa-sync-alt me-2"></i>转换
       </button>
       <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
-        <i class="fas fa-trash-alt me-2"></i>Clear
+        <i class="fas fa-trash-alt me-2"></i>清除
       </button>
     </div>
   </form>
@@ -131,19 +131,19 @@ const generateForm = () => `
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
   <div class="mt-5">
-    <h2 class="mb-4">Your subscribe links:</h2>
-    ${generateLinkInput('Xray Link:', 'xrayLink', xrayUrl)}
-    ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
-    ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
+    <h2 class="mb-4">您的订阅链接:</h2>
+    ${generateLinkInput('v2ray 订阅:', 'xrayLink', xrayUrl)}
+    ${generateLinkInput('SingBox 订阅:', 'singboxLink', singboxUrl)}
+    ${generateLinkInput('Clash 订阅:', 'clashLink', clashUrl)}
     <div class="mb-3">
-      <label for="customShortCode" class="form-label">Custom Path (optional):</label>
+      <label for="customShortCode" class="form-label">自定义路径（可选）:</label>
       <div class="input-group flex-nowrap">
         <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
           ${baseUrl}/s/
         </span>
         <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
         <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
-          <option value="">Saved paths</option>
+          <option value="">保存的路径</option>
         </select>
         <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
           <i class="fas fa-trash-alt"></i>
@@ -152,7 +152,7 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
     </div>
     <div class="d-grid">
       <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-        <i class="fas fa-compress-alt me-2"></i>Shorten Links
+        <i class="fas fa-compress-alt me-2"></i>短链接
       </button>
     </div>
   </div>
@@ -192,73 +192,73 @@ const generateScripts = () => `
 `;
 
 const customPathFunctions = () => `
-  function saveCustomPath() {
-    const customPath = document.getElementById('customShortCode').value;
-    if (customPath) {
-      let savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
-      if (!savedPaths.includes(customPath)) {
-        savedPaths.push(customPath);
-        localStorage.setItem('savedCustomPaths', JSON.stringify(savedPaths));
-        updateSavedPathsDropdown();
-      }
-    }
-  }
+function saveCustomPath() {
+const customPath = document.getElementById('customShortCode').value;
+if (customPath) {
+let savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
+if (!savedPaths.includes(customPath)) {
+savedPaths.push(customPath);
+localStorage.setItem('savedCustomPaths', JSON.stringify(savedPaths));
+updateSavedPathsDropdown();
+}
+}
+}
 
-  function updateSavedPathsDropdown() {
-    const savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
-    const dropdown = document.getElementById('savedCustomPaths');
-    dropdown.innerHTML = '<option value="">Saved paths</option>';
-    savedPaths.forEach(path => {
-      const option = document.createElement('option');
-      option.value = path;
-      option.textContent = path;
-      dropdown.appendChild(option);
-    });
-  }
+function updateSavedPathsDropdown() {
+const savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
+const dropdown = document.getElementById('savedCustomPaths');
+dropdown.innerHTML = '<option value="">保存的路径</option>';
+savedPaths.forEach(path => {
+const option = document.createElement('option');
+option.value = path;
+option.textContent = path;
+dropdown.appendChild(option);
+});
+}
 
-  function loadSavedCustomPath() {
-    const dropdown = document.getElementById('savedCustomPaths');
-    const customShortCode = document.getElementById('customShortCode');
-    if (dropdown.value) {
-      customShortCode.value = dropdown.value;
-    }
-  }
+function loadSavedCustomPath() {
+const dropdown = document.getElementById('savedCustomPaths');
+const customShortCode = document.getElementById('customShortCode');
+if (dropdown.value) {
+customShortCode.value = dropdown.value;
+}
+}
 
-  function deleteSelectedPath() {
-    const dropdown = document.getElementById('savedCustomPaths');
-    const selectedPath = dropdown.value;
-    if (selectedPath) {
-      let savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
-      savedPaths = savedPaths.filter(path => path !== selectedPath);
-      localStorage.setItem('savedCustomPaths', JSON.stringify(savedPaths));
-      updateSavedPathsDropdown();
-      document.getElementById('customShortCode').value = '';
-    }
-  }
+function deleteSelectedPath() {
+const dropdown = document.getElementById('savedCustomPaths');
+const selectedPath = dropdown.value;
+if (selectedPath) {
+let savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
+savedPaths = savedPaths.filter(path => path !== selectedPath);
+localStorage.setItem('savedCustomPaths', JSON.stringify(savedPaths));
+updateSavedPathsDropdown();
+document.getElementById('customShortCode').value = '';
+}
+}
 
-  document.addEventListener('DOMContentLoaded', function() {
-    updateSavedPathsDropdown();
-    document.getElementById('savedCustomPaths').addEventListener('change', loadSavedCustomPath);
-  });
+document.addEventListener('DOMContentLoaded', function() {
+updateSavedPathsDropdown();
+document.getElementById('savedCustomPaths').addEventListener('change', loadSavedCustomPath);
+});
 `;
 
 const advancedOptionsToggleFunction = () => `
-  document.getElementById('advancedToggle').addEventListener('change', function() {
-    const advancedOptions = document.getElementById('advancedOptions');
-    if (this.checked) {
-      advancedOptions.classList.add('show');
-    } else {
-      advancedOptions.classList.remove('show');
-    }
-  });
+document.getElementById('advancedToggle').addEventListener('change', function() {
+const advancedOptions = document.getElementById('advancedOptions');
+if (this.checked) {
+advancedOptions.classList.add('show');
+} else {
+advancedOptions.classList.remove('show');
+}
+});
 `;
 
 const copyToClipboardFunction = () => `
-  function copyToClipboard(elementId) {
-    const element = document.getElementById(elementId);
-    element.select();
-    document.execCommand('copy');
-    
+function copyToClipboard(elementId) {
+const element = document.getElementById(elementId);
+element.select();
+document.execCommand('copy');
+
     const button = element.nextElementSibling;
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-check"></i> Copied!';
@@ -269,41 +269,41 @@ const copyToClipboardFunction = () => `
       button.classList.remove('btn-success');
       button.classList.add('btn-outline-secondary');
     }, 2000);
-  }
+}
 `;
 
 const shortenAllUrlsFunction = () => `
-  let isShortening = false; // Add flag to track shortening status
+let isShortening = false; // Add flag to track shortening status
 
-  async function shortenUrl(url, customShortCode) {
-    saveCustomPath();
-    const response = await fetch(\`/shorten-v2?url=\${encodeURIComponent(url)}&shortCode=\${encodeURIComponent(customShortCode || '')}\`);
-    if (response.ok) {
-      const data = await response.text();
-      return data;
-    }
-    throw new Error('Failed to shorten URL');
-  }
+async function shortenUrl(url, customShortCode) {
+saveCustomPath();
+const response = await fetch(\`/shorten-v2?url=\${encodeURIComponent(url)}&shortCode=\${encodeURIComponent(customShortCode || '')}\`);
+if (response.ok) {
+const data = await response.text();
+return data;
+}
+throw new Error('Failed to shorten URL');
+}
 
-  async function shortenAllUrls() {
-    // Prevent multiple clicks
-    if (isShortening) {
-      return;
-    }
+async function shortenAllUrls() {
+// Prevent multiple clicks
+if (isShortening) {
+return;
+}
 
     const shortenButton = document.querySelector('button[onclick="shortenAllUrls()"]');
     
     try {
       isShortening = true;
       shortenButton.disabled = true;
-      shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
+      shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>缩短...';
 
       const singboxLink = document.getElementById('singboxLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
       // Check if links are already shortened
       if (singboxLink.value.includes('/b/')) {
-        alert('Links are already shortened!');
+        alert('链接已经缩短!');
         return;
       }
 
@@ -317,66 +317,66 @@ const shortenAllUrlsFunction = () => `
       clashLink.value = window.location.origin + '/c/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
-      alert('Failed to shorten URLs. Please try again.');
+      alert('无法缩短 URL。请重试。');
     } finally {
       isShortening = false;
       shortenButton.disabled = false;
-      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
+      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>短链接';
     }
-  }
+}
 `;
 
 const darkModeToggleFunction = () => `
-  const darkModeToggle = document.getElementById('darkModeToggle');
-  const body = document.body;
+const darkModeToggle = document.getElementById('darkModeToggle');
+const body = document.body;
 
-  darkModeToggle.addEventListener('click', () => {
-    body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    darkModeToggle.innerHTML = body.getAttribute('data-theme') === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-  });
+darkModeToggle.addEventListener('click', () => {
+body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+darkModeToggle.innerHTML = body.getAttribute('data-theme') === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+});
 
-  // Check for saved theme preference or use system preference
-  const savedTheme = localStorage.getItem('theme');
-  const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  if (savedTheme) {
-    body.setAttribute('data-theme', savedTheme);
-    darkModeToggle.innerHTML = savedTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-  } else if (systemDarkMode) {
-    body.setAttribute('data-theme', 'dark');
-    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-  }
+// Check for saved theme preference or use system preference
+const savedTheme = localStorage.getItem('theme');
+const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  // Save theme preference when changed
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-        localStorage.setItem('theme', body.getAttribute('data-theme'));
-      }
-    });
-  });
+if (savedTheme) {
+body.setAttribute('data-theme', savedTheme);
+darkModeToggle.innerHTML = savedTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+} else if (systemDarkMode) {
+body.setAttribute('data-theme', 'dark');
+darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+}
 
-  observer.observe(body, { attributes: true });
+// Save theme preference when changed
+const observer = new MutationObserver((mutations) => {
+mutations.forEach((mutation) => {
+if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+localStorage.setItem('theme', body.getAttribute('data-theme'));
+}
+});
+});
+
+observer.observe(body, { attributes: true });
 `;
 
 const generateRuleSetSelection = () => `
   <div class="container">
     <div class="header-container">
-      <h4 class="header-title">Rule Selection</h4>
+      <h4 class="header-title">规则选择</h4>
       <span class="tooltip-icon">
         <i class="fas fa-question-circle"></i>
         <span class="tooltip-content">
-          These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can use a predefined rule set.
+          这些规则确定如何通过不同的代理或直接引导流量。如果您不确定，可以使用预定义的规则集。
         </span>
       </span>
     </div>
 
     <div class="content-container mb-3">
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
-        <option value="custom">Custom</option>
-        <option value="minimal">Minimal</option>
-        <option value="balanced">Balanced</option>
-        <option value="comprehensive">Comprehensive</option>
+        <option value="custom">自定义</option>
+        <option value="minimal">轻量</option>
+        <option value="balanced">常用</option>
+        <option value="comprehensive">全部</option>
       </select>
     </div>
     <div class="row" id="ruleCheckboxes">
@@ -390,24 +390,24 @@ const generateRuleSetSelection = () => `
       `).join('')}
     </div>
     <div class="mt-4">
-      <h5>Custom Rules</h5>
+      <h5>自定义规则</h5>
       <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" id="crpinToggle">
-        <label class="form-check-label" for="crpinToggle">Pin Custom Rules</label>
+        <label class="form-check-label" for="crpinToggle">固定自定义规则</label>
       </div>
       <div id="customRules">
       <!-- Custom rules will be dynamically added here -->
     </div>
-    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">Add Custom Rule</button>
+    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">添加自定义规则</button>
   </div>
   </div>
 `;
 
 const applyPredefinedRulesFunction = () => `
-  function applyPredefinedRules() {
-    const predefinedRules = document.getElementById('predefinedRules').value;
-    const checkboxes = document.querySelectorAll('.rule-checkbox');
-    
+function applyPredefinedRules() {
+const predefinedRules = document.getElementById('predefinedRules').value;
+const checkboxes = document.querySelectorAll('.rule-checkbox');
+
     checkboxes.forEach(checkbox => {
       checkbox.checked = false;
     });
@@ -424,32 +424,19 @@ const applyPredefinedRulesFunction = () => `
         checkbox.checked = true;
       }
     });
-  }
-
-  // Add event listeners to checkboxes
-  document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.rule-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        const predefinedSelect = document.getElementById('predefinedRules');
-        if (predefinedSelect.value !== 'custom') {
-          predefinedSelect.value = 'custom';
-        }
-      });
-    });
-  });
+}
 `;
 
 const tooltipFunction = () => `
-  function initTooltips() {
-    const tooltips = document.querySelectorAll('.tooltip-icon');
-    tooltips.forEach(tooltip => {
-      tooltip.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const content = tooltip.querySelector('.tooltip-content');
-        content.style.display = content.style.display === 'block' ? 'none' : 'block';
-      });
-    });
+function initTooltips() {
+const tooltips = document.querySelectorAll('.tooltip-icon');
+tooltips.forEach(tooltip => {
+tooltip.addEventListener('click', (e) => {
+e.stopPropagation();
+const content = tooltip.querySelector('.tooltip-content');
+content.style.display = content.style.display === 'block' ? 'none' : 'block';
+});
+});
 
     document.addEventListener('click', () => {
       const openTooltips = document.querySelectorAll('.tooltip-content[style="display: block;"]');
@@ -457,18 +444,18 @@ const tooltipFunction = () => `
         tooltip.style.display = 'none';
       });
     });
-  }
+}
 
-  document.addEventListener('DOMContentLoaded', initTooltips);
+document.addEventListener('DOMContentLoaded', initTooltips);
 `;
 
 const submitFormFunction = () => `
-  function submitForm(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const inputString = formData.get('input');
-    
+function submitForm(event) {
+event.preventDefault();
+const form = event.target;
+const formData = new FormData(form);
+const inputString = formData.get('input');
+
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
@@ -497,8 +484,7 @@ const submitFormFunction = () => `
       name: rule.querySelector('input[name="customRuleName[]"]').value,
       domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value,
       domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value,
-      ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value,
-      protocol: rule.querySelector('input[name="customRuleProtocol[]"]').value
+      ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value
     }));
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
@@ -517,13 +503,13 @@ const submitFormFunction = () => `
 
     // Scroll to the subscribe part
     subscribeLinksContainer.scrollIntoView({ behavior: 'smooth' });
-  }
+}
 
-  function loadSavedFormData() {
-    const savedInput = localStorage.getItem('inputTextarea');
-    if (savedInput) {
-      document.getElementById('inputTextarea').value = savedInput;
-    }
+function loadSavedFormData() {
+const savedInput = localStorage.getItem('inputTextarea');
+if (savedInput) {
+document.getElementById('inputTextarea').value = savedInput;
+}
 
     const advancedToggle = localStorage.getItem('advancedToggle');
     if (advancedToggle) {
@@ -550,41 +536,41 @@ const submitFormFunction = () => `
     }
 
     loadSelectedRules();
-  }
+}
 
-  function saveSelectedRules() {
-    const selectedRules = Array.from(document.querySelectorAll('input[name="selectedRules"]:checked'))
-      .map(checkbox => checkbox.value);
-    localStorage.setItem('selectedRules', JSON.stringify(selectedRules));
-    localStorage.setItem('predefinedRules', document.getElementById('predefinedRules').value);
-  }
+function saveSelectedRules() {
+const selectedRules = Array.from(document.querySelectorAll('input[name="selectedRules"]:checked'))
+.map(checkbox => checkbox.value);
+localStorage.setItem('selectedRules', JSON.stringify(selectedRules));
+localStorage.setItem('predefinedRules', document.getElementById('predefinedRules').value);
+}
 
-  function loadSelectedRules() {
-    const savedRules = localStorage.getItem('selectedRules');
-    if (savedRules) {
-      const rules = JSON.parse(savedRules);
-      rules.forEach(rule => {
-        const checkbox = document.querySelector(\`input[name="selectedRules"][value="\${rule}"]\`);
-        if (checkbox) {
-          checkbox.checked = true;
-        }
-      });
-    }
+function loadSelectedRules() {
+const savedRules = localStorage.getItem('selectedRules');
+if (savedRules) {
+const rules = JSON.parse(savedRules);
+rules.forEach(rule => {
+const checkbox = document.querySelector(\`input[name="selectedRules"][value="\${rule}"]\`);
+if (checkbox) {
+checkbox.checked = true;
+}
+});
+}
 
     const savedPredefinedRules = localStorage.getItem('predefinedRules');
     if (savedPredefinedRules) {
       document.getElementById('predefinedRules').value = savedPredefinedRules;
     }
-  }
+}
 
-  function clearFormData() {
-    localStorage.removeItem('inputTextarea');
-    localStorage.removeItem('advancedToggle');
-    localStorage.removeItem('selectedRules');
-    localStorage.removeItem('predefinedRules');
-    localStorage.removeItem('configEditor');  // 添加清除 configEditor
-    localStorage.removeItem('configType');    // 添加清除 configType
-    
+function clearFormData() {
+localStorage.removeItem('inputTextarea');
+localStorage.removeItem('advancedToggle');
+localStorage.removeItem('selectedRules');
+localStorage.removeItem('predefinedRules');
+localStorage.removeItem('configEditor');  // 添加清除 configEditor
+localStorage.removeItem('configType');    // 添加清除 configType
+
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
@@ -606,99 +592,89 @@ const submitFormFunction = () => `
     setTimeout(() => {
       subscribeLinksContainer.classList.remove('hide');
     }, 500);
-  }
+}
 
-  document.addEventListener('DOMContentLoaded', function() {
-    loadSavedFormData();
-    document.getElementById('encodeForm').addEventListener('submit', submitForm);
-    document.getElementById('clearFormBtn').addEventListener('click', clearFormData);
-  });
+document.addEventListener('DOMContentLoaded', function() {
+loadSavedFormData();
+document.getElementById('encodeForm').addEventListener('submit', submitForm);
+document.getElementById('clearFormBtn').addEventListener('click', clearFormData);
+});
 `;
 
 const customRuleFunctions = `
-  let customRuleCount = 0;
+let customRuleCount = 0;
 
-  function addCustomRule() {
-    const customRulesDiv = document.getElementById('customRules');
-    const newRuleDiv = document.createElement('div');
-    newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
-    newRuleDiv.dataset.ruleId = customRuleCount++;
-    newRuleDiv.innerHTML = \`
-      <div class="mb-2">
-        <label class="form-label">Outbound Name*</label>
-        <input type="text" class="form-control mb-2" name="customRuleName[]" placeholder="Rule Name" required>
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Geo-Site Rule Sets</label>
-        <span class="tooltip-icon">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            Site Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
-          </span>
-        </span>
-        <input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google,anthropic">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Geo-IP Rule Sets</label>
-        <span class="tooltip-icon">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            IP Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
-          </span>
-        </span>
-        <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private,cn">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Domain Suffix</label>
-        <input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="Domain Suffix (comma separated)">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Domain Keyword</label>
-        <input type="text" class="form-control mb-2" name="customRuleDomainKeyword[]" placeholder="Domain Keyword (comma separated)">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">IP CIDR</label>
-        <input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="IP CIDR (comma separated)">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Protocol</label>
-        <span class="tooltip-icon">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            Protocol rules for specific traffic types. More details: https://sing-box.sagernet.org/configuration/route/sniff/
-          </span>
-        </span>
-        <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="Protocol (comma separated, e.g, http,ssh,dns)">
-      </div>
-      <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">Remove</button>
-    \`;
-    customRulesDiv.appendChild(newRuleDiv);
-  }
+function addCustomRule() {
+const customRulesDiv = document.getElementById('customRules');
+const newRuleDiv = document.createElement('div');
+newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
+newRuleDiv.dataset.ruleId = customRuleCount++;
+newRuleDiv.innerHTML = \`
+<div class="mb-2">
+<label class="form-label">规则名称*</label>
+<input type="text" class="form-control mb-2" name="customRuleName[]" placeholder="规则名称" required>
+</div>
+<div class="mb-2">
+<label class="form-label">Geo-Site 规则集</label>
+<span class="tooltip-icon">
+<i class="fas fa-question-circle"></i>
+<span class="tooltip-content">
+SingBox 中的站点规则来自 https://github.com/lyc8503/sing-box-rules，这意味着您的自定义规则必须在存储库中
+</span>
+</span>
+<input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google,anthropic">
+</div>
+<div class="mb-2">
+<label class="form-label">Geo-IP 规则集</label>
+<span class="tooltip-icon">
+<i class="fas fa-question-circle"></i>
+<span class="tooltip-content">
+SingBox 中的 IP 规则来自 https://github.com/lyc8503/sing-box-rules，这意味着您的自定义规则必须在存储库中
+</span>
+</span>
+<input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private,cn">
+</div>
+<div class="mb-2">
+<label class="form-label">域名后缀</label>
+<input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="域名后缀（逗号分隔）">
+</div>
+<div class="mb-2">
+<label class="form-label">域名关键字</label>
+<input type="text" class="form-control mb-2" name="customRuleDomainKeyword[]" placeholder="域名关键字（逗号分隔）">
+</div>
+<div class="mb-2">
+<label class="form-label">IP段</label>
+<input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="IP段（逗号分隔）">
+</div>
+<button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">删除</button>
+\`;
+customRulesDiv.appendChild(newRuleDiv);
+}
 
-  function removeCustomRule(button) {
-    const ruleDiv = button.closest('.custom-rule');
-    if (ruleDiv) {
-      ruleDiv.classList.add('removing');
-      ruleDiv.addEventListener('animationend', () => {
-        ruleDiv.remove();
-        customRuleCount--;
-      }, { once: true });
-    }
-  }
+function removeCustomRule(button) {
+const ruleDiv = button.closest('.custom-rule');
+if (ruleDiv) {
+ruleDiv.classList.add('removing');
+ruleDiv.addEventListener('animationend', () => {
+ruleDiv.remove();
+customRuleCount--;
+}, { once: true });
+}
+}
 `;
 
 const generateQRCodeFunction = () => `
-  function generateQRCode(id) {
-    const input = document.getElementById(id);
-    const text = input.value;
-    if (!text) {
-      alert('No link provided!');
-      return;
-    }
-    try {
-      const qr = qrcode(0, 'M');
-      qr.addData(text);
-      qr.make();
+function generateQRCode(id) {
+const input = document.getElementById(id);
+const text = input.value;
+if (!text) {
+alert('未提供链接！');
+return;
+}
+try {
+const qr = qrcode(0, 'M');
+qr.addData(text);
+qr.make();
 
       const moduleCount = qr.getModuleCount();
       const cellSize = Math.max(2, Math.min(8, Math.floor(300 / moduleCount)));
@@ -711,7 +687,7 @@ const generateQRCodeFunction = () => `
       modal.innerHTML = \`
         <div class="qr-card">
           <img src="\${qrImage}" alt="QR Code">
-          <p>Scan QR Code</p>
+          <p>扫描二维码</p>
         </div>
       \`;
 
@@ -734,26 +710,26 @@ const generateQRCodeFunction = () => `
       });
     } catch (error) {
       console.error('Error in generating:', error);
-      alert('Try to use short links!');
+      alert('尝试使用短链接！');
     }
-  }
+}
 
-  function closeQRModal() {
-    const modal = document.querySelector('.qr-modal');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.addEventListener('transitionend', () => {
-        document.body.removeChild(modal);
-      }, { once: true });
-    }
-  }
+function closeQRModal() {
+const modal = document.querySelector('.qr-modal');
+if (modal) {
+modal.classList.remove('show');
+modal.addEventListener('transitionend', () => {
+document.body.removeChild(modal);
+}, { once: true });
+}
+}
 `;
 
 const saveConfig = () => `
-  function saveConfig() {
-    const configEditor = document.getElementById('configEditor');
-    const configType = document.getElementById('configType').value;
-    const config = configEditor.value;
+function saveConfig() {
+const configEditor = document.getElementById('configEditor');
+const configType = document.getElementById('configType').value;
+const config = configEditor.value;
 
     localStorage.setItem('configEditor', config);
     localStorage.setItem('configType', configType);
@@ -778,20 +754,20 @@ const saveConfig = () => `
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('configId', configId);
       window.history.pushState({}, '', currentUrl);
-      alert('Configuration saved successfully!');
+      alert('配置保存成功！');
     })
     .catch(error => {
-      alert('Error: ' + error.message);
+      alert('异常: ' + error.message);
     });
-  }
+}
 `;
 
 const clearConfig = () => `
-  function clearConfig() {
-    document.getElementById('configEditor').value = '';
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.delete('configId');
-    window.history.pushState({}, '', currentUrl);
-    localStorage.removeItem('configEditor');
-  }
+function clearConfig() {
+document.getElementById('configEditor').value = '';
+const currentUrl = new URL(window.location.href);
+currentUrl.searchParams.delete('configId');
+window.history.pushState({}, '', currentUrl);
+localStorage.removeItem('configEditor');
+}
 `;
