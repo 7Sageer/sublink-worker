@@ -159,15 +159,6 @@ async function handleRequest(request) {
         headers: { 'Content-Type': 'text/plain' }
       });
 
-    } else if (url.pathname.startsWith('/s/')) {
-      const shortCode = url.pathname.split('/')[2];
-      const originalUrl = await SUBLINK_KV.get(shortCode);
-
-      if (originalUrl === null) {
-        return new Response('Short URL not found', { status: 404 });
-      }
-
-      return Response.redirect(originalUrl, 302);
     } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
       const originalParam = await SUBLINK_KV.get(shortCode);

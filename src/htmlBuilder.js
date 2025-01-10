@@ -131,13 +131,12 @@ const generateForm = () => `
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <div class="mt-5">
-    <h2 class="mb-4">Your subscribe links:</h2>
-    ${generateLinkInput('Xray Link:', 'xrayLink', xrayUrl)}
+    ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
     <div class="mb-3">
-      <label for="customShortCode" class="form-label">Custom Path (optional):</label>
+      <label for="customShortCode" class="form-label">Custom Path (Optional):</label>
       <div class="input-group flex-nowrap">
         <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
           ${baseUrl}/s/
@@ -274,7 +273,7 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
-  let isShortening = false; // Add flag to track shortening status
+  let isShortening = false;
 
   async function shortenUrl(url, customShortCode) {
     saveCustomPath();
@@ -287,7 +286,6 @@ const shortenAllUrlsFunction = () => `
   }
 
   async function shortenAllUrls() {
-    // Prevent multiple clicks
     if (isShortening) {
       return;
     }
@@ -302,7 +300,6 @@ const shortenAllUrlsFunction = () => `
       const singboxLink = document.getElementById('singboxLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
-      // Check if links are already shortened
       if (singboxLink.value.includes('/b/')) {
         alert('Links are already shortened!');
         return;
@@ -312,10 +309,12 @@ const shortenAllUrlsFunction = () => `
 
       const xrayLink = document.getElementById('xrayLink');
       const clashLink = document.getElementById('clashLink');
+      const surgeLink = document.getElementById('surgeLink');
 
       xrayLink.value = window.location.origin + '/x/' + shortCode;
       singboxLink.value = window.location.origin + '/b/' + shortCode;
       clashLink.value = window.location.origin + '/c/' + shortCode;
+      surgeLink.value = window.location.origin + '/s/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to shorten URLs. Please try again.');
