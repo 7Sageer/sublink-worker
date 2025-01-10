@@ -78,6 +78,8 @@ const generateForm = () => `
     <div class="form-section">
       <div class="form-section-title">Share URLs</div>
       <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
+      <div class="form-section-title" style="margin-top:1rem;">Filter Keywords</div>
+      <textarea class="form-control" id="inputFilter" name="filters" placeholder="剩余,官网,到期" rows="1"></textarea>    
     </div>
 
     <div class="form-check form-switch mb-3">
@@ -468,9 +470,11 @@ const submitFormFunction = () => `
     const form = event.target;
     const formData = new FormData(form);
     const inputString = formData.get('input');
+    const filters = formData.get('filters') ? formData.get('filters').split(',') : '';
     
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
+    localStorage.setItem('inputFilter', filters);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
     localStorage.setItem('crpinToggle', document.getElementById('crpinToggle').checked);
     
@@ -503,9 +507,14 @@ const submitFormFunction = () => `
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
-
+    let singboxUrl, clashUrl;
+    if (filters.length > 0) {
+      singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&filters=\${encodeURIComponent(JSON.stringify(filters))}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
+      clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&filters=\${encodeURIComponent(JSON.stringify(filters))}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
+    } else {
+      singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
+      clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
+    }
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
@@ -523,6 +532,11 @@ const submitFormFunction = () => `
     const savedInput = localStorage.getItem('inputTextarea');
     if (savedInput) {
       document.getElementById('inputTextarea').value = savedInput;
+    }
+    
+    const savedFilter = localStorage.getItem('inputFilter');
+    if (savedFilter) {
+      document.getElementById('inputFilter').value = savedFilter;
     }
 
     const advancedToggle = localStorage.getItem('advancedToggle');
@@ -579,6 +593,7 @@ const submitFormFunction = () => `
 
   function clearFormData() {
     localStorage.removeItem('inputTextarea');
+    localStorage.removeItem('inputFilter');
     localStorage.removeItem('advancedToggle');
     localStorage.removeItem('selectedRules');
     localStorage.removeItem('predefinedRules');
@@ -586,6 +601,7 @@ const submitFormFunction = () => `
     localStorage.removeItem('configType');    // 添加清除 configType
     
     document.getElementById('inputTextarea').value = '';
+    document.getElementById('inputFilter').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
     document.getElementById('configEditor').value = '';
