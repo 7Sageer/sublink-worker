@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG,  generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
+import { CLASH_CONFIG, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
