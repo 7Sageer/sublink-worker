@@ -1,8 +1,9 @@
 import { ConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
-import { encodeBase64, decodeBase64, GenerateWebPath, DeepCopy } from './utils.js';
-import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, CLASH_CONFIG } from './config.js';
+import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
+import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
+import { PREDEFINED_RULE_SETS } from './config.js';
 import yaml from 'js-yaml';
 
 addEventListener('fetch', event => {
@@ -15,7 +16,7 @@ async function handleRequest(request) {
 
     if (request.method === 'GET' && url.pathname === '/') {
       // Return the HTML form for GET requests
-      return new Response(generateHtml('', '', '', url.origin), {
+      return new Response(generateHtml('', '', '', '', url.origin), {
         headers: { 'Content-Type': 'text/html' }
       });
     } else if (request.method === 'POST' && url.pathname === '/') {
@@ -42,11 +43,15 @@ async function handleRequest(request) {
       const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
       const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
       const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
+      const surgeUrl = `${url.origin}/surge?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
 
-      return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl), {
+      console.log(surgeUrl);
+
+
+      return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl), {
         headers: { 'Content-Type': 'text/html' }
       });
-    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash')) {
+    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge')) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
@@ -83,28 +88,39 @@ async function handleRequest(request) {
         const customConfig = await SUBLINK_KV.get(configId);
         if (customConfig) {
           baseConfig = JSON.parse(customConfig);
-        } 
+        }
       }
 
       // Env pin is use to pin customRules to top
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
         configBuilder = new ConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
-      } else {
+      } else if (url.pathname.startsWith('/clash')) {
         configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+      } else {
+        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig)
+          .setSubscriptionUrl(url.href);
       }
 
       const config = await configBuilder.build();
 
+      // 设置正确的 Content-Type 和其他响应头
+      const headers = {
+        'content-type': url.pathname.startsWith('/singbox')
+          ? 'application/json; charset=utf-8'
+          : url.pathname.startsWith('/clash')
+            ? 'text/yaml; charset=utf-8'
+            : 'text/plain; charset=utf-8'
+      };
+
+      // 如果是 Surge 配置，添加 subscription-userinfo 头
+      if (url.pathname.startsWith('/surge')) {
+        headers['subscription-userinfo'] = 'upload=0; download=0; total=10737418240; expire=2546249531';
+      }
+
       return new Response(
         url.pathname.startsWith('/singbox') ? JSON.stringify(config, null, 2) : config,
-        {
-          headers: {
-            'content-type': url.pathname.startsWith('/singbox')
-              ? 'application/json; charset=utf-8'
-              : 'text/yaml; charset=utf-8'
-          }
-        }
+        { headers }
       );
 
     } else if (url.pathname === '/shorten') {
@@ -121,38 +137,29 @@ async function handleRequest(request) {
         headers: { 'Content-Type': 'application/json' }
       });
 
-    } else if (url.pathname === '/shorten-v2'){
+    } else if (url.pathname === '/shorten-v2') {
       const originalUrl = url.searchParams.get('url');
       let shortCode = url.searchParams.get('shortCode');
 
       if (!originalUrl) {
         return new Response('Missing URL parameter', { status: 400 });
       }
-      
+
       // Create a URL object to correctly parse the original URL
       const parsedUrl = new URL(originalUrl);
       const queryString = parsedUrl.search;
-      
+
       if (!shortCode) {
         shortCode = GenerateWebPath();
       }
 
       await SUBLINK_KV.put(shortCode, queryString);
-      
+
       return new Response(shortCode, {
         headers: { 'Content-Type': 'text/plain' }
       });
 
-    } else if (url.pathname.startsWith('/s/')) {
-      const shortCode = url.pathname.split('/')[2];
-      const originalUrl = await SUBLINK_KV.get(shortCode);
-
-      if (originalUrl === null) {
-        return new Response('Short URL not found', { status: 404 });
-      }
-
-      return Response.redirect(originalUrl, 302);
-    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/')) {
+    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
       const originalParam = await SUBLINK_KV.get(shortCode);
       let originalUrl;
@@ -163,6 +170,8 @@ async function handleRequest(request) {
         originalUrl = `${url.origin}/clash${originalParam}`;
       } else if (url.pathname.startsWith('/x/')) {
         originalUrl = `${url.origin}/xray${originalParam}`;
+      } else if (url.pathname.startsWith('/s/')) {
+        originalUrl = `${url.origin}/surge${originalParam}`;
       }
 
       if (originalUrl === null) {
@@ -211,7 +220,7 @@ async function handleRequest(request) {
     } else if (url.pathname === '/config') {
       const { type, content } = await request.json();
       const configId = `${type}_${GenerateWebPath(8)}`;
-      
+
       try {
         let configString;
         if (type === 'clash') {
@@ -220,24 +229,24 @@ async function handleRequest(request) {
             const yamlConfig = yaml.load(content);
             configString = JSON.stringify(yamlConfig);
           } else {
-            configString = typeof content === 'object' 
+            configString = typeof content === 'object'
               ? JSON.stringify(content)
               : content;
           }
         } else {
           // singbox 配置处理
-          configString = typeof content === 'object' 
+          configString = typeof content === 'object'
             ? JSON.stringify(content)
             : content;
         }
 
         // 验证 JSON 格式
         JSON.parse(configString);
-        
-        await SUBLINK_KV.put(configId, configString, { 
+
+        await SUBLINK_KV.put(configId, configString, {
           expirationTtl: 60 * 60 * 24 * 30  // 30 days
         });
-        
+
         return new Response(configId, {
           headers: { 'Content-Type': 'text/plain' }
         });

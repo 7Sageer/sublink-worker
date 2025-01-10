@@ -1,12 +1,12 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
 
-export function generateHtml(xrayUrl, singboxUrl, clashUrl, baseUrl) {
+export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) {
   return `
     <!DOCTYPE html>
     <html lang="en">
       ${generateHead()}
-      ${generateBody(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+      ${generateBody(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
     </html>
   `;
 }
@@ -15,9 +15,9 @@ const generateHead = () => `
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sublink Worker是一款强大的在线订阅链接转换工具,支持V2Ray/Xray、SingBox、Clash等多种客户端，提供自定义规则和高效转换，帮助您轻松管理和优化代理节点。">
-    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线, 订阅转换, 机场订阅, 节点管理, 节点解析">
-    <title>Sublink Worker - 轻量高效的订阅转换工具 | 支持V2Ray/Xray、SingBox、Clash</title>
+    <meta name="description" content="Sublink Worker是一款强大的在线订阅链接转换工具,支持V2Ray/Xray、SingBox、Clash、Surge等多种客户端，提供自定义规则和高效转换，帮助您轻松管理和优化代理节点。">
+    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, Surge, 自定义规则, 在线, 订阅转换, 机场订阅, 节点管理, 节点解析">
+    <title>Sublink Worker - 轻量高效的订阅转换工具 | 支持V2Ray/Xray、SingBox、Clash、Surge</title>
     <meta property="og:title" content="Sublink Worker - 轻量高效的订阅链接转换工具">
     <meta property="og:description" content="强大的在线订阅链接转换工具,支持多种代理协议和自定义规则">
     <meta property="og:type" content="website">
@@ -33,7 +33,7 @@ const generateHead = () => `
 
 
 
-const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
+const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
     ${generateGithubLink()}
@@ -43,7 +43,7 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
         <div class="card-body">
           ${generateForm()}
           <div id="subscribeLinksContainer">
-            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
           </div>
         </div>
       </div>
@@ -129,14 +129,14 @@ const generateForm = () => `
   </form>
 `;
 
-const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
+const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <div class="mt-5">
-    <h2 class="mb-4">Your subscribe links:</h2>
-    ${generateLinkInput('Xray Link:', 'xrayLink', xrayUrl)}
+    ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
+    ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
     <div class="mb-3">
-      <label for="customShortCode" class="form-label">Custom Path (optional):</label>
+      <label for="customShortCode" class="form-label">Custom Path (Optional):</label>
       <div class="input-group flex-nowrap">
         <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
           ${baseUrl}/s/
@@ -273,7 +273,7 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
-  let isShortening = false; // Add flag to track shortening status
+  let isShortening = false;
 
   async function shortenUrl(url, customShortCode) {
     saveCustomPath();
@@ -286,7 +286,6 @@ const shortenAllUrlsFunction = () => `
   }
 
   async function shortenAllUrls() {
-    // Prevent multiple clicks
     if (isShortening) {
       return;
     }
@@ -301,7 +300,6 @@ const shortenAllUrlsFunction = () => `
       const singboxLink = document.getElementById('singboxLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
-      // Check if links are already shortened
       if (singboxLink.value.includes('/b/')) {
         alert('Links are already shortened!');
         return;
@@ -311,10 +309,12 @@ const shortenAllUrlsFunction = () => `
 
       const xrayLink = document.getElementById('xrayLink');
       const clashLink = document.getElementById('clashLink');
+      const surgeLink = document.getElementById('surgeLink');
 
       xrayLink.value = window.location.origin + '/x/' + shortCode;
       singboxLink.value = window.location.origin + '/b/' + shortCode;
       clashLink.value = window.location.origin + '/c/' + shortCode;
+      surgeLink.value = window.location.origin + '/s/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to shorten URLs. Please try again.');
@@ -505,11 +505,11 @@ const submitFormFunction = () => `
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
     const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
     const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
-
+    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
-
+    document.getElementById('surgeLink').value = surgeUrl;
     // Show the subscribe part
     const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
     subscribeLinksContainer.classList.remove('hide');
