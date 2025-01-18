@@ -280,7 +280,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             // 处理 IP 规则
             if (rule.ip_rules[0] !== '') {
                 rule.ip_rules.forEach(ip => {
-                    finalConfig.push(`GEOIP,${ip},${rule.outbound}`);
+                    finalConfig.push(`GEOIP,${ip},${rule.outbound},no-resolve`);
                 });
             }
 
@@ -301,7 +301,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             // 处理 IP CIDR 规则
             if (rule.ip_cidr) {
                 rule.ip_cidr.forEach(cidr => {
-                    finalConfig.push(`IP-CIDR,${cidr},${rule.outbound}`);
+                    finalConfig.push(`IP-CIDR,${cidr},${rule.outbound},no-resolve`);
                 });
             }
         });
