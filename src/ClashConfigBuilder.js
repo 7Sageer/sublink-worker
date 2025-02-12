@@ -120,7 +120,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     cipher: proxy.security,
                     //tls: proxy.tls?.enabled || false,
 		    //2025.2.12修改：proxy.tls 的值为 tls，则返回 true，否则返回 false
-		    tls: proxy.tls === 'tls' || false
+		    tls: proxy.tls === 'tls' || false,
                     servername: proxy.tls?.server_name || '',
                     network: proxy.transport?.type || 'tcp',
                     'ws-opts': proxy.transport?.type === 'ws' ? {
