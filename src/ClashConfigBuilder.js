@@ -118,9 +118,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 		    //2025.2.12修改：alterId 默认为 0
 		    alterId: 0,
                     cipher: proxy.security,
-                    //tls: proxy.tls?.enabled || false,
-		    //2025.2.12修改：proxy.tls 的值为 tls，则返回 true，否则返回 false
-		    tls: Object.values(proxy),
+                    tls: proxy.tls?.enabled || false,
                     servername: proxy.tls?.server_name || '',
                     network: proxy.transport?.type || 'tcp',
                     'ws-opts': proxy.transport?.type === 'ws' ? {
