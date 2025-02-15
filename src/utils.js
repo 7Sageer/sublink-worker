@@ -126,9 +126,12 @@ export function parseServerInfo(serverInfo) {
 	const [paramsOnly, ...fragmentParts] = paramsPart.split('#');
 	const searchParams = new URLSearchParams(paramsOnly);
 	const params = Object.fromEntries(searchParams.entries());
-  
-	const name = fragmentParts.length > 0 ? decodeURIComponent(fragmentParts.join('#')) : '';
-  
+
+	let name = fragmentParts.length > 0 ? fragmentParts.join('#') : '';
+	try {
+	    name = decodeURIComponent(name);
+	} catch (error) { };
+	
 	return { addressPart, params, name };
   }
   
