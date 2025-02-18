@@ -229,7 +229,7 @@ export function setLanguage(lang) {
   console.log('setLanguage:', lang);
   if(translations[lang]) {
     currentLang = lang;
-  } else if(checkStartsWith(lang, 'en-')) {
+  } else if(checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
   } else if(checkStartsWith(lang, 'ar')) {
     currentLang = 'ar';
