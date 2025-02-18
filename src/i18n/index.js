@@ -1,3 +1,4 @@
+import {checkStartsWith} from "../utils";
 // 定义语言包
 const translations = {
   'zh-CN': {
@@ -228,9 +229,9 @@ export function setLanguage(lang) {
   console.log('setLanguage:', lang);
   if(translations[lang]) {
     currentLang = lang;
-  } else if(lang.startsWith('en-')) {
+  } else if(checkStartsWith(lang, 'en-')) {
     currentLang = 'en-US';
-  } else if(lang.startsWith('ar')) {
+  } else if(checkStartsWith(lang, 'ar')) {
     currentLang = 'ar';
   } else {
     currentLang = 'zh-CN';

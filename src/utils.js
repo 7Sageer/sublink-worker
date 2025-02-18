@@ -1,5 +1,15 @@
 const PATH_LENGTH = 7;
 
+// 自定义的字符串前缀检查函数
+export function checkStartsWith(str, prefix) {
+  if (str === undefined || str === null || prefix === undefined || prefix === null) {
+    return false;
+  }
+  str = String(str);
+  prefix = String(prefix);
+  return str.slice(0, prefix.length) === prefix;
+}
+
 
 // Base64 编码函数
 export function encodeBase64(input) {

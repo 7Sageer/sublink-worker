@@ -393,35 +393,35 @@ export const SING_BOX_CONFIG = {
 };
 
 export const CLASH_CONFIG = {
-	port: 7890,
-	'socks-port': 7891,
-	'allow-lan': false,
-	mode: 'Rule',
-	'log-level': 'info',
-	dns: {
-		enable: true,
-		ipv6: true,
-		'respect-rules': true,
-		'enhanced-mode': 'fake-ip',
-		nameserver: [
-			'https://120.53.53.53/dns-query',
-			'https://223.5.5.5/dns-query'
-		],
-		'proxy-server-nameserver': [
-			'https://120.53.53.53/dns-query',
-			'https://223.5.5.5/dns-query'
-		],
-		'nameserver-policy': {
-			'geosite:cn,private': [
-				'https://120.53.53.53/dns-query',
-				'https://223.5.5.5/dns-query'
-			],
-			'geosite:geolocation-!cn': [
-				'https://dns.cloudflare.com/dns-query',
-				'https://dns.google/dns-query'
-			]
-		}
-	},
-	proxies: [],
-	'proxy-groups': [],
+    'port': 7890,
+    'socks-port': 7891,
+    'allow-lan': false,
+    'mode': 'Rule',
+    'log-level': 'info',
+    'dns': {
+        'enable': true,
+        'ipv6': true,
+        'respect-rules': true,
+        'enhanced-mode': 'fake-ip',
+        'nameserver': [
+            'https://120.53.53.53/dns-query',
+            'https://223.5.5.5/dns-query'
+        ],
+        'proxy-server-nameserver': [
+            'https://120.53.53.53/dns-query',
+            'https://223.5.5.5/dns-query'
+        ],
+        'nameserver-policy': {
+            'geosite:cn,private': [
+                'https://120.53.53.53/dns-query',
+                'https://223.5.5.5/dns-query'
+            ],
+            'geosite:geolocation-!cn': [
+                'https://dns.cloudflare.com/dns-query',
+                'https://dns.google/dns-query'
+            ]
+        }
+    },
+    'proxies': [],
+    'proxy-groups': []
 };
