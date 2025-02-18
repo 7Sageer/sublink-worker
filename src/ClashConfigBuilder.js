@@ -4,14 +4,13 @@ import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, pin, baseConfig) {
+    constructor(inputString, selectedRules, customRules, baseConfig) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG
         }
         super(inputString, baseConfig);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
-        this.pin = pin;
     }
 
     addCustomItems(customItems) {
@@ -79,7 +78,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         });
     }
     formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules, this.pin);
+        const rules = generateRules(this.selectedRules, this.customRules);
 
         this.config.rules = rules.flatMap(rule => {
             const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];

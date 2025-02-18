@@ -2,15 +2,14 @@ import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFI
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 
-export class ConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, pin, baseConfig) {
+export class SingboxConfigBuilder extends BaseConfigBuilder {
+    constructor(inputString, selectedRules, customRules, baseConfig) {
         if (baseConfig === undefined) {
             baseConfig = SING_BOX_CONFIG
         }
         super(inputString, baseConfig);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
-        this.pin = pin;
     }
 
     addCustomItems(customItems) {
@@ -73,7 +72,7 @@ export class ConfigBuilder extends BaseConfigBuilder {
     }
 
     formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules, this.pin);
+        const rules = generateRules(this.selectedRules, this.customRules);
         const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules,this.customRules);
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];

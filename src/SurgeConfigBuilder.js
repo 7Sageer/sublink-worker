@@ -2,7 +2,7 @@ import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, pin, baseConfig) {
+    constructor(inputString, selectedRules, customRules, baseConfig) {
         super(inputString, baseConfig || {
             'general': {
                 'allow-wifi-access': false,
@@ -36,7 +36,6 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         });
         this.selectedRules = selectedRules;
         this.customRules = customRules;
-        this.pin = pin;
         this.subscriptionUrl = null;
     }
 
@@ -201,7 +200,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules, this.pin);
+        const rules = generateRules(this.selectedRules, this.customRules);
 
         // 构建最终配置
         let finalConfig = [];
