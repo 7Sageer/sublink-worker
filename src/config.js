@@ -15,7 +15,7 @@ export const UNIFIED_RULES = [
 	{
 		name: 'AI Services',
 		outbound: t('outboundNames.AI Services'),
-		site_rules: ['openai', 'anthropic','jetbrains-ai','perplexity'],
+		site_rules: ['category-ai-chat-!cn',],
 		ip_rules: []
 	},
 	{
