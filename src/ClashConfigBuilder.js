@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { CLASH_CONFIG } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
@@ -7,96 +7,22 @@ import { t } from './i18n/index.js';
 export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang) {
         if (!baseConfig) {
-            baseConfig = CLASH_CONFIG
+            baseConfig = CLASH_CONFIG;
         }
         super(inputString, baseConfig, lang);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
     }
 
-    addCustomItems(customItems) {
-        customItems.forEach(item => {
-            if (item?.tag && !this.config.proxies.some(p => p.name === item.tag)) {
-                this.config.proxies.push(this.convertToClashProxy(item));
-            }
-        });
+    getProxies() {
+        return this.config.proxies || [];
     }
 
-    addSelectors() {
-        let outbounds;
-        if (typeof this.selectedRules === 'string' && PREDEFINED_RULE_SETS[this.selectedRules]) {
-            outbounds = getOutbounds(PREDEFINED_RULE_SETS[this.selectedRules]);
-        } else if(this.selectedRules && Object.keys(this.selectedRules).length > 0) {
-            outbounds = getOutbounds(this.selectedRules);
-        } else {
-            outbounds = getOutbounds(PREDEFINED_RULE_SETS.minimal);
-        }
-
-        const proxyList = this.config.proxies.map(proxy => proxy.name);
-        
-        this.config['proxy-groups'].push({
-            name: t('outboundNames.Auto Select'),
-            type: 'url-test',
-            proxies: DeepCopy(proxyList),
-            url: 'https://www.gstatic.com/generate_204',
-            interval: 300,
-            lazy: false
-        });
-
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
-        outbounds.unshift(t('outboundNames.Node Select'));
-        
-        outbounds.forEach(outbound => {
-            if (outbound !== t('outboundNames.Node Select')) {
-                this.config['proxy-groups'].push({
-                    type: "select",
-                    name: t(`outboundNames.${outbound}`),
-                    proxies: [t('outboundNames.Node Select'), ...proxyList]
-                });
-            } else {
-                this.config['proxy-groups'].unshift({
-                    type: "select",
-                    name: outbound,
-                    proxies: proxyList
-                });
-            }
-        });
-
-        if (Array.isArray(this.customRules)) {
-            this.customRules.forEach(rule => {
-                this.config['proxy-groups'].push({
-                    type: "select",
-                    name: t(`outboundNames.${rule.name}`),
-                    proxies: [t('outboundNames.Node Select'), ...proxyList]
-                });
-            });
-        }
-
-        this.config['proxy-groups'].push({
-            type: "select",
-            name: t('outboundNames.Fall Back'),
-            proxies: [t('outboundNames.Node Select'), ...proxyList]
-        });
-    }
-    formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules);
-
-        this.config.rules = rules.flatMap(rule => {
-            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${t('outboundNames.'+ rule.outbound)}`) : [];
-            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
-            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`) : [];
-            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => `DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`) : [];
-            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
-            return [...siteRules, ...ipRules, ...domainSuffixRules, ...domainKeywordRules, ...ipCidrRules];
-        });
-
-        // Add the final catch-all rule
-        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
-
-        return yaml.dump(this.config);
+    getProxyName(proxy) {
+        return proxy.name;
     }
 
-    convertToClashProxy(proxy) {
+    convertProxy(proxy) {
         switch(proxy.type) {
             case 'shadowsocks':
                 return {
@@ -164,8 +90,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     auth: proxy.password,
                     'skip-cert-verify': proxy.tls.insecure,
                 };
-			case 'trojan':
-				return {
+            case 'trojan':
+                return {
                     name: proxy.tag,
                     type: proxy.type,
                     server: proxy.server,
@@ -191,7 +117,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     tfo : proxy.tcp_fast_open,
                     'skip-cert-verify': proxy.tls.insecure,
                     'flow': proxy.flow ?? undefined,
-				}
+                };
             case 'tuic':
                 return {
                     name: proxy.tag,
@@ -210,5 +136,80 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             default:
                 return proxy; // Return as-is if no specific conversion is defined
         }
+    }
+
+    addProxyToConfig(proxy) {
+        this.config.proxies = this.config.proxies || [];
+        this.config.proxies.push(proxy);
+    }
+
+    addAutoSelectGroup(proxyList) {
+        this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+        this.config['proxy-groups'].push({
+            name: t('outboundNames.Auto Select'),
+            type: 'url-test',
+            proxies: DeepCopy(proxyList),
+            url: 'https://www.gstatic.com/generate_204',
+            interval: 300,
+            lazy: false
+        });
+    }
+
+    addNodeSelectGroup(proxyList) {
+        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        this.config['proxy-groups'].unshift({
+            type: "select",
+            name: t('outboundNames.Node Select'),
+            proxies: proxyList
+        });
+    }
+
+    addOutboundGroups(outbounds, proxyList) {
+        outbounds.forEach(outbound => {
+            if (outbound !== t('outboundNames.Node Select')) {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: t(`outboundNames.${outbound}`),
+                    proxies: [t('outboundNames.Node Select'), ...proxyList]
+                });
+            }
+        });
+    }
+
+    addCustomRuleGroups(proxyList) {
+        if (Array.isArray(this.customRules)) {
+            this.customRules.forEach(rule => {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: t(`outboundNames.${rule.name}`),
+                    proxies: [t('outboundNames.Node Select'), ...proxyList]
+                });
+            });
+        }
+    }
+
+    addFallBackGroup(proxyList) {
+        this.config['proxy-groups'].push({
+            type: "select",
+            name: t('outboundNames.Fall Back'),
+            proxies: [t('outboundNames.Node Select'), ...proxyList]
+        });
+    }
+
+    formatConfig() {
+        const rules = this.generateRules();
+
+        this.config.rules = rules.flatMap(rule => {
+            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
+            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => `DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
+            return [...siteRules, ...ipRules, ...domainSuffixRules, ...domainKeywordRules, ...ipCidrRules];
+        });
+
+        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+
+        return yaml.dump(this.config);
     }
 }

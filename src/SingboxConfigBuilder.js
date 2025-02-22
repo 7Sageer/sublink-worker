@@ -16,32 +16,40 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.customRules = customRules;
     }
 
-    addCustomItems(customItems) {
-        const validItems = customItems.filter(item => item != null);
-        this.config.outbounds.push(...validItems);
+    getProxies() {
+        return this.config.outbounds.filter(outbound => outbound?.server != undefined);
     }
 
-    addSelectors() {
-        let outbounds;
-        if (typeof this.selectedRules === 'string' && PREDEFINED_RULE_SETS[this.selectedRules]) {
-            outbounds = getOutbounds(PREDEFINED_RULE_SETS[this.selectedRules]);
-        } else if(this.selectedRules && Object.keys(this.selectedRules).length > 0) {
-            outbounds = getOutbounds(this.selectedRules);
-        } else {
-            outbounds = getOutbounds(PREDEFINED_RULE_SETS.minimal);
-        }
+    getProxyName(proxy) {
+        return proxy.tag;
+    }
 
-        const proxyList = this.config.outbounds.filter(outbound => outbound?.server != undefined).map(outbound => outbound.tag);
+    convertProxy(proxy) {
+        return proxy;
+    }
 
+    addProxyToConfig(proxy) {
+        this.config.outbounds.push(proxy);
+    }
+
+    addAutoSelectGroup(proxyList) {
         this.config.outbounds.unshift({
             type: "urltest",
             tag: t('outboundNames.Auto Select'),
             outbounds: DeepCopy(proxyList),
         });
+    }
 
+    addNodeSelectGroup(proxyList) {
         proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
-        outbounds.unshift(t('outboundNames.Node Select'),'GLOBAL');
-        
+        this.config.outbounds.unshift({
+            type: "selector",
+            tag: t('outboundNames.Node Select'),
+            outbounds: proxyList
+        });
+    }
+
+    addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
                 this.config.outbounds.push({
@@ -49,15 +57,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                     tag: t(`outboundNames.${outbound}`),
                     outbounds: [t('outboundNames.Node Select'), ...proxyList]
                 });
-            } else {
-                this.config.outbounds.unshift({
-                    type: "selector",
-                    tag: outbound,
-                    outbounds: proxyList
-                });
             }
         });
+    }
 
+    addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config.outbounds.push({
@@ -67,7 +71,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 });
             });
         }
+    }
 
+    addFallBackGroup(proxyList) {
         this.config.outbounds.push({
             type: "selector",
             tag: t('outboundNames.Fall Back'),
@@ -92,7 +98,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             protocol: rule.protocol,
             outbound: t(`outboundNames.${rule.outbound}`)
         }));
-        // Add any default rules that should always be present
+
         this.config.route.rules.unshift(
             { protocol: 'dns', outbound: 'dns-out' },
             { clash_mode: 'direct', outbound: 'DIRECT' },

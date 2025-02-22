@@ -74,7 +74,8 @@ const translations = {
       'Education': '📚 教育资源',
       'Financial': '💰 金融服务',
       'Cloud Services': '☁️ 云服务',
-      'Non-China': '🌐 非中国'
+      'Non-China': '🌐 非中国',
+      'GLOBAL': 'GLOBAL'
     }
   },
   'en-US': {
@@ -149,7 +150,8 @@ const translations = {
       'Education': '📚 Education Resources',
       'Financial': '💰 Financial Services',
       'Cloud Services': '☁️ Cloud Services',
-      'Non-China': '🌐 Non-China'
+      'Non-China': '🌐 Non-China',
+      'GLOBAL': 'GLOBAL'
     }
   },
   'ar': {
@@ -224,7 +226,8 @@ const translations = {
       'Education': '📚 موارد تعليمية',
       'Financial': '💰 خدمات مالية',
       'Cloud Services': '☁️ خدمات سحابية',
-      'Non-China': '🌐 خارج الصين'
+      'Non-China': '🌐 خارج الصين',
+      'GLOBAL': 'GLOBAL'
     }
   }
 };
