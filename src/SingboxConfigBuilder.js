@@ -1,13 +1,17 @@
 import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
+import { t } from './i18n/index.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang) {
         if (baseConfig === undefined) {
-            baseConfig = SING_BOX_CONFIG
+            baseConfig = SING_BOX_CONFIG;
+            if (baseConfig.dns && baseConfig.dns.servers) {
+                baseConfig.dns.servers[0].detour = t('outboundNames.Node Select');
+            }
         }
-        super(inputString, baseConfig);
+        super(inputString, baseConfig, lang);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
     }
@@ -31,19 +35,19 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.config.outbounds.unshift({
             type: "urltest",
-            tag: "⚡ 自动选择",
+            tag: t('outboundNames.Auto Select'),
             outbounds: DeepCopy(proxyList),
         });
 
-        proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
-        outbounds.unshift('🚀 节点选择','GLOBAL');
+        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        outbounds.unshift(t('outboundNames.Node Select'),'GLOBAL');
         
         outbounds.forEach(outbound => {
-            if (outbound !== '🚀 节点选择') {
+            if (outbound !== t('outboundNames.Node Select')) {
                 this.config.outbounds.push({
                     type: "selector",
-                    tag: outbound,
-                    outbounds: ['🚀 节点选择', ...proxyList]
+                    tag: t(`outboundNames.${outbound}`),
+                    outbounds: [t('outboundNames.Node Select'), ...proxyList]
                 });
             } else {
                 this.config.outbounds.unshift({
@@ -59,15 +63,15 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 this.config.outbounds.push({
                     type: "selector",
                     tag: rule.name,
-                    outbounds: ['🚀 节点选择', ...proxyList]
+                    outbounds: [t('outboundNames.Node Select'), ...proxyList]
                 });
             });
         }
 
         this.config.outbounds.push({
             type: "selector",
-            tag: "🐟 漏网之鱼",
-            outbounds: ['🚀 节点选择', ...proxyList]
+            tag: t('outboundNames.Fall Back'),
+            outbounds: [t('outboundNames.Node Select'), ...proxyList]
         });
     }
 
@@ -86,7 +90,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             domain_keyword: rule.domain_keyword,
             ip_cidr: rule.ip_cidr,
             protocol: rule.protocol,
-            outbound: rule.outbound
+            outbound: t(`outboundNames.${rule.outbound}`)
         }));
         // Add any default rules that should always be present
         this.config.route.rules.unshift(
@@ -96,7 +100,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         );
 
         this.config.route.auto_detect_interface = true;
-        this.config.route.final = '🐟 漏网之鱼';
+        this.config.route.final = t('outboundNames.Fall Back');
 
         return this.config;
     }

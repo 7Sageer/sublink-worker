@@ -1,8 +1,9 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { t } from './i18n/index.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang) {
         super(inputString, baseConfig || {
             'general': {
                 'allow-wifi-access': false,
@@ -33,7 +34,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 'use-keyword-filter': false,
                 'hide-udp': false
             }
-        });
+        }, lang);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;
@@ -132,10 +133,6 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                     surgeProxy += `, udp-relay-mode=${proxy.udp_relay_mode}`;
                 }
                 break;
-            case 'vless':
-                // Surge 不支持 VLESS，返回注释说明
-                surgeProxy = `# ${proxy.tag} - VLESS protocol is not supported by Surge`;
-                break;
             default:
                 // 对于不支持的类型，返回注释说明
                 surgeProxy = `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
@@ -167,19 +164,19 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         // 添加自动选择策略组
         this.config['proxy-groups'].push(
-            createProxyGroup('⚡ 自动选择', 'url-test', [], ', url=http://www.gstatic.com/generate_204, interval=300')
+            createProxyGroup(t('outboundNames.Auto Select'), 'url-test', [], ', url=http://www.gstatic.com/generate_204, interval=300')
         );
 
         // 添加节点选择策略组
         this.config['proxy-groups'].push(
-            createProxyGroup('🚀 节点选择', 'select', ['⚡ 自动选择'])
+            createProxyGroup(t('outboundNames.Node Select'), 'select', [t('outboundNames.Auto Select')])
         );
 
         // 添加其他策略组
         outbounds.forEach(outbound => {
-            if (outbound !== '🚀 节点选择') {
+            if (outbound !== t('outboundNames.Node Select')) {
                 this.config['proxy-groups'].push(
-                    createProxyGroup(outbound, 'select', ['🚀 节点选择'])
+                    createProxyGroup(t(`outboundNames.${outbound}`), 'select', [t('outboundNames.Node Select')])
                 );
             }
         });
@@ -188,14 +185,14 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config['proxy-groups'].push(
-                    createProxyGroup(rule.name, 'select', ['🚀 节点选择'])
+                    createProxyGroup(rule.name, 'select', [t('outboundNames.Node Select')])
                 );
             });
         }
 
         // 添加漏网之鱼策略组
         this.config['proxy-groups'].push(
-            createProxyGroup('🐟 漏网之鱼', 'select', ['🚀 节点选择'])
+            createProxyGroup(t('outboundNames.Fall Back'), 'select', [t('outboundNames.Node Select')])
         );
     }
 
@@ -250,28 +247,28 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                     switch (site.toLowerCase()) {
                         case 'cn':
                             // 中国大陆域名
-                            finalConfig.push(`DOMAIN-SUFFIX,cn,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,com.cn,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${rule.outbound}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,cn,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,com.cn,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${t('outboundNames.'+ rule.outbound)}`);
                             break;
                         case 'google':
                             // Google 相关域名
-                            finalConfig.push(`DOMAIN-SUFFIX,google.com,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-KEYWORD,google,${rule.outbound}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,google.com,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-KEYWORD,google,${t('outboundNames.'+ rule.outbound)}`);
                             break;
                         case 'telegram':
                             // Telegram 相关域名
-                            finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,t.me,${rule.outbound}`);
-                            finalConfig.push(`DOMAIN-KEYWORD,telegram,${rule.outbound}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,t.me,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-KEYWORD,telegram,${t('outboundNames.'+ rule.outbound)}`);
                             break;
                         default:
                             // 其他域名规则转为 DOMAIN-KEYWORD
-                            finalConfig.push(`DOMAIN-KEYWORD,${site},${rule.outbound}`);
+                            finalConfig.push(`DOMAIN-KEYWORD,${site},${t('outboundNames.'+ rule.outbound)}`);
                     }
                 });
             }
@@ -279,34 +276,34 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             // 处理 IP 规则
             if (rule.ip_rules[0] !== '') {
                 rule.ip_rules.forEach(ip => {
-                    finalConfig.push(`GEOIP,${ip},${rule.outbound},no-resolve`);
+                    finalConfig.push(`GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
                 });
             }
 
             // 处理域名后缀规则
             if (rule.domain_suffix) {
                 rule.domain_suffix.forEach(suffix => {
-                    finalConfig.push(`DOMAIN-SUFFIX,${suffix},${rule.outbound}`);
+                    finalConfig.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
                 });
             }
 
             // 处理域名关键词规则
             if (rule.domain_keyword) {
                 rule.domain_keyword.forEach(keyword => {
-                    finalConfig.push(`DOMAIN-KEYWORD,${keyword},${rule.outbound}`);
+                    finalConfig.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
                 });
             }
 
             // 处理 IP CIDR 规则
             if (rule.ip_cidr) {
                 rule.ip_cidr.forEach(cidr => {
-                    finalConfig.push(`IP-CIDR,${cidr},${rule.outbound},no-resolve`);
+                    finalConfig.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
                 });
             }
         });
 
         // 添加最终规则
-        finalConfig.push('FINAL,🐟 漏网之鱼');
+        finalConfig.push('FINAL,' + t('outboundNames.Fall Back'));
 
         return finalConfig.join('\n');
     }

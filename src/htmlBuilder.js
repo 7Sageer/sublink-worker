@@ -1,6 +1,6 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
-import { t } from './i18n/index.js';
+import { t, getCurrentLang} from './i18n/index.js';
 
 export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) {
   return `
@@ -132,10 +132,10 @@ const generateForm = () => `
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <div class="mt-5">
-    ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
-    ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
-    ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
-    ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
+    ${generateLinkInput('Xray(Base64):', 'xrayLink', xrayUrl)}
+    ${generateLinkInput('SingBox:', 'singboxLink', singboxUrl)}
+    ${generateLinkInput('Clash:', 'clashLink', clashUrl)}
+    ${generateLinkInput('Surge/Surfboard:', 'surgeLink', surgeUrl)}
     <div class="mb-3">
       <label for="customShortCode" class="form-label">${t('customPath')}</label>
       <div class="input-group flex-nowrap">
@@ -498,10 +498,11 @@ const submitFormFunction = () => `
     }));
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
+    const langParam = \`&lang=${getCurrentLang()}\`;
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${langParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${langParam}\`;
+    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${langParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;

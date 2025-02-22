@@ -54,6 +54,9 @@ const translations = {
     removeCustomRule: '移除',
     // 规则名称和出站名称的翻译
     outboundNames: {
+      'Auto Select': '⚡ 自动选择',
+      'Node Select': '🚀 节点选择',
+      'Fall Back': '🐟 漏网之鱼',
       'Ad Block': '🛑 广告拦截',
       'AI Services': '💬 AI 服务',
       'Bilibili': '📺 哔哩哔哩',
@@ -126,6 +129,9 @@ const translations = {
     customRuleProtocolPlaceholder: 'Protocols (comma separated, e.g., http,ssh,dns)',
     removeCustomRule: 'Remove',
     outboundNames:{
+      'Auto Select': '⚡ Auto Select',
+      'Node Select': '🚀 Node Select',
+      'Fall Back': '🐟 Fall Back',
       'Ad Block': '🛑 Ad Blocking',
       'AI Services': '💬 AI Services',
       'Bilibili': '📺 Bilibili',
@@ -198,6 +204,9 @@ const translations = {
     customRuleProtocolPlaceholder: 'البروتوكولات (مفصولة بفواصل، مثال: http,ssh,dns)',
     removeCustomRule: 'إزالة',
     outboundNames: {
+      'Auto Select': '⚡ تحديد تلقائي',
+      'Node Select': '🚀 اختيار العقدة',
+      'Fall Back': '🐟 العودة',
       'Ad Block': '🛑 حظر الإعلانات',
       'AI Services': '💬 خدمات الذكاء الاصطناعي',
       'Bilibili': '📺 بيلي بيلي',
@@ -226,7 +235,6 @@ let currentLang = 'zh-CN';
 
 // 设置语言
 export function setLanguage(lang) {
-  console.log('setLanguage:', lang);
   if(translations[lang]) {
     currentLang = lang;
   } else if(checkStartsWith(lang, 'en')) {

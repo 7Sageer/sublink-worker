@@ -1,11 +1,13 @@
 import { ProxyParser } from './ProxyParsers.js';
 import { DeepCopy } from './utils.js';
+import { t, setLanguage } from './i18n/index.js'
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig) {
+    constructor(inputString, baseConfig, lang) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
+        setLanguage(lang);
     }
 
     async build() {

@@ -2,13 +2,14 @@ import yaml from 'js-yaml';
 import { CLASH_CONFIG, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
+import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG
         }
-        super(inputString, baseConfig);
+        super(inputString, baseConfig, lang);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
     }
@@ -34,7 +35,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         const proxyList = this.config.proxies.map(proxy => proxy.name);
         
         this.config['proxy-groups'].push({
-            name: '⚡ 自动选择',
+            name: t('outboundNames.Auto Select'),
             type: 'url-test',
             proxies: DeepCopy(proxyList),
             url: 'https://www.gstatic.com/generate_204',
@@ -42,15 +43,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             lazy: false
         });
 
-        proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
-        outbounds.unshift('🚀 节点选择');
+        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        outbounds.unshift(t('outboundNames.Node Select'));
         
         outbounds.forEach(outbound => {
-            if (outbound !== '🚀 节点选择') {
+            if (outbound !== t('outboundNames.Node Select')) {
                 this.config['proxy-groups'].push({
                     type: "select",
-                    name: outbound,
-                    proxies: ['🚀 节点选择', ...proxyList]
+                    name: t(`outboundNames.${outbound}`),
+                    proxies: [t('outboundNames.Node Select'), ...proxyList]
                 });
             } else {
                 this.config['proxy-groups'].unshift({
@@ -65,32 +66,32 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             this.customRules.forEach(rule => {
                 this.config['proxy-groups'].push({
                     type: "select",
-                    name: rule.name,
-                    proxies: ['🚀 节点选择', ...proxyList]
+                    name: t(`outboundNames.${rule.name}`),
+                    proxies: [t('outboundNames.Node Select'), ...proxyList]
                 });
             });
         }
 
         this.config['proxy-groups'].push({
             type: "select",
-            name: "🐟 漏网之鱼",
-            proxies: ['🚀 节点选择', ...proxyList]
+            name: t('outboundNames.Fall Back'),
+            proxies: [t('outboundNames.Node Select'), ...proxyList]
         });
     }
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
 
         this.config.rules = rules.flatMap(rule => {
-            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];
-            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound},no-resolve`) : [];
-            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${rule.outbound}`) : [];
-            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => `DOMAIN-KEYWORD,${keyword},${rule.outbound}`) : [];
-            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${rule.outbound},no-resolve`) : [];
+            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
+            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => `DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
             return [...siteRules, ...ipRules, ...domainSuffixRules, ...domainKeywordRules, ...ipCidrRules];
         });
 
         // Add the final catch-all rule
-        this.config.rules.push('MATCH,🐟 漏网之鱼');
+        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
 
         return yaml.dump(this.config);
     }

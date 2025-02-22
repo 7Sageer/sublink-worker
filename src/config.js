@@ -146,7 +146,7 @@ export function getOutbounds(selectedRuleNames) {
     }
     return UNIFIED_RULES
       .filter(rule => selectedRuleNames.includes(rule.name))
-      .map(rule => rule.outbound);
+      .map(rule => rule.name);
 }
 
 // Helper function to generate rules based on selected rule names
@@ -168,7 +168,7 @@ export function generateRules(selectedRules = [], customRules = []) {
 		  ip_rules: rule.ip_rules,
 		  domain_suffix: rule?.domain_suffix,
 		  ip_cidr: rule?.ip_cidr,
-		  outbound: rule.outbound
+		  outbound: rule.name
 		});
 	  }
 	});
@@ -220,7 +220,6 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     type: 'remote',
     format: 'binary',
     url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
-    download_detour: '⚡ 自动选择'
   }));
 
   const ip_rule_sets = Array.from(ipRuleSets).map(rule => ({
@@ -228,7 +227,6 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
     type: 'remote',
     format: 'binary',
     url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
-    	download_detour: '⚡ 自动选择'
   }));
 
   if(!selectedRules.includes('Non-China')){
@@ -237,7 +235,6 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 		type: 'remote',
 		format: 'binary',
 		url: `${SITE_RULE_SET_BASE_URL}geosite-geolocation-!cn.srs`,
-		download_detour: '⚡ 自动选择'
 	});
   }
 
@@ -250,7 +247,6 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					type: 'remote',
 					format: 'binary',
 					url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
-					download_detour: '⚡ 自动选择'
 				});
 			});
 		}
@@ -261,7 +257,6 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					type: 'remote',
 					format: 'binary',
 					url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
-					download_detour: '⚡ 自动选择'
 				});
 			});
 		}
