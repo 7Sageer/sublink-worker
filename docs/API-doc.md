@@ -131,7 +131,7 @@ API 支持以下预定义规则集:
 | Rule Name | Used Site Rules | Used IP Rules |
 |---|---|---|
 | Ad Block | category-ads-all |  |
-| AI Services | openai,anthropic,jetbrains-ai,perplexity |  |
+| AI Services | category-ai-chat-!cn |  |
 | Bilibili | bilibili |  |
 | Youtube | youtube |  |
 | Google | google | google |
