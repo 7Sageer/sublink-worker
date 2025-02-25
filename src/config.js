@@ -142,7 +142,7 @@ export const IP_RULE_SETS = UNIFIED_RULES.reduce((acc, rule) => {
 // Helper function to get outbounds based on selected rule names
 export function getOutbounds(selectedRuleNames) {
     if (!selectedRuleNames || !Array.isArray(selectedRuleNames)) {
-        return []; // or handle this case as appropriate for your use case
+        return [];
     }
     return UNIFIED_RULES
       .filter(rule => selectedRuleNames.includes(rule.name))

@@ -154,79 +154,79 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     }
   },
-  'ar': {
-    missingInput: 'معلمة الإدخال مفقودة',
-    missingConfig: 'معلمة التكوين مفقودة',
-    missingUrl: 'معلمة URL مفقودة',
-    shortUrlNotFound: 'لم يتم العثور على الرابط المختصر',
-    internalError: 'خطأ داخلي في الخادم',
-    notFound: 'غير موجود',
-    invalidFormat: 'تنسيق غير صالح: ',
-    defaultRules: ['حظر الإعلانات', 'خدمات جوجل', 'وسائط أجنبية', 'تيليجرام'],
-    configValidationError: 'خطأ في التحقق من صحة التكوين: ',
-    pageDescription: 'Sublink Worker - محول روابط الاشتراك',
-    pageKeywords: 'رابط الاشتراك,محول,Xray,SingBox,Clash,Surge',
-    pageTitle: 'Sublink Worker - محول روابط الاشتراك',
-    ogTitle: 'Sublink Worker - محول روابط الاشتراك',
-    ogDescription: 'محول قوي لروابط الاشتراك يدعم تنسيقات عملاء متعددة',
-    shareUrls: 'مشاركة الروابط',
-    urlPlaceholder: 'أدخل روابط الاشتراك الخاصة بك هنا...',
-    advancedOptions: 'خيارات متقدمة',
-    baseConfigSettings: 'إعدادات التكوين الأساسي',
-    baseConfigTooltip: 'قم بتخصيص التكوين الأساسي الخاص بك هنا',
-    saveConfig: 'حفظ التكوين',
-    clearConfig: 'مسح التكوين',
-    convert: 'تحويل',
-    clear: 'مسح',
-    customPath: 'مسار مخصص',
-    savedPaths: 'المسارات المحفوظة',
-    shortenLinks: 'إنشاء روابط قصيرة',
-    ruleSelection: 'اختيار القواعد',
-    ruleSelectionTooltip: 'حدد مجموعات القواعد المطلوبة',
-    custom: 'مخصص',
-    minimal: 'الحد الأدنى',
-    balanced: 'متوازن',
-    comprehensive: 'شامل',
-    addCustomRule: 'إضافة قاعدة مخصصة',
-    customRuleOutboundName: 'اسم المخرج*',
-    customRuleGeoSite: 'قواعد Geo-Site',
-    customRuleGeoSiteTooltip: 'قواعد SingBox Site تأتي من https://github.com/lyc8503/sing-box-rules، مما يعني أن قواعدك المخصصة يجب أن تكون في هذا المستودع',
-    customRuleGeoSitePlaceholder: 'مثال: google,anthropic',
-    customRuleGeoIP: 'قواعد Geo-IP',
-    customRuleGeoIPTooltip: 'قواعد SingBox IP تأتي من https://github.com/lyc8503/sing-box-rules، مما يعني أن قواعدك المخصصة يجب أن تكون في هذا المستودع',
-    customRuleGeoIPPlaceholder: 'مثال: private,cn',
-    customRuleDomainSuffix: 'لاحقة النطاق',
-    customRuleDomainSuffixPlaceholder: 'لواحق النطاق (مفصولة بفواصل)',
-    customRuleDomainKeyword: 'كلمة مفتاحية للنطاق',
-    customRuleDomainKeywordPlaceholder: 'الكلمات المفتاحية للنطاق (مفصولة بفواصل)',
+  'fa': {
+    missingInput: 'پارامتر ورودی وجود ندارد',
+    missingConfig: 'پارامتر پیکربندی وجود ندارد',
+    missingUrl: 'پارامتر URL وجود ندارد',
+    shortUrlNotFound: 'لینک کوتاه پیدا نشد',
+    internalError: 'خطای داخلی سرور',
+    notFound: 'یافت نشد',
+    invalidFormat: 'فرمت نامعتبر: ',
+    defaultRules: ['مسدودسازی تبلیغات', 'سرویس‌های گوگل', 'رسانه‌های خارجی', 'تلگرام'],
+    configValidationError: 'خطای اعتبارسنجی پیکربندی: ',
+    pageDescription: 'Sublink Worker - مبدل لینک اشتراک',
+    pageKeywords: 'لینک اشتراک,مبدل,Xray,SingBox,Clash,Surge',
+    pageTitle: 'Sublink Worker - مبدل لینک اشتراک',
+    ogTitle: 'Sublink Worker - مبدل لینک اشتراک',
+    ogDescription: 'یک مبدل قدرتمند لینک اشتراک با پشتیبانی از فرمت‌های مختلف',
+    shareUrls: 'اشتراک‌گذاری لینک‌ها',
+    urlPlaceholder: 'لینک‌های اشتراک خود را اینجا وارد کنید...',
+    advancedOptions: 'گزینه‌های پیشرفته',
+    baseConfigSettings: 'تنظیمات پیکربندی پایه',
+    baseConfigTooltip: 'پیکربندی پایه خود را اینجا سفارشی کنید',
+    saveConfig: 'ذخیره پیکربندی',
+    clearConfig: 'پاک کردن پیکربندی',
+    convert: 'تبدیل',
+    clear: 'پاک کردن',
+    customPath: 'مسیر سفارشی',
+    savedPaths: 'مسیرهای ذخیره شده',
+    shortenLinks: 'ایجاد لینک‌های کوتاه',
+    ruleSelection: 'انتخاب قوانین',
+    ruleSelectionTooltip: 'مجموعه قوانین مورد نظر خود را انتخاب کنید',
+    custom: 'سفارشی',
+    minimal: 'حداقل',
+    balanced: 'متعادل',
+    comprehensive: 'جامع',
+    addCustomRule: 'افزودن قانون سفارشی',
+    customRuleOutboundName: 'نام خروجی*',
+    customRuleGeoSite: 'قوانین Geo-Site',
+    customRuleGeoSiteTooltip: 'قوانین SingBox Site از https://github.com/lyc8503/sing-box-rules می‌آیند، به این معنی که قوانین سفارشی شما باید در آن مخزن باشد',
+    customRuleGeoSitePlaceholder: 'برای مثال: google,anthropic',
+    customRuleGeoIP: 'قوانین Geo-IP',
+    customRuleGeoIPTooltip: 'قوانین SingBox IP از https://github.com/lyc8503/sing-box-rules می‌آیند، به این معنی که قوانین سفارشی شما باید در آن مخزن باشد',
+    customRuleGeoIPPlaceholder: 'برای مثال: private,cn',
+    customRuleDomainSuffix: 'پسوند دامنه',
+    customRuleDomainSuffixPlaceholder: 'پسوندهای دامنه (با کاما جدا شده)',
+    customRuleDomainKeyword: 'کلمه کلیدی دامنه',
+    customRuleDomainKeywordPlaceholder: 'کلمات کلیدی دامنه (با کاما جدا شده)',
     customRuleIPCIDR: 'IP CIDR',
-    customRuleIPCIDRPlaceholder: 'IP CIDR (مفصولة بفواصل)',
-    customRuleProtocol: 'نوع البروتوكول',
-    customRuleProtocolTooltip: 'قواعد البروتوكول لأنواع محددة من حركة المرور. مزيد من التفاصيل: https://sing-box.sagernet.org/configuration/route/sniff/',
-    customRuleProtocolPlaceholder: 'البروتوكولات (مفصولة بفواصل، مثال: http,ssh,dns)',
-    removeCustomRule: 'إزالة',
+    customRuleIPCIDRPlaceholder: 'IP CIDR (با کاما جدا شده)',
+    customRuleProtocol: 'نوع پروتکل',
+    customRuleProtocolTooltip: 'قوانین پروتکل برای انواع خاص ترافیک. جزئیات بیشتر: https://sing-box.sagernet.org/configuration/route/sniff/',
+    customRuleProtocolPlaceholder: 'پروتکل‌ها (با کاما جدا شده، مثلاً: http,ssh,dns)',
+    removeCustomRule: 'حذف',
     outboundNames: {
-      'Auto Select': '⚡ تحديد تلقائي',
-      'Node Select': '🚀 اختيار العقدة',
-      'Fall Back': '🐟 العودة',
-      'Ad Block': '🛑 حظر الإعلانات',
-      'AI Services': '💬 خدمات الذكاء الاصطناعي',
-      'Bilibili': '📺 بيلي بيلي',
-      'Youtube': '📹 يوتيوب',
-      'Google': '🔍 خدمات جوجل',
-      'Private': '🏠 شبكة خاصة',
-      'Location:CN': '🔒 خدمات الصين',
-      'Telegram': '📲 تيليجرام',
-      'Github': '🐱 جيثب',
-      'Microsoft': 'Ⓜ️ خدمات مايكروسوفت',
-      'Apple': '🍏 خدمات آبل',
-      'Social Media': '🌐 وسائل التواصل الاجتماعي',
-      'Streaming': '🎬 بث الوسائط',
-      'Gaming': '🎮 منصة الألعاب',
-      'Education': '📚 موارد تعليمية',
-      'Financial': '💰 خدمات مالية',
-      'Cloud Services': '☁️ خدمات سحابية',
-      'Non-China': '🌐 خارج الصين',
+      'Auto Select': '⚡ انتخاب خودکار',
+      'Node Select': '🚀 انتخاب نود',
+      'Fall Back': '🐟 فال بک',
+      'Ad Block': '🛑 مسدودسازی تبلیغات',
+      'AI Services': '💬 سرویس‌های هوش مصنوعی',
+      'Bilibili': '📺 بیلی‌بیلی',
+      'Youtube': '📹 یوتیوب',
+      'Google': '🔍 سرویس‌های گوگل',
+      'Private': '🏠 شبکه خصوصی',
+      'Location:CN': '🔒 سرویس‌های چین',
+      'Telegram': '📲 تلگرام',
+      'Github': '🐱 گیت‌هاب',
+      'Microsoft': 'Ⓜ️ سرویس‌های مایکروسافت',
+      'Apple': '🍏 سرویس‌های اپل',
+      'Social Media': '🌐 شبکه‌های اجتماعی',
+      'Streaming': '🎬 استریمینگ',
+      'Gaming': '🎮 پلتفرم بازی',
+      'Education': '📚 منابع آموزشی',
+      'Financial': '💰 سرویس‌های مالی',
+      'Cloud Services': '☁️ سرویس‌های ابری',
+      'Non-China': '🌐 خارج از چین',
       'GLOBAL': 'GLOBAL'
     }
   }
@@ -242,20 +242,28 @@ export function setLanguage(lang) {
     currentLang = lang;
   } else if(checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
-  } else if(checkStartsWith(lang, 'ar')) {
-    currentLang = 'ar';
+  } else if(checkStartsWith(lang, 'fa')) {
+    currentLang = 'fa';
   } else {
     currentLang = 'zh-CN';
   }
 }
 
-// 获取翻译
+// 获取翻译，支持嵌套键值访问
 export function t(key) {
   const keys = key.split('.');
   let value = translations[currentLang];
+  
+  // 逐级查找翻译值
   for (const k of keys) {
     value = value?.[k];
-    if (value === undefined) return key;
+    if (value === undefined) {
+      if (checkStartsWith(key, 'outboundNames.')) {
+        return key.split('.')[1];
+      }
+      // 找不到翻译时返回原始键名
+      return key;
+    }
   }
   return value;
 }
