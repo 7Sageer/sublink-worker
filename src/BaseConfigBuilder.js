@@ -4,12 +4,13 @@ import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang) {
+    constructor(inputString, baseConfig, lang, userAgent) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
         setLanguage(lang);
+        this.userAgent = userAgent;
     }
 
     async build() {
@@ -24,10 +25,10 @@ export class BaseConfigBuilder {
         const parsedItems = [];
 
         for (const url of urls) {
-            const result = await ProxyParser.parse(url);
+            const result = await ProxyParser.parse(url, this.userAgent);
             if (Array.isArray(result)) {
                 for (const subUrl of result) {
-                    const subResult = await ProxyParser.parse(subUrl);
+                    const subResult = await ProxyParser.parse(subUrl, this.userAgent);
                     if (subResult) {
                         parsedItems.push(subResult);
                     }
