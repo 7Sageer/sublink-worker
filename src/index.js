@@ -4,7 +4,7 @@ import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
 import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
-import { t, setLanguage, getCurrentLang } from './i18n/index.js';
+import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
 
 addEventListener('fetch', event => {
@@ -32,7 +32,6 @@ async function handleRequest(request) {
         return new Response(t('missingConfig'), { status: 400 });
       }
 
-      // Deal with predefined rules
       if (PREDEFINED_RULE_SETS[selectedRules]) {
         selectedRules = PREDEFINED_RULE_SETS[selectedRules];
       } else {
