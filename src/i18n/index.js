@@ -341,33 +341,42 @@ const translations = {
 };
 
 // 当前语言
-let currentLang = 'ja-JP';
-
-// 安全的 `startsWith` 检查
-function safeStartsWith(str, prefix) {
-  return typeof str === 'string' && str.startsWith(prefix);
-}
+let currentLang = 'zh-CN';
 
 // 设置语言
 export function setLanguage(lang) {
-  if (!lang || typeof lang !== 'string') {
-    currentLang = 'zh-CN'; // 兜底默认值
-    return;
-  }
-
   if (translations[lang]) {
     currentLang = lang;
-  } else if (safeStartsWith(lang, 'en')) {
+  } else if (checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
-  } else if (safeStartsWith(lang, 'fa')) {
+  } else if (checkStartsWith(lang, 'fa')) {
     currentLang = 'fa';
-  } else if (safeStartsWith(lang, 'ja')) {
+  } else if (checkStartsWith(lang, 'ja')) {
     currentLang = 'ja-JP';
-  } else if (safeStartsWith(lang, 'ko')) {
+  } else if (checkStartsWith(lang, 'ko')) {
     currentLang = 'ko-KR';
   } else {
     currentLang = 'zh-CN';
   }
+}
+
+// 获取翻译，支持嵌套键值访问
+export function t(key) {
+  const keys = key.split('.');
+  let value = translations[currentLang];
+  
+  // 逐级查找翻译值
+  for (const k of keys) {
+    value = value?.[k];
+    if (value === undefined) {
+      if (checkStartsWith(key, 'outboundNames.')) {
+        return key.split('.')[1];
+      }
+      // 找不到翻译时返回原始键名
+      return key;
+    }
+  }
+  return value;
 }
 
 // 获取当前语言
@@ -375,19 +384,12 @@ export function getCurrentLang() {
   return currentLang;
 }
 
-// 获取翻译值
-export function t(key) {
-  if (!key || typeof key !== 'string') return key;
+// 获取默认规则列表
+export function getDefaultRules() {
+  return translations[currentLang]?.defaultRules || [];
+}
 
-  const keys = key.split('.');
-  let value = translations[currentLang];
-
-  for (const k of keys) {
-    if (value?.[k] !== undefined) {
-      value = value[k];
-    } else {
-      return key.startsWith('outboundNames.') ? key.split('.')[1] : key;
-    }
-  }
-  return value;
+// 获取出站集
+export function getOutbounds() {
+  return translations[currentLang]?.outboundNames || {};
 }
