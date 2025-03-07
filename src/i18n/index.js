@@ -387,7 +387,3 @@ export function t(key) {
   }
   return value;
 }
-
-window.autoDetectLanguage = autoDetectLanguage;
-window.getCurrentLang = getCurrentLang;
-window.t = t;
