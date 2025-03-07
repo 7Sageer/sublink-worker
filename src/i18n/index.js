@@ -340,13 +340,15 @@ const translations = {
   }
 };
 
-// 当前语言
-let currentLang = 'zh-CN';
-
 // 获取 URL 参数中的语言
 function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
+}
+
+// 获取语言，优先级：URL 参数 > localStorage > 浏览器语言 > 默认
+function detectLanguage() {
+  return getQueryParam('lang') || localStorage.getItem('userLang') || navigator.language || 'zh-CN';
 }
 
 // 设置语言
@@ -370,27 +372,25 @@ export function setLanguage(lang) {
 
 // 更新页面语言（用于 UI 变化）
 function updatePageLanguage() {
-    document.documentElement.lang = currentLang;
-    document.title = translations[currentLang].pageTitle || document.title;
-    // 如果有 UI 需要动态更新，可以在这里加逻辑
+  document.documentElement.lang = currentLang;
+  if (translations[currentLang]?.pageTitle) {
+    document.title = translations[currentLang].pageTitle;
+  }
 }
 
-// 页面加载时自动检测语言
-const savedLang = localStorage.getItem('userLang') || getQueryParam('lang') || navigator.language || 'zh-CN';
-setLanguage(savedLang);
+// 页面加载时自动设置语言
+let currentLang = detectLanguage();
+setLanguage(currentLang);
 
 // 获取翻译，支持嵌套键值访问
 export function t(key) {
   const keys = key.split('.');
   let value = translations[currentLang];
-  
+
   for (const k of keys) {
     value = value?.[k];
     if (value === undefined) {
-      if (checkStartsWith(key, 'outboundNames.')) {
-        return key.split('.')[1];
-      }
-      return key;
+      return key; // 找不到翻译，返回 key
     }
   }
   return value;
@@ -399,14 +399,4 @@ export function t(key) {
 // 获取当前语言
 export function getCurrentLang() {
   return currentLang;
-}
-
-// 获取默认规则列表
-export function getDefaultRules() {
-  return translations[currentLang].defaultRules;
-}
-
-// 获取出站集
-export function getOutbounds() {
-  return translations[currentLang].outboundNames;
 }
