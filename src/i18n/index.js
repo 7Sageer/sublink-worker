@@ -360,19 +360,23 @@ export function setLanguage(lang) {
   }
 }
 
+// 自动检测并设置浏览器语言
+export function autoDetectLanguage() {
+  const browserLang = navigator.language || navigator.userLanguage;
+  setLanguage(browserLang);
+}
+
 // 获取翻译，支持嵌套键值访问
 export function t(key) {
   const keys = key.split('.');
   let value = translations[currentLang];
-  
-  // 逐级查找翻译值
+
   for (const k of keys) {
     value = value?.[k];
     if (value === undefined) {
       if (checkStartsWith(key, 'outboundNames.')) {
         return key.split('.')[1];
       }
-      // 找不到翻译时返回原始键名
       return key;
     }
   }
@@ -393,3 +397,9 @@ export function getDefaultRules() {
 export function getOutbounds() {
   return translations[currentLang].outboundNames;
 }
+
+// 暴露函数到全局作用域，方便调试或页面直接调用
+window.setLanguage = setLanguage;
+window.autoDetectLanguage = autoDetectLanguage;
+window.getCurrentLang = getCurrentLang;
+window.t = t;
