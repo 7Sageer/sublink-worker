@@ -421,8 +421,6 @@ export const CLASH_CONFIG = {
             ]
         }
     },
-};
-
     'proxies': [],
     'proxy-groups': []
 };
