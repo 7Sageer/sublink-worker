@@ -409,7 +409,10 @@ export const CLASH_CONFIG = {
             ],
             'geosite:geolocation-!cn': [
                 'https://dns.cloudflare.com/dns-query',
-                'https://dns.google/dns-query'
+                'https://dns.google/dns-query',
+		'https://dns.quad9.net/dns-query',
+	        'https://adblock.doh.mullvad.net/dns-query',
+		'https://doh.libredns.gr/dns-query'
             ]
         }
     },
