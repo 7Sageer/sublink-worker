@@ -230,7 +230,7 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     }
   },
-'ja-JP': {
+  'ja-JP': {
     missingInput: '入力パラメータが不足しています',
     missingConfig: '設定パラメータが不足しています',
     missingUrl: 'URLパラメータが不足しています',
@@ -284,7 +284,7 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     }
   },
-'ko-KR': {
+  'ko-KR': {
     missingInput: '입력 매개변수가 부족합니다',
     missingConfig: '설정 매개변수가 부족합니다',
     missingUrl: 'URL 매개변수가 부족합니다',
