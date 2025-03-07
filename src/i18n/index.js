@@ -343,6 +343,11 @@ const translations = {
 // 当前语言
 let currentLang = 'zh-CN';
 
+// 获取 URL 参数中的语言
+function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
 
 // 设置语言
 export function setLanguage(lang) {
@@ -360,6 +365,14 @@ export function setLanguage(lang) {
   } else {
     currentLang = 'zh-CN';
   }
+  updatePageLanguage();
+}
+
+// 更新页面语言（用于 UI 变化）
+function updatePageLanguage() {
+    document.documentElement.lang = currentLang;
+    document.title = translations[currentLang].pageTitle || document.title;
+    // 如果有 UI 需要动态更新，可以在这里加逻辑
 }
 
 // 页面加载时自动检测语言
