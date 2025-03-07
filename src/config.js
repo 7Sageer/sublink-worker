@@ -390,35 +390,39 @@ export const CLASH_CONFIG = {
     'mode': 'Rule',
     'log-level': 'info',
     'dns': {
-        'enable': true,
-        'ipv6': true,
+        'enable': true,  // 启用 DNS 解析
+        'ipv6': false,  // 关闭 IPv6，避免 DNS 泄露（如果你确实需要 IPv6，可以改为 true）
         'respect-rules': true,
-        'enhanced-mode': 'fake-ip',
+        'enhanced-mode': 'fake-ip',  // 启用 Fake-IP 模式，防止 DNS 泄露
         'nameserver': [
-            'https://223.5.5.5/dns-query',
-  	    'https://120.53.53.53/dns-query',
-            'https://dns.cloudflare.com/dns-query',
-    	    'https://dns.google/dns-query'
+            'https://223.5.5.5/dns-query',  // 阿里 DNS（主）
+            'https://119.29.29.29/dns-query',  // DNSPod（备用）
+            'https://dns.cloudflare.com/dns-query',  // Cloudflare
+            'https://dns.google/dns-query'  // Google
         ],
         'proxy-server-nameserver': [
-            'https://dns.cloudflare.com/dns-query',  
-            'https://dns.google/dns-query', 
-            'https://dns.quad9.net/dns-query' 
+            'https://dns.cloudflare.com/dns-query',  // Cloudflare（代理流量解析）
+            'https://dns.google/dns-query',  // Google（备用）
+            'https://dns.quad9.net/dns-query',  // Quad9（带安全防护）
+            'https://adblock.doh.mullvad.net/dns-query',  // Mullvad（去广告）
+            'https://doh.libredns.gr/dns-query'  // LibreDNS（隐私增强）
         ],
         'nameserver-policy': {
             'geosite:cn,private': [
-                'https://120.53.53.53/dns-query',
-                'https://223.5.5.5/dns-query'
+                'https://223.5.5.5/dns-query',  // 阿里 DNS（国内解析）
+                'https://119.29.29.29/dns-query'  // DNSPod（腾讯旗下备用）
             ],
             'geosite:geolocation-!cn': [
-                'https://dns.cloudflare.com/dns-query',
+                'https://dns.cloudflare.com/dns-query',  // Cloudflare（代理流量解析）
                 'https://dns.google/dns-query',
-		'https://dns.quad9.net/dns-query',
-	        'https://adblock.doh.mullvad.net/dns-query',
-		'https://doh.libredns.gr/dns-query'
+                'https://dns.quad9.net/dns-query',
+                'https://adblock.doh.mullvad.net/dns-query',
+                'https://doh.libredns.gr/dns-query'
             ]
         }
     },
+};
+
     'proxies': [],
     'proxy-groups': []
 };
