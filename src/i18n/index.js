@@ -343,36 +343,45 @@ const translations = {
 // 当前语言
 let currentLang = 'zh-CN';
 
+// 获取 URL 参数
+function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
 // 设置语言
 export function setLanguage(lang) {
-  if(translations[lang]) {
+  if (translations[lang]) {
     currentLang = lang;
-  } else if(checkStartsWith(lang, 'en')) {
+    localStorage.setItem('userLang', lang); // 记住用户选择的语言
+  } else if (checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
-  } else if(checkStartsWith(lang, 'fa')) {
+  } else if (checkStartsWith(lang, 'fa')) {
     currentLang = 'fa';
-  } else if(checkStartsWith(lang, 'ja')) {
+  } else if (checkStartsWith(lang, 'ja')) {
     currentLang = 'ja-JP';
-  } else if(checkStartsWith(lang, 'ko')) {
+  } else if (checkStartsWith(lang, 'ko')) {
     currentLang = 'ko-KR';
   } else {
     currentLang = 'zh-CN';
   }
 }
 
+// 页面加载时自动检测语言
+const savedLang = localStorage.getItem('userLang') || getQueryParam('lang') || navigator.language || 'zh-CN';
+setLanguage(savedLang);
+
 // 获取翻译，支持嵌套键值访问
 export function t(key) {
   const keys = key.split('.');
   let value = translations[currentLang];
   
-  // 逐级查找翻译值
   for (const k of keys) {
     value = value?.[k];
     if (value === undefined) {
       if (checkStartsWith(key, 'outboundNames.')) {
         return key.split('.')[1];
       }
-      // 找不到翻译时返回原始键名
       return key;
     }
   }
@@ -390,6 +399,6 @@ export function getDefaultRules() {
 }
 
 // 获取出站集
-export function getOutbounds(){
+export function getOutbounds() {
   return translations[currentLang].outboundNames;
 }
