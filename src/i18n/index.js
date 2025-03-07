@@ -341,7 +341,7 @@ const translations = {
 };
 
 // 当前语言
-let currentLang = 'zh-CN';
+let currentLang = 'ja-JP';
 
 // 设置语言
 export function setLanguage(lang) {
@@ -358,12 +358,6 @@ export function setLanguage(lang) {
   } else {
     currentLang = 'zh-CN';
   }
-}
-
-// 自动检测浏览器语言（仅浏览器端调用）
-export function autoDetectLanguage() {
-  const browserLang = typeof navigator !== 'undefined' ? navigator.language : 'zh-CN';
-  setLanguage(browserLang);
 }
 
 // 获取当前语言
