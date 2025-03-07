@@ -343,17 +343,27 @@ const translations = {
 // 当前语言
 let currentLang = 'ja-JP';
 
+// 安全的 `startsWith` 检查
+function safeStartsWith(str, prefix) {
+  return typeof str === 'string' && str.startsWith(prefix);
+}
+
 // 设置语言
 export function setLanguage(lang) {
+  if (!lang || typeof lang !== 'string') {
+    currentLang = 'zh-CN'; // 兜底默认值
+    return;
+  }
+
   if (translations[lang]) {
     currentLang = lang;
-  } else if (checkStartsWith(lang, 'en')) {
+  } else if (safeStartsWith(lang, 'en')) {
     currentLang = 'en-US';
-  } else if (checkStartsWith(lang, 'fa')) {
+  } else if (safeStartsWith(lang, 'fa')) {
     currentLang = 'fa';
-  } else if (checkStartsWith(lang, 'ja')) {
+  } else if (safeStartsWith(lang, 'ja')) {
     currentLang = 'ja-JP';
-  } else if (checkStartsWith(lang, 'ko')) {
+  } else if (safeStartsWith(lang, 'ko')) {
     currentLang = 'ko-KR';
   } else {
     currentLang = 'zh-CN';
@@ -367,16 +377,16 @@ export function getCurrentLang() {
 
 // 获取翻译值
 export function t(key) {
+  if (!key || typeof key !== 'string') return key;
+
   const keys = key.split('.');
   let value = translations[currentLang];
 
   for (const k of keys) {
-    value = value?.[k];
-    if (value === undefined) {
-      if (checkStartsWith(key, 'outboundNames.')) {
-        return key.split('.')[1];
-      }
-      return key;
+    if (value?.[k] !== undefined) {
+      value = value[k];
+    } else {
+      return key.startsWith('outboundNames.') ? key.split('.')[1] : key;
     }
   }
   return value;
