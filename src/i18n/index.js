@@ -343,11 +343,6 @@ const translations = {
 // 当前语言
 let currentLang = 'zh-CN';
 
-// 获取 URL 参数
-function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-}
 
 // 设置语言
 export function setLanguage(lang) {
