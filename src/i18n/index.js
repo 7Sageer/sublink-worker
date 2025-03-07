@@ -230,11 +230,118 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     }
   }
+'ja-JP': {
+    missingInput: '入力パラメータが不足しています',
+    missingConfig: '設定パラメータが不足しています',
+    missingUrl: 'URLパラメータが不足しています',
+    shortUrlNotFound: '短縮URLが見つかりません',
+    internalError: 'サーバー内部エラー',
+    notFound: '見つかりません',
+    invalidFormat: '無効な形式：',
+    defaultRules: ['広告ブロック', 'Googleサービス', '海外メディア', 'Telegramメッセージ'],
+    configValidationError: '設定の検証エラー：',
+    pageDescription: 'Sublink Worker - サブスクリプションリンク変換ツール',
+    pageKeywords: 'サブスクリプションリンク,変換,Xray,SingBox,Clash,Surge',
+    pageTitle: 'Sublink Worker - サブスクリプションリンク変換ツール',
+    ogTitle: 'Sublink Worker - サブスクリプションリンク変換ツール',
+    ogDescription: '多くのクライアントフォーマットをサポートする強力なサブスクリプションリンク変換ツール',
+    shareUrls: '共有リンク',
+    urlPlaceholder: 'ここにサブスクリプションリンクを入力してください...',
+    advancedOptions: '高度なオプション',
+    baseConfigSettings: '基本設定',
+    baseConfigTooltip: 'ここで基本設定をカスタマイズできます',
+    saveConfig: '設定を保存',
+    clearConfig: '設定をクリア',
+    convert: '変換',
+    clear: 'クリア',
+    customPath: 'カスタムパス',
+    savedPaths: '保存されたパス',
+    shortenLinks: '短縮リンクを生成',
+    ruleSelection: 'ルール選択',
+    ruleSelectionTooltip: '必要なルールセットを選択',
+    outboundNames: {
+      'Auto Select': '⚡ 自動選択',
+      'Node Select': '🚀 ノード選択',
+      'Fall Back': '🐟 フォールバック',
+      'Ad Block': '🛑 広告ブロック',
+      'AI Services': '💬 AIサービス',
+      'Bilibili': '📺 ビリビリ',
+      'Youtube': '📹 YouTube',
+      'Google': '🔍 Googleサービス',
+      'Private': '🏠 プライベートネットワーク',
+      'Location:CN': '🔒 中国国内サービス',
+      'Telegram': '📲 Telegramメッセージ',
+      'Github': '🐱 Github',
+      'Microsoft': 'Ⓜ️ Microsoftサービス',
+      'Apple': '🍏 Appleサービス',
+      'Social Media': '🌐 ソーシャルメディア',
+      'Streaming': '🎬 ストリーミング',
+      'Gaming': '🎮 ゲームプラットフォーム',
+      'Education': '📚 教育リソース',
+      'Financial': '💰 金融サービス',
+      'Cloud Services': '☁️ クラウドサービス',
+      'Non-China': '🌐 非中国',
+      'GLOBAL': 'GLOBAL'
+    }
+  }
+'ko-KR': {
+    missingInput: '입력 매개변수가 부족합니다',
+    missingConfig: '설정 매개변수가 부족합니다',
+    missingUrl: 'URL 매개변수가 부족합니다',
+    shortUrlNotFound: '짧은 URL을 찾을 수 없습니다',
+    internalError: '서버 내부 오류',
+    notFound: '찾을 수 없습니다',
+    invalidFormat: '잘못된 형식：',
+    defaultRules: ['광고 차단', 'Google 서비스', '해외 미디어', 'Telegram 메시지'],
+    configValidationError: '설정 검증 오류：',
+    pageDescription: 'Sublink Worker - 구독 링크 변환 도구',
+    pageKeywords: '구독 링크,변환,Xray,SingBox,Clash,Surge',
+    pageTitle: 'Sublink Worker - 구독 링크 변환 도구',
+    ogTitle: 'Sublink Worker - 구독 링크 변환 도구',
+    ogDescription: '다양한 클라이언트 포맷을 지원하는 강력한 구독 링크 변환 도구',
+    shareUrls: '공유 링크',
+    urlPlaceholder: '여기에 구독 링크를 입력하세요...',
+    advancedOptions: '고급 옵션',
+    baseConfigSettings: '기본 설정',
+    baseConfigTooltip: '여기에서 기본 설정을 사용자 지정할 수 있습니다',
+    saveConfig: '설정 저장',
+    clearConfig: '설정 지우기',
+    convert: '변환',
+    clear: '지우기',
+    customPath: '사용자 지정 경로',
+    savedPaths: '저장된 경로',
+    shortenLinks: '짧은 링크 생성',
+    ruleSelection: '규칙 선택',
+    ruleSelectionTooltip: '필요한 규칙 세트를 선택하세요',
+    outboundNames: {
+      'Auto Select': '⚡ 자동 선택',
+      'Node Select': '🚀 노드 선택',
+      'Fall Back': '🐟 폴백',
+      'Ad Block': '🛑 광고 차단',
+      'AI Services': '💬 AI 서비스',
+      'Bilibili': '📺 빌리빌리',
+      'Youtube': '📹 유튜브',
+      'Google': '🔍 Google 서비스',
+      'Private': '🏠 개인 네트워크',
+      'Location:CN': '🔒 중국 내 서비스',
+      'Telegram': '📲 텔레그램',
+      'Github': '🐱 Github',
+      'Microsoft': 'Ⓜ️ Microsoft 서비스',
+      'Apple': '🍏 Apple 서비스',
+      'Social Media': '🌐 소셜 미디어',
+      'Streaming': '🎬 스트리밍',
+      'Gaming': '🎮 게임 플랫폼',
+      'Education': '📚 교육 자료',
+      'Financial': '💰 금융 서비스',
+      'Cloud Services': '☁️ 클라우드 서비스',
+      'Non-China': '🌐 비중국',
+      'GLOBAL': 'GLOBAL'
+    }
+  }
 };
 
 // 当前语言
 let currentLang = 'zh-CN';
-
 
 // 设置语言
 export function setLanguage(lang) {
@@ -244,6 +351,10 @@ export function setLanguage(lang) {
     currentLang = 'en-US';
   } else if(checkStartsWith(lang, 'fa')) {
     currentLang = 'fa';
+  } else if(checkStartsWith(lang, 'ja')) {
+    currentLang = 'ja-JP';
+  } else if(checkStartsWith(lang, 'ko')) {
+    currentLang = 'ko-KR';
   } else {
     currentLang = 'zh-CN';
   }
