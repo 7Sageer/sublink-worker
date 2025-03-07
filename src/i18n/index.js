@@ -229,7 +229,7 @@ const translations = {
       'Non-China': '🌐 خارج از چین',
       'GLOBAL': 'GLOBAL'
     }
-  }
+  },
 'ja-JP': {
     missingInput: '入力パラメータが不足しています',
     missingConfig: '設定パラメータが不足しています',
@@ -283,7 +283,7 @@ const translations = {
       'Non-China': '🌐 非中国',
       'GLOBAL': 'GLOBAL'
     }
-  }
+  },
 'ko-KR': {
     missingInput: '입력 매개변수가 부족합니다',
     missingConfig: '설정 매개변수가 부족합니다',
