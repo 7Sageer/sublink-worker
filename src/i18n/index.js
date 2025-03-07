@@ -343,17 +343,10 @@ const translations = {
 // 当前语言
 let currentLang = 'zh-CN';
 
-// 获取 URL 参数中的语言
-function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-}
-
 // 设置语言
 export function setLanguage(lang) {
   if (translations[lang]) {
     currentLang = lang;
-    localStorage.setItem('userLang', lang); // 记住用户选择的语言
   } else if (checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
   } else if (checkStartsWith(lang, 'fa')) {
@@ -365,31 +358,21 @@ export function setLanguage(lang) {
   } else {
     currentLang = 'zh-CN';
   }
-  updatePageLanguage();
 }
-
-// 更新页面语言（用于 UI 变化）
-function updatePageLanguage() {
-    document.documentElement.lang = currentLang;
-    document.title = translations[currentLang].pageTitle || document.title;
-    // 如果有 UI 需要动态更新，可以在这里加逻辑
-}
-
-// 页面加载时自动检测语言
-const savedLang = localStorage.getItem('userLang') || getQueryParam('lang') || navigator.language || 'zh-CN';
-setLanguage(savedLang);
 
 // 获取翻译，支持嵌套键值访问
 export function t(key) {
   const keys = key.split('.');
   let value = translations[currentLang];
   
+  // 逐级查找翻译值
   for (const k of keys) {
     value = value?.[k];
     if (value === undefined) {
       if (checkStartsWith(key, 'outboundNames.')) {
         return key.split('.')[1];
       }
+      // 找不到翻译时返回原始键名
       return key;
     }
   }
