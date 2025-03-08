@@ -76,7 +76,9 @@ const translations = {
       'Cloud Services': '☁️ 云服务',
       'Non-China': '🌍 非中国',
       'GLOBAL': 'GLOBAL'
-    }
+    },
+    UASettings: '自定义UserAgent',
+    UAtip: '默认值curl/7.74.0'
   },
   'en-US': {
     missingInput: 'Missing input parameter',
@@ -152,7 +154,9 @@ const translations = {
       'Cloud Services': '☁️ Cloud Services',
       'Non-China': '🌍 Non-China',
       'GLOBAL': 'GLOBAL'
-    }
+    },
+    UASettings: 'Custom UserAgent',
+    UAtip: 'By default it will use curl/7.74.0'
   },
   'fa': {
     missingInput: 'پارامتر ورودی وجود ندارد',
@@ -380,7 +384,9 @@ const translations = {
       'Cloud Services': '☁️ 클라우드 서비스',
       'Non-China': '🌍 비중국 지역',
       'GLOBAL': 'GLOBAL'
-    }
+    },
+    UASettings: 'Custom UserAgent',
+    UAtip: 'By default it will use curl/7.74.0'
   }
 };
 

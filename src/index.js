@@ -27,6 +27,11 @@ async function handleRequest(request) {
       let customRules = url.searchParams.get('customRules');
       // 获取语言参数，如果为空则使用默认值
       let lang = url.searchParams.get('lang') || 'zh-CN';
+      // Get custom UserAgent
+      let userAgent = url.searchParams.get('ua');
+      if (!userAgent) {
+        userAgent = 'curl/7.74.0';
+      }
 
       if (!inputString) {
         return new Response(t('missingConfig'), { status: 400 });
@@ -63,11 +68,11 @@ async function handleRequest(request) {
 
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang);
+        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
       } else if (url.pathname.startsWith('/clash')) {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang);
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
       } else {
-        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang)
+        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent)
           .setSubscriptionUrl(url.href);
       }
 
@@ -154,11 +159,22 @@ async function handleRequest(request) {
       const proxylist = inputString.split('\n');
 
       const finalProxyList = [];
+      // Use custom UserAgent (for Xray) Hmmm...
+      let userAgent = url.searchParams.get('ua');
+      if (!userAgent) {
+        userAgent = 'curl/7.74.0';
+      }
+      let headers = new Headers({
+        "User-Agent"   : userAgent
+      });
 
       for (const proxy of proxylist) {
         if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
           try {
-            const response = await fetch(proxy)
+            const response = await fetch(proxy, {
+              method : 'GET',
+              headers : headers
+            })
             const text = await response.text();
             let decodedText;
             decodedText = decodeBase64(text.trim());

@@ -1,15 +1,15 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG } from './config.js';
+import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
-        super(inputString, baseConfig, lang);
+        super(inputString, baseConfig, lang, userAgent);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
     }
@@ -196,16 +196,50 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         });
     }
 
+    // 生成规则
+    generateRules() {
+        return generateRules(this.selectedRules, this.customRules);
+    }
+
     formatConfig() {
         const rules = this.generateRules();
+        
+        // 获取.mrs规则集配置
+        const { site_rule_providers, ip_rule_providers } = generateClashRuleSets(this.selectedRules, this.customRules);
+        
+        // 添加规则集提供者
+        this.config['rule-providers'] = {
+            ...site_rule_providers,
+            ...ip_rule_providers
+        };
 
+        // 使用RULE-SET规则格式替代原有的GEOSITE/GEOIP
         this.config.rules = rules.flatMap(rule => {
-            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${t('outboundNames.'+ rule.outbound)}`) : [];
-            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
-            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`) : [];
-            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => `DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`) : [];
-            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
-            return [...siteRules, ...ipRules, ...domainSuffixRules, ...domainKeywordRules, ...ipCidrRules];
+            const ruleResults = [];
+            
+            // 使用RULE-SET格式的站点规则
+            if (rule.site_rules && rule.site_rules[0] !== '') {
+                rule.site_rules.forEach(site => {
+                    ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
+                });
+            }
+            
+            // 使用RULE-SET格式的IP规则
+            if (rule.ip_rules && rule.ip_rules[0] !== '') {
+                rule.ip_rules.forEach(ip => {
+                    ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                });
+            }
+            
+            // 保持对其他类型规则的支持
+            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => 
+                `DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => 
+                `DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`) : [];
+            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => 
+                `IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`) : [];
+            
+            return [...ruleResults, ...domainSuffixRules, ...domainKeywordRules, ...ipCidrRules];
         });
 
         this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);

@@ -2,7 +2,7 @@ import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig
 
 
 export class ProxyParser {
-	static parse(url) {
+	static parse(url, userAgent) {
 		url = url.trim();
 		const type = url.split('://')[0];
 		switch(type) {
@@ -14,7 +14,7 @@ export class ProxyParser {
         return new Hysteria2Parser().parse(url);
       case 'http':
       case 'https':
-        return HttpParser.parse(url);
+        return HttpParser.parse(url, userAgent);
       case 'trojan': return new TrojanParser().parse(url);
       case 'tuic': return new TuicParser().parse(url);
 		}
@@ -230,9 +230,15 @@ export class ProxyParser {
       
 
       class HttpParser {
-        static async parse(url) {
+        static async parse(url, userAgent) {
             try {
-                const response = await fetch(url);
+                let headers = new Headers({
+                  "User-Agent"   : userAgent
+                });
+                const response = await fetch(url, {
+                  method : 'GET',
+                  headers : headers
+                });
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

@@ -4,12 +4,13 @@ import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang) {
+    constructor(inputString, baseConfig, lang, userAgent) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
         setLanguage(lang);
+        this.userAgent = userAgent;
     }
 
     async build() {
@@ -31,10 +32,10 @@ export class BaseConfigBuilder {
             if (Array.isArray(processedUrls)) {
                 // Handle multiple URLs from a single base64 string
                 for (const processedUrl of processedUrls) {
-                    const result = await ProxyParser.parse(processedUrl);
+                    const result = await ProxyParser.parse(processedUrl, this.userAgent);
                     if (Array.isArray(result)) {
                         for (const subUrl of result) {
-                            const subResult = await ProxyParser.parse(subUrl);
+                            const subResult = await ProxyParser.parse(subUrl, this.userAgent);
                             if (subResult) {
                                 parsedItems.push(subResult);
                             }
@@ -45,10 +46,10 @@ export class BaseConfigBuilder {
                 }
             } else {
                 // Handle single URL (original behavior)
-                const result = await ProxyParser.parse(processedUrls);
+                const result = await ProxyParser.parse(processedUrls, this.userAgent);
                 if (Array.isArray(result)) {
                     for (const subUrl of result) {
-                        const subResult = await ProxyParser.parse(subUrl);
+                        const subResult = await ProxyParser.parse(subUrl, this.userAgent);
                         if (subResult) {
                             parsedItems.push(subResult);
                         }
