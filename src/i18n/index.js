@@ -230,7 +230,7 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     }
   },
-  'ja-JP': {
+  'ja': {
     missingInput: '入力パラメータが不足しています',
     missingConfig: '設定パラメータが不足しています',
     missingUrl: 'URLパラメータが不足しています',
@@ -284,7 +284,7 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     }
   },
-  'ko-KR': {
+  'ko': {
     missingInput: '입력 매개변수가 부족합니다',
     missingConfig: '설정 매개변수가 부족합니다',
     missingUrl: 'URL 매개변수가 부족합니다',
@@ -343,18 +343,19 @@ const translations = {
 // 当前语言
 let currentLang = 'zh-CN';
 
+
 // 设置语言
 export function setLanguage(lang) {
   if(translations[lang]) {
     currentLang = lang;
-  } else if (checkStartsWith(lang, 'en')) {
+  } else if(checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
-  } else if (checkStartsWith(lang, 'fa')) {
+  } else if(checkStartsWith(lang, 'fa')) {
     currentLang = 'fa';
-  } else if (checkStartsWith(lang, 'ja')) {
-    currentLang = 'ja-JP';
-  } else if (checkStartsWith(lang, 'ko')) {
-    currentLang = 'ko-KR';
+  } else if(checkStartsWith(lang, 'ja')) {
+    currentLang = 'ja';
+  } else if(checkStartsWith(lang, 'ko')) {
+    currentLang = 'ko';
   } else {
     currentLang = 'zh-CN';
   }
