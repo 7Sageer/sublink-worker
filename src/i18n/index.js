@@ -345,7 +345,7 @@ let currentLang = 'zh-CN';
 
 // 设置语言
 export function setLanguage(lang) {
-  if (translations[lang]) {
+  if(translations[lang]) {
     currentLang = lang;
   } else if (checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
@@ -386,10 +386,10 @@ export function getCurrentLang() {
 
 // 获取默认规则列表
 export function getDefaultRules() {
-  return translations[currentLang]?.defaultRules || [];
+  return translations[currentLang].defaultRules;
 }
 
 // 获取出站集
-export function getOutbounds() {
-  return translations[currentLang]?.outboundNames || {};
+export function getOutbounds(){
+  return translations[currentLang].outboundNames;
 }
