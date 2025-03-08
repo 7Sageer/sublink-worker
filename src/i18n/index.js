@@ -75,7 +75,7 @@ const translations = {
       'Financial': '💵 金融服务',
       'Cloud Services': '☁️ 云服务',
       'Non-China': '🌍 非中国',
-      'GLOBAL': '🚀 全球网络'
+      'GLOBAL': 'GLOBAL'
     }
   },
   'en-US': {
@@ -151,7 +151,7 @@ const translations = {
       'Financial': '💵 Financial Services',
       'Cloud Services': '☁️ Cloud Services',
       'Non-China': '🌍 Non-China',
-      'GLOBAL': '🚀 GLOBAL'
+      'GLOBAL': 'GLOBAL'
     }
   },
   'fa': {
@@ -227,7 +227,7 @@ const translations = {
       'Financial': '💵 سرویس‌های مالی',
       'Cloud Services': '☁️ سرویس‌های ابری',
       'Non-China': '🌍 خارج از چین',
-      'GLOBAL': '🚀 GLOBAL'
+      'GLOBAL': 'GLOBAL'
     }
   },
   'ja': {
@@ -303,7 +303,7 @@ const translations = {
       'Financial': '💵 金融サービス',
       'Cloud Services': '☁️ クラウドサービス',
       'Non-China': '🌍 グローバルサービス',
-      'GLOBAL': '🚀 グローバル'
+      'GLOBAL': 'GLOBAL'
     }
   },
   'ko': {
@@ -379,7 +379,7 @@ const translations = {
       'Financial': '💵 금융 서비스',
       'Cloud Services': '☁️ 클라우드 서비스',
       'Non-China': '🌍 비중국 지역',
-      'GLOBAL': '🚀 글로벌'
+      'GLOBAL': 'GLOBAL'
     }
   }
 };
