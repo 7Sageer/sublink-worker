@@ -1,15 +1,16 @@
 import { ProxyParser } from './ProxyParsers.js';
-import { DeepCopy } from './utils.js';
+import { DeepCopy, decodeBase64 } from './utils.js';
 import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang) {
+    constructor(inputString, baseConfig, lang, userAgent) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
         setLanguage(lang);
+        this.userAgent = userAgent;
     }
 
     async build() {
@@ -24,20 +25,73 @@ export class BaseConfigBuilder {
         const parsedItems = [];
 
         for (const url of urls) {
-            const result = await ProxyParser.parse(url);
-            if (Array.isArray(result)) {
-                for (const subUrl of result) {
-                    const subResult = await ProxyParser.parse(subUrl);
-                    if (subResult) {
-                        parsedItems.push(subResult);
+            // Try to decode if it might be base64
+            const processedUrls = this.tryDecodeBase64(url);
+            
+            // Handle single URL or array of URLs
+            if (Array.isArray(processedUrls)) {
+                // Handle multiple URLs from a single base64 string
+                for (const processedUrl of processedUrls) {
+                    const result = await ProxyParser.parse(processedUrl, this.userAgent);
+                    if (Array.isArray(result)) {
+                        for (const subUrl of result) {
+                            const subResult = await ProxyParser.parse(subUrl, this.userAgent);
+                            if (subResult) {
+                                parsedItems.push(subResult);
+                            }
+                        }
+                    } else if (result) {
+                        parsedItems.push(result);
                     }
                 }
-            } else if (result) {
-                parsedItems.push(result);
+            } else {
+                // Handle single URL (original behavior)
+                const result = await ProxyParser.parse(processedUrls, this.userAgent);
+                if (Array.isArray(result)) {
+                    for (const subUrl of result) {
+                        const subResult = await ProxyParser.parse(subUrl, this.userAgent);
+                        if (subResult) {
+                            parsedItems.push(subResult);
+                        }
+                    }
+                } else if (result) {
+                    parsedItems.push(result);
+                }
             }
         }
 
         return parsedItems;
+    }
+
+    tryDecodeBase64(str) {
+        // If the string already has a protocol prefix, return as is
+        if (str.includes('://')) {
+            return str;
+        }
+
+        try {
+            // Try to decode as base64
+            const decoded = decodeBase64(str);
+            
+            // Check if decoded content contains multiple links
+            if (decoded.includes('\n')) {
+                // Split by newline and filter out empty lines
+                const multipleUrls = decoded.split('\n').filter(url => url.trim() !== '');
+                
+                // Check if at least one URL is valid
+                if (multipleUrls.some(url => url.includes('://'))) {
+                    return multipleUrls;
+                }
+            }
+            
+            // Check if the decoded string looks like a valid URL
+            if (decoded.includes('://')) {
+                return decoded;
+            }
+        } catch (e) {
+            // If decoding fails, return original string
+        }
+        return str;
     }
 
     getOutboundsList() {

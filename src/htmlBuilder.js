@@ -117,6 +117,19 @@ const generateForm = () => `
           </button>
         </div>
       </div>
+
+      <div class="form-section">
+        <div class="form-section-title d-flex align-items-center">
+          ${t('UASettings')}
+          <span class="tooltip-icon ms-2">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              ${t('UAtip')}
+            </span>
+          </span>
+        </div>
+        <input type="text" class="form-control" id="customUA" placeholder="curl/7.74.0">
+      </div>
     </div>
 
     <div class="d-flex gap-2 mt-4">
@@ -466,10 +479,15 @@ const submitFormFunction = () => `
     const form = event.target;
     const formData = new FormData(form);
     const inputString = formData.get('input');
+
+    const userAgent = document.getElementById('customUA').value;
     
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
+
+    // Save UserAgent data to localStorage
+    localStorage.setItem('userAgent', document.getElementById('customUA').value);
     
     // 保存 configEditor 和 configType 到 localStorage
     localStorage.setItem('configEditor', document.getElementById('configEditor').value);
@@ -498,10 +516,10 @@ const submitFormFunction = () => `
     }));
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
-    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
@@ -527,6 +545,12 @@ const submitFormFunction = () => `
       if (advancedToggle === 'true') {
         document.getElementById('advancedOptions').classList.add('show');
       }
+    }
+    
+    // Load userAgent
+    const savedUA = localStorage.getItem('userAgent');
+    if (savedUA) {
+      document.getElementById('customUA').value = savedUA;
     }
     
     // 加载 configEditor 和 configType
@@ -580,12 +604,14 @@ const submitFormFunction = () => `
     localStorage.removeItem('predefinedRules');
     localStorage.removeItem('configEditor');  // 添加清除 configEditor
     localStorage.removeItem('configType');    // 添加清除 configType
+    localStorage.removeItem('userAgent');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
     document.getElementById('configEditor').value = '';
     document.getElementById('configType').value = 'singbox';  // 重置为默认值
+    document.getElementById('customUA').value = '';
     
     localStorage.removeItem('customPath');
     document.getElementById('customShortCode').value = '';
