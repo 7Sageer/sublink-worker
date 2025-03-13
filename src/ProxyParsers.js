@@ -36,7 +36,7 @@ export class ProxyParser {
 				// If no @ symbol found, try legacy format
 				if (!serverPart) {
 					// Decode the entire mainPart for legacy format
-					let decodedLegacy = decodeBase64(mainPart);
+					let decodedLegacy = base64ToBinary(mainPart);
 					// Legacy format: method:password@server:port
 					let [methodAndPass, serverInfo] = decodedLegacy.split('@');
 					let [method, password] = methodAndPass.split(':');
@@ -46,7 +46,7 @@ export class ProxyParser {
 				}
 
 				// Continue with new format parsing
-				let decodedParts = decodeBase64(base64).split(':');
+				let decodedParts = base64ToBinary(decodeURIComponent(base64)).split(':');
 				let method = decodedParts[0];
 				let password = decodedParts.slice(1).join(':');
 				let [server, server_port] = this.parseServer(serverPart);
