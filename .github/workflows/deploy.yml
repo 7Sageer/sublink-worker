@@ -77,7 +77,7 @@ jobs:
           cat wrangler.toml
           
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@V3
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: deploy
