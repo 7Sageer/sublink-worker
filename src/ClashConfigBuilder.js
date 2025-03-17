@@ -71,7 +71,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         'short-id': proxy.tls.reality.short_id,
                     } : undefined,
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
-                        'grpc-mode': 'gun',
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
                     tfo : proxy.tcp_fast_open,
@@ -111,7 +110,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         'short-id': proxy.tls.reality.short_id,
                     } : undefined,
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
-                        'grpc-mode': 'gun',
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
                     tfo : proxy.tcp_fast_open,
