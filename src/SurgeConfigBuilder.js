@@ -61,6 +61,9 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 break;
             case 'vmess':
                 surgeProxy = `${proxy.tag} = vmess, ${proxy.server}, ${proxy.server_port}, username=${proxy.uuid}`;
+                if (proxy.alter_id == 0) {
+                    surgeProxy += ', vmess-aead=true';
+                }
                 if (proxy.tls?.enabled) {
                     surgeProxy += ', tls=true';
                     if (proxy.tls.server_name) {
