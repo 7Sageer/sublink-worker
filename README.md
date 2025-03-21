@@ -37,7 +37,7 @@
 
 ### （推荐）自动部署
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lalalaccjj/sublink-worker)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/la1alaccjj/sublink-worker)
 
 ### 手动部署
 
