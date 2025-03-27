@@ -479,12 +479,7 @@ export const SING_BOX_CONFIG = {
                 "path": "geosite-geolocation-!cn.srs"
             }
 		],
-		rules: [
-			{
-				"outbound": "any",
-				"server": "dns_resolver"
-			}
-		]
+		rules: []
 	},
 	experimental: {
 		cache_file: {
