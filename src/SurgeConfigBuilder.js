@@ -227,57 +227,59 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         }
 
         finalConfig.push('\n[Rule]');
-        rules.forEach(rule => {
-            if (rule.site_rules[0] !== '') {
-                rule.site_rules.forEach(site => {
-                    switch (site.toLowerCase()) {
-                        case 'cn':
-                            finalConfig.push(`DOMAIN-SUFFIX,cn,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,com.cn,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${t('outboundNames.'+ rule.outbound)}`);
-                            break;
-                        case 'google':
-                            finalConfig.push(`DOMAIN-SUFFIX,google.com,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-KEYWORD,google,${t('outboundNames.'+ rule.outbound)}`);
-                            break;
-                        case 'telegram':
-                            finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,t.me,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-KEYWORD,telegram,${t('outboundNames.'+ rule.outbound)}`);
-                            break;
-                        default:
-                            finalConfig.push(`DOMAIN-KEYWORD,${site},${t('outboundNames.'+ rule.outbound)}`);
-                    }
-                });
-            }
 
-            if (rule.ip_rules[0] !== '') {
-                rule.ip_rules.forEach(ip => {
-                    finalConfig.push(`GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
-                });
-            }
+        // Rule-Set & Domain Rules & IP Rules:  To reduce DNS leaks and unnecessary DNS queries,
+        // domain & non-IP rules must precede IP rules
 
-            if (rule.domain_suffix) {
-                rule.domain_suffix.forEach(suffix => {
-                    finalConfig.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
-                });
-            }
+        rules.filter(rule => !!rule.domain_suffix).map(rule => {
+            rule.domain_suffix.forEach(suffix => {
+                finalConfig.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
+            });
+        });
 
-            if (rule.domain_keyword) {
-                rule.domain_keyword.forEach(keyword => {
-                    finalConfig.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
-                });
-            }
+        rules.filter(rule => !!rule.domain_keyword).map(rule => {
+            rule.domain_keyword.forEach(keyword => {
+                finalConfig.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
+            });
+        });
 
-            if (rule.ip_cidr) {
-                rule.ip_cidr.forEach(cidr => {
-                    finalConfig.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
-                });
-            }
+        rules.filter(rule => rule.site_rules[0] !== '').map(rule => {
+            rule.site_rules.forEach(site => {
+                switch (site.toLowerCase()) {
+                    case 'cn':
+                        finalConfig.push(`DOMAIN-SUFFIX,cn,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,com.cn,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${t('outboundNames.'+ rule.outbound)}`);
+                        break;
+                    case 'google':
+                        finalConfig.push(`DOMAIN-SUFFIX,google.com,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-KEYWORD,google,${t('outboundNames.'+ rule.outbound)}`);
+                        break;
+                    case 'telegram':
+                        finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-SUFFIX,t.me,${t('outboundNames.'+ rule.outbound)}`);
+                        finalConfig.push(`DOMAIN-KEYWORD,telegram,${t('outboundNames.'+ rule.outbound)}`);
+                        break;
+                    default:
+                        finalConfig.push(`DOMAIN-KEYWORD,${site},${t('outboundNames.'+ rule.outbound)}`);
+                }
+            });
+        });
+
+        rules.filter(rule => rule.ip_rules[0] !== '').map(rule => {
+            rule.ip_rules.forEach(ip => {
+                finalConfig.push(`GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+            });
+        });
+
+        rules.filter(rule => !!rule.ip_cidr).map(rule => {
+            rule.ip_cidr.forEach(cidr => {
+                finalConfig.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+            });
         });
 
         finalConfig.push('FINAL,' + t('outboundNames.Fall Back'));
