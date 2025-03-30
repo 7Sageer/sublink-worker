@@ -12,7 +12,7 @@
   <br>
 
   <p>
-    <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
+    <a href="https://dash.cloudflare.com/?to=/:account/workers-and-pages/create">
       <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
     </a>
   </p>
@@ -20,15 +20,13 @@
 
 ## 🚀 快速开始
 
-### 一键部署
-点击上方的 "Deploy to Cloudflare" 按钮，即可快速部署您的专属订阅转换服务。
-
-### 新手指南
-- [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
-- [视频教程2](https://www.youtube.com/watch?v=_1BfM2Chn7w)
-- [视频教程3](https://www.youtube.com/watch?v=7abmWqCXPR8)
-
-> 💡 这些是由Youtube社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+### 快速部署
+- Fork本项目，点击上方Deploy to Cloudflare按钮
+- 在`导入储存库`栏选择你的仓库（你需要绑定Github账户）
+- 更改`部署命令`如下，选择`保存并部署`即可使用
+``` bash
+npm run deploy
+```
 
 ## ✨ 功能特点
 
