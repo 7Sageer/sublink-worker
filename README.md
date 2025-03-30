@@ -21,7 +21,7 @@
 ## 🚀 快速开始
 
 ### 快速部署
-- Fork本项目，点击上方Deploy to Cloudflare按钮
+- Fork本项目，点击上方`Deploy to Cloudflare`按钮
 - 在`导入储存库`栏选择你的仓库（你需要绑定Github账户）
 - 更改`部署命令`如下，选择`保存并部署`即可使用
 ``` bash
