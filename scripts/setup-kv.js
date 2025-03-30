@@ -21,26 +21,54 @@ function runWranglerCommand(command) {
 // 检查KV namespace是否存在
 function checkKvNamespaceExists() {
   console.log(`正在检查KV namespace "${KV_NAMESPACE_NAME}"是否存在...`);
-  const output = runWranglerCommand('kv:namespace list --json');
+  const output = runWranglerCommand('kv namespace list');
   
   try {
-    const namespaces = JSON.parse(output);
-    return namespaces.find(ns => ns.title === KV_NAMESPACE_NAME);
+    // 尝试从输出中提取JSON部分（如果有）
+    const jsonMatch = output.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      const namespaces = JSON.parse(jsonMatch[0]);
+      return namespaces.find(ns => ns.title === KV_NAMESPACE_NAME);
+    }
+    
+    // 如果没有匹配到JSON格式，就使用正则表达式查找namespace
+    const namespaceRegex = new RegExp(`"${KV_NAMESPACE_NAME}"\\s*([a-zA-Z0-9-]+)`);
+    const match = output.match(namespaceRegex);
+    
+    if (match) {
+      return { 
+        title: KV_NAMESPACE_NAME, 
+        id: match[1] 
+      };
+    }
+    
+    return null;
   } catch (error) {
     console.error('解析KV namespace列表失败:', error.message);
-    process.exit(1);
+    console.error('原始输出:', output);
+    return null;
   }
 }
 
 // 创建KV namespace
 function createKvNamespace() {
   console.log(`创建KV namespace "${KV_NAMESPACE_NAME}"...`);
-  const output = runWranglerCommand(`kv:namespace create "${KV_NAMESPACE_NAME}" --json`);
+  const output = runWranglerCommand(`kv namespace create "${KV_NAMESPACE_NAME}"`);
   
   try {
-    return JSON.parse(output);
+    // 尝试从输出中提取ID
+    const idMatch = output.match(/id\s*=\s*"([^"]+)"/);
+    if (idMatch) {
+      return { 
+        title: KV_NAMESPACE_NAME, 
+        id: idMatch[1] 
+      };
+    } else {
+      throw new Error('无法从输出中提取KV namespace ID');
+    }
   } catch (error) {
-    console.error('创建KV namespace失败:', error.message);
+    console.error('解析创建KV namespace结果失败:', error.message);
+    console.error('原始输出:', output);
     process.exit(1);
   }
 }
