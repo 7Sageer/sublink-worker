@@ -68,10 +68,10 @@ npm run deploy
 
 ## 📝 最近更新
 
-### 2025-03-08
+### 2025-03-31
 
-- 支持自定义UA
-- 全面使用Clash Meta的Rule Provider
+- 因为Deploy to Workers 的重定向问题，更新了部署方式
+- 修改了部分过时的配置
 
 ## 🔧 项目结构
 
