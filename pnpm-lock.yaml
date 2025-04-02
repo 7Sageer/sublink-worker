@@ -19,7 +19,7 @@ importers:
         specifier: ^0.8.0
         version: 0.8.8(@vitest/runner@3.0.9)(@vitest/snapshot@3.0.9)(vitest@3.0.9(@types/node@22.10.5))
       vitest:
-        specifier: ^3.0.0
+        specifier: ^3.0.0 <3.1.0
         version: 3.0.9(@types/node@22.10.5)
       wrangler:
         specifier: ^3.60.3
