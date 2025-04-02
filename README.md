@@ -58,7 +58,7 @@ npm run deploy
 
 ## 📖 API 文档
 
-详细的 API 文档请参考 [API-doc.md](/docs/API-doc.md)
+详细的 API 文档请参考 [API-doc.md](/docs/APIDoc.md)
 
 ### 主要端点
 - `/singbox` - 生成 Sing-Box 配置
@@ -89,7 +89,7 @@ npm run deploy
 └── docs/
     ├── APIDoc.md         # API 文档
     ├── UpdateLogs.md      # 更新日志
-    └── FAQ.md             # 常见问题解答
+    ├── FAQ.md             # 常见问题解答
     └── BaseConfig.md      # 基础配置功能介绍
 ```
 
