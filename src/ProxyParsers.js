@@ -150,12 +150,7 @@ export class ProxyParser {
           const [uuid, serverInfo] = addressPart.split('@');
           const { host, port } = parseServerInfo(serverInfo);
       
-          const tls = {
-            enabled: true,
-            server_name: params.sni,
-            insecure: true,
-            alpn: ["h3"],
-          };
+          const tls = createTlsConfig(params);
 
           const obfs = {};
           if (params['obfs-password']) {
@@ -171,8 +166,8 @@ export class ProxyParser {
             password: decodeURIComponent(uuid),
             tls: tls,
             obfs: obfs,
-            up_mbps: 100,
-            down_mbps: 100
+            // up_mbps: 100,
+            // down_mbps: 100
           };
         }
       }
