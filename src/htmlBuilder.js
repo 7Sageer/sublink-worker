@@ -50,9 +50,6 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
       </div>
     </div>
     ${generateScripts()}
-    <!-- Cloudflare Web Analytics -->
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "67ed5892c109479cb0baddfaa9249c4e"}'></script>
-    <!-- End Cloudflare Web Analytics -->
   </body>
 `;
 
