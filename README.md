@@ -58,7 +58,7 @@ npm run deploy
 
 ## 📖 API 文档
 
-详细的 API 文档请参考 [API-doc.md](/docs/APIDoc.md)
+详细的 API 文档请参考 [APIDoc.md](/docs/APIDoc.md)
 
 ### 主要端点
 - `/singbox` - 生成 Sing-Box 配置
@@ -68,10 +68,10 @@ npm run deploy
 
 ## 📝 最近更新
 
-### 2025-03-31
+### 2025-04-04
 
-- 因为Deploy to Workers 的重定向问题，更新了部署方式
-- 修改了部分过时的配置
+- Surge 改为远程规则集 (#149 by @NSZA156)
+
 
 ## 🔧 项目结构
 
