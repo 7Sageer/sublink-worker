@@ -134,7 +134,7 @@ export class ProxyParser {
             tag: name,
             server: host,
             server_port: port,
-            uuid: uuid,
+            uuid: decodeURIComponent(uuid),
             tcp_fast_open: false,
             tls: tls,
             transport: transport,
@@ -150,12 +150,7 @@ export class ProxyParser {
           const [uuid, serverInfo] = addressPart.split('@');
           const { host, port } = parseServerInfo(serverInfo);
       
-          const tls = {
-            enabled: true,
-            server_name: params.sni,
-            insecure: true,
-            alpn: ["h3"],
-          };
+          const tls = createTlsConfig(params);
 
           const obfs = {};
           if (params['obfs-password']) {
@@ -168,11 +163,11 @@ export class ProxyParser {
             type: "hysteria2",
             server: host,
             server_port: port,
-            password: uuid,
+            password: decodeURIComponent(uuid),
             tls: tls,
             obfs: obfs,
-            up_mbps: 100,
-            down_mbps: 100
+            // up_mbps: 100,
+            // down_mbps: 100
           };
         }
       }
@@ -191,7 +186,7 @@ export class ProxyParser {
             tag: name,
             server: host,
             server_port: port,
-            password: password || parsedURL.username,
+            password: decodeURIComponent(password) || parsedURL.username,
             network: "tcp",
             tcp_fast_open: false,
             tls: tls,
@@ -219,8 +214,8 @@ export class ProxyParser {
             type: "tuic",
             server: host,
             server_port: port,
-            uuid: userinfo.split(':')[0],
-            password: userinfo.split(':')[1],
+            uuid: decodeURIComponent(userinfo.split(':')[0]),
+            password: decodeURIComponent(userinfo.split(':')[1]),
             congestion_control: params.congestion_control,
             tls: tls,
             flow: params.flow ?? undefined

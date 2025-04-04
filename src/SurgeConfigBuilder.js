@@ -1,40 +1,15 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { t } from './i18n/index.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
-        super(inputString, baseConfig || {
-            'general': {
-                'allow-wifi-access': false,
-                'wifi-access-http-port': 6152,
-                'wifi-access-socks5-port': 6153,
-                'http-listen': '127.0.0.1:6152',
-                'socks5-listen': '127.0.0.1:6153',
-                'allow-hotspot-access': false,
-                'skip-proxy': '127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,17.0.0.0/8,localhost,*.local,*.crashlytics.com,seed-sequoia.siri.apple.com,sequoia.apple.com',
-                'test-timeout': 5,
-                'proxy-test-url': 'http://cp.cloudflare.com/generate_204',
-                'internet-test-url': 'http://www.apple.com/library/test/success.html',
-                'geoip-maxmind-url': 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb',
-                'ipv6': false,
-                'show-error-page-for-reject': true,
-                'dns-server': '119.29.29.29, 180.184.1.1, 223.5.5.5, system',
-                'encrypted-dns-server': 'https://223.5.5.5/dns-query',
-                'exclude-simple-hostnames': true,
-                'read-etc-hosts': true,
-                'always-real-ip': '*.msftconnecttest.com, *.msftncsi.com, *.srv.nintendo.net, *.stun.playstation.net, xbox.*.microsoft.com, *.xboxlive.com, *.logon.battlenet.com.cn, *.logon.battle.net, stun.l.google.com, easy-login.10099.com.cn,*-update.xoyocdn.com, *.prod.cloud.netflix.com, appboot.netflix.com, *-appboot.netflix.com',
-                'hijack-dns': '*:53',
-                'udp-policy-not-supported-behaviour': 'REJECT',
-                'hide-vpn-icon': false,
-            },
-            'replica': {
-                'hide-apple-request': true,
-                'hide-crashlytics-request': true,
-                'use-keyword-filter': false,
-                'hide-udp': false
-            }
-        }, lang, userAgent);
+        // Not yet implemented, set aside for later use ;)
+        // if (!baseConfig) {
+        //     baseConfig = SURGE_CONFIG;
+        // }
+        baseConfig = SURGE_CONFIG;
+        super(inputString, baseConfig, lang, userAgent);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;
@@ -245,34 +220,13 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         rules.filter(rule => rule.site_rules[0] !== '').map(rule => {
             rule.site_rules.forEach(site => {
-                switch (site.toLowerCase()) {
-                    case 'cn':
-                        finalConfig.push(`DOMAIN-SUFFIX,cn,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,com.cn,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${t('outboundNames.'+ rule.outbound)}`);
-                        break;
-                    case 'google':
-                        finalConfig.push(`DOMAIN-SUFFIX,google.com,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-KEYWORD,google,${t('outboundNames.'+ rule.outbound)}`);
-                        break;
-                    case 'telegram':
-                        finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-SUFFIX,t.me,${t('outboundNames.'+ rule.outbound)}`);
-                        finalConfig.push(`DOMAIN-KEYWORD,telegram,${t('outboundNames.'+ rule.outbound)}`);
-                        break;
-                    default:
-                        finalConfig.push(`DOMAIN-KEYWORD,${site},${t('outboundNames.'+ rule.outbound)}`);
-                }
+                finalConfig.push(`RULE-SET,${SURGE_SITE_RULE_SET_BASEURL}${site}.conf,${t('outboundNames.'+ rule.outbound)}`);
             });
         });
 
         rules.filter(rule => rule.ip_rules[0] !== '').map(rule => {
             rule.ip_rules.forEach(ip => {
-                finalConfig.push(`GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                finalConfig.push(`RULE-SET,${SURGE_IP_RULE_SET_BASEURL}${ip}.txt,${t('outboundNames.'+ rule.outbound)},no-resolve`);
             });
         });
 
