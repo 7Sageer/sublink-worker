@@ -2,7 +2,7 @@
 
 ## 2025-04-04
 
-- Surge 改为远程规则集 (#149 by @NSZA156)
+- Surge 改为远程规则集 (#149 by [@NSZA156](https://github.com/NSZA156))
 
 ## 2025-03-31
 
