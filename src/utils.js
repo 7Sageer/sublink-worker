@@ -147,15 +147,15 @@ export function parseServerInfo(serverInfo) {
   
   export function createTlsConfig(params) {
 	let tls = { enabled: false };
-	if (params.security === 'xtls' || params.security === 'tls' || params.security === 'reality') {
+	if (params.security != 'none') {
 	  tls = {
 		enabled: true,
 		server_name: params.sni || params.host,
-		insecure: false,
-		utls: {
-		  enabled: true,
-		  fingerprint: "chrome"
-		},
+		insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+		// utls: {
+		//   enabled: true,
+		//   fingerprint: "chrome"
+		// },
 	  };
 	  if (params.security === 'reality') {
 		tls.reality = {

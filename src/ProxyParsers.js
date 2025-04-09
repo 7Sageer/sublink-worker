@@ -1,4 +1,4 @@
-import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64 } from './utils.js';
+import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64, base64ToBinary } from './utils.js';
 
 
 export class ProxyParser {
@@ -36,7 +36,7 @@ export class ProxyParser {
 				// If no @ symbol found, try legacy format
 				if (!serverPart) {
 					// Decode the entire mainPart for legacy format
-					let decodedLegacy = decodeBase64(mainPart);
+					let decodedLegacy = base64ToBinary(mainPart);
 					// Legacy format: method:password@server:port
 					let [methodAndPass, serverInfo] = decodedLegacy.split('@');
 					let [method, password] = methodAndPass.split(':');
@@ -46,7 +46,7 @@ export class ProxyParser {
 				}
 
 				// Continue with new format parsing
-				let decodedParts = decodeBase64(base64).split(':');
+				let decodedParts = base64ToBinary(decodeURIComponent(base64)).split(':');
 				let method = decodedParts[0];
 				let password = decodedParts.slice(1).join(':');
 				let [server, server_port] = this.parseServer(serverPart);
@@ -127,6 +127,12 @@ export class ProxyParser {
           const { host, port } = parseServerInfo(serverInfo);
       
           const tls = createTlsConfig(params);
+          if (tls.reality){
+            tls.utls = {
+              enabled: true,
+              fingerprint: "chrome",
+            }
+          }
           const transport = params.type !== 'tcp' ? createTransportConfig(params) : undefined;
       
           return {
@@ -134,7 +140,7 @@ export class ProxyParser {
             tag: name,
             server: host,
             server_port: port,
-            uuid: uuid,
+            uuid: decodeURIComponent(uuid),
             tcp_fast_open: false,
             tls: tls,
             transport: transport,
@@ -150,12 +156,7 @@ export class ProxyParser {
           const [uuid, serverInfo] = addressPart.split('@');
           const { host, port } = parseServerInfo(serverInfo);
       
-          const tls = {
-            enabled: true,
-            server_name: params.sni,
-            insecure: true,
-            alpn: ["h3"],
-          };
+          const tls = createTlsConfig(params);
 
           const obfs = {};
           if (params['obfs-password']) {
@@ -168,11 +169,11 @@ export class ProxyParser {
             type: "hysteria2",
             server: host,
             server_port: port,
-            password: uuid,
+            password: decodeURIComponent(uuid),
             tls: tls,
             obfs: obfs,
-            up_mbps: 100,
-            down_mbps: 100
+            // up_mbps: 100,
+            // down_mbps: 100
           };
         }
       }
@@ -191,7 +192,7 @@ export class ProxyParser {
             tag: name,
             server: host,
             server_port: port,
-            password: password || parsedURL.username,
+            password: decodeURIComponent(password) || parsedURL.username,
             network: "tcp",
             tcp_fast_open: false,
             tls: tls,
@@ -219,8 +220,8 @@ export class ProxyParser {
             type: "tuic",
             server: host,
             server_port: port,
-            uuid: userinfo.split(':')[0],
-            password: userinfo.split(':')[1],
+            uuid: decodeURIComponent(userinfo.split(':')[0]),
+            password: decodeURIComponent(userinfo.split(':')[1]),
             congestion_control: params.congestion_control,
             tls: tls,
             flow: params.flow ?? undefined

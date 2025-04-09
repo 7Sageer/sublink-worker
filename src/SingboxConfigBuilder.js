@@ -87,22 +87,47 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 
-        this.config.route.rules = rules.map(rule => ({
-            rule_set: [
-              ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
-              ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
-            ],
-            domain_suffix: rule.domain_suffix,
-            domain_keyword: rule.domain_keyword,
-            ip_cidr: rule.ip_cidr,
-            protocol: rule.protocol,
-            outbound: t(`outboundNames.${rule.outbound}`)
-        }));
+        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
+            this.config.route.rules.push({
+                domain_suffix: rule.domain_suffix,
+                domain_keyword: rule.domain_keyword,
+                protocol: rule.protocol,
+                outbound: t(`outboundNames.${rule.outbound}`)
+            });
+        });
+
+        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
+            this.config.route.rules.push({
+                rule_set: [
+                ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
+                ],
+                protocol: rule.protocol,
+                outbound: t(`outboundNames.${rule.outbound}`)
+            });
+        });
+
+        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
+            this.config.route.rules.push({
+                rule_set: [
+                ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
+                ],
+                protocol: rule.protocol,
+                outbound: t(`outboundNames.${rule.outbound}`)
+          });
+        });
+
+        rules.filter(rule => !!rule.ip_cidr).map(rule => {
+            this.config.route.rules.push({
+                ip_cidr: rule.ip_cidr,
+                protocol: rule.protocol,
+                outbound: t(`outboundNames.${rule.outbound}`)
+            });
+        });
 
         this.config.route.rules.unshift(
             { protocol: 'dns', outbound: 'dns-out' },
             { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: 'GLOBAL' }
+            { clash_mode: 'global', outbound: t('outboundNames.Node Select') }
         );
 
         this.config.route.auto_detect_interface = true;

@@ -12,7 +12,7 @@
   <br>
 
   <p>
-    <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Atlas52306/sublink-worker">
+      <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Atlas52306/sublink-worker">
       <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
     </a>
   </p>
@@ -20,15 +20,13 @@
 
 ## 🚀 快速开始
 
-### 一键部署
-点击上方的 "Deploy to Workers" 按钮，即可快速部署您的专属订阅转换服务。
-
-### 新手指南
-- [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
-- [视频教程2](https://www.youtube.com/watch?v=_1BfM2Chn7w)
-- [视频教程3](https://www.youtube.com/watch?v=7abmWqCXPR8)
-
-> 💡 这些是由Youtube社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+### 快速部署
+- Fork本项目，点击上方`Deploy to Cloudflare`按钮
+- 在`导入储存库`栏选择你的仓库（你需要绑定Github账户）
+- 更改`部署命令`如下，选择`保存并部署`即可使用
+``` bash
+npm run deploy
+```
 
 ## ✨ 功能特点
 
@@ -60,7 +58,7 @@
 
 ## 📖 API 文档
 
-详细的 API 文档请参考 [API-doc.md](/docs/API-doc.md)
+详细的 API 文档请参考 [APIDoc.md](/docs/APIDoc.md)
 
 ### 主要端点
 - `/singbox` - 生成 Sing-Box 配置
@@ -70,10 +68,10 @@
 
 ## 📝 最近更新
 
-### 2025-03-08
+### 2025-04-04
 
-- 支持自定义UA
-- 全面使用Clash Meta的Rule Provider
+- Surge 改为远程规则集 (#149 by [@NSZA156](https://github.com/NSZA156))
+
 
 ## 🔧 项目结构
 
@@ -89,9 +87,10 @@
 ├── style.js               # 生成 Web 界面的 CSS
 ├── config.js              # 保存配置信息
 └── docs/
-    ├── API-doc.md         # API 文档
-    ├── update-log.md      # 更新日志
-    └── FAQ.md             # 常见问题解答
+    ├── APIDoc.md         # API 文档
+    ├── UpdateLogs.md      # 更新日志
+    ├── FAQ.md             # 常见问题解答
+    └── BaseConfig.md      # 基础配置功能介绍
 ```
 
 ## 🤝 贡献

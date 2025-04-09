@@ -1,5 +1,19 @@
 # 更新日志
 
+## 2025-04-04
+
+- Surge 改为远程规则集 (#149 by [@NSZA156](https://github.com/NSZA156))
+
+## 2025-03-31
+
+- 因为Deploy to Workers 的重定向问题，更新了部署方式
+- 修改了部分过时的配置
+
+## 2025-03-08
+
+- 支持自定义UA
+- 全面使用Clash Meta的Rule Provider
+
 ## 2025-02-22
 
 - 全面支持i18n
