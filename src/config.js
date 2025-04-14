@@ -19,7 +19,7 @@ export const UNIFIED_RULES = [
 	{
 		name: 'AI Services',
 		outbound: t('outboundNames.AI Services'),
-		site_rules: ['category-ai-!cn',],
+		site_rules: ['category-ai-chat-!cn',],
 		ip_rules: []
 	},
 	{
