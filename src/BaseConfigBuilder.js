@@ -29,24 +29,13 @@ export class BaseConfigBuilder {
             const processedUrls = this.tryDecodeBase64(url);
             
             // Handle single URL or array of URLs
-            if (Array.isArray(processedUrls)) {
-                // Handle multiple URLs from a single base64 string
-                for (const processedUrl of processedUrls) {
-                    const result = await ProxyParser.parse(processedUrl, this.userAgent);
-                    if (Array.isArray(result)) {
-                        for (const subUrl of result) {
-                            const subResult = await ProxyParser.parse(subUrl, this.userAgent);
-                            if (subResult) {
-                                parsedItems.push(subResult);
-                            }
-                        }
-                    } else if (result) {
-                        parsedItems.push(result);
-                    }
-                }
-            } else {
-                // Handle single URL (original behavior)
-                const result = await ProxyParser.parse(processedUrls, this.userAgent);
+            if(!Array.isArray(processedUrls)){
+                processedUrls = [processedUrls];
+            }
+            
+            // Handle multiple URLs from a single base64 string
+            for (const processedUrl of processedUrls) {
+                const result = await ProxyParser.parse(processedUrl, this.userAgent);
                 if (Array.isArray(result)) {
                     for (const subUrl of result) {
                         const subResult = await ProxyParser.parse(subUrl, this.userAgent);
