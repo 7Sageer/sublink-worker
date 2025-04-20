@@ -220,8 +220,8 @@ export class ProxyParser {
             type: "tuic",
             server: host,
             server_port: port,
-            uuid: decodeURIComponent(userinfo.split(':')[0]),
-            password: decodeURIComponent(userinfo.split(':')[1]),
+            uuid: decodeURIComponent(userinfo).split(':')[0],
+            password: decodeURIComponent(userinfo).split(':')[1],
             congestion_control: params.congestion_control,
             tls: tls,
             flow: params.flow ?? undefined
