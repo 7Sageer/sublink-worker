@@ -16,8 +16,6 @@
       <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
     </a>
   </p>
-  
-  <p><b>本项目由 <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank">NodeSupport</a> 赞助支持</b></p>
 </div>
 
 ## 🚀 快速开始
