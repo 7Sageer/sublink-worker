@@ -12,23 +12,23 @@
   <br>
 
   <p>
-    <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
+    <a href="https://dash.cloudflare.com/?to=/:account/workers-and-pages/create">
       <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
     </a>
   </p>
+  
+  <p><b>本项目由 <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank">NodeSupport</a> 赞助支持</b></p>
 </div>
 
 ## 🚀 快速开始
 
-### 一键部署
-点击上方的 "Deploy to Workers" 按钮，即可快速部署您的专属订阅转换服务。
-
-### 新手指南
-- [视频教程1](https://www.youtube.com/watch?v=ZTgDm4qReyA)
-- [视频教程2](https://www.youtube.com/watch?v=_1BfM2Chn7w)
-- [视频教程3](https://www.youtube.com/watch?v=7abmWqCXPR8)
-
-> 💡 这些是由Youtube社区成员制作的教程视频，详细的讲解可以让你快速上手。但是部分内容可能与我们的见解不同，也可能与最新版本存在差异，建议同时参考[官方文档](/docs)
+### 快速部署
+- Fork本项目，点击上方`Deploy to Cloudflare`按钮
+- 在`导入储存库`栏选择你的仓库（你需要绑定Github账户）
+- 更改`部署命令`如下，选择`保存并部署`即可使用
+``` bash
+npm run deploy
+```
 
 ## ✨ 功能特点
 
@@ -46,6 +46,7 @@
 - 支持固定/随机短链接生成（基于 KV）
 - 浅色/深色主题切换
 - 灵活的 API，支持脚本化操作
+- 中文，英语，波斯语三语言支持
 
 ### 客户端支持
 - Sing-Box
@@ -59,7 +60,7 @@
 
 ## 📖 API 文档
 
-详细的 API 文档请参考 [API-doc.md](/docs/API-doc.md)
+详细的 API 文档请参考 [APIDoc.md](/docs/APIDoc.md)
 
 ### 主要端点
 - `/singbox` - 生成 Sing-Box 配置
@@ -69,9 +70,9 @@
 
 ## 📝 最近更新
 
-### 2024-12-27
+### 2025-04-27
 
-- 更新了 sing-box tun中废弃的 inet4_address 为 address
+- 提升Hysteria2协议兼容性
 
 ## 🔧 项目结构
 
@@ -87,9 +88,10 @@
 ├── style.js               # 生成 Web 界面的 CSS
 ├── config.js              # 保存配置信息
 └── docs/
-    ├── API-doc.md         # API 文档
-    ├── update-log.md      # 更新日志
-    └── FAQ.md             # 常见问题解答
+    ├── APIDoc.md         # API 文档
+    ├── UpdateLogs.md      # 更新日志
+    ├── FAQ.md             # 常见问题解答
+    └── BaseConfig.md      # 基础配置功能介绍
 ```
 
 ## 📄 许可证
@@ -100,8 +102,36 @@
 
 本项目仅供学习交流使用，请勿用于非法用途。使用本项目所造成的一切后果由使用者自行承担，与开发者无关。
 
+## 💰 赞助
+
+<div align="center">
+  <h3>感谢以下赞助商对本项目的支持</h3>
+<table border="0">
+  <tr>
+    <td>
+      <a href="https://yxvm.com/" target="_blank" title="YXVM">
+        <img src="https://image.779477.xyz/yxvm.png" alt="YXVM" height="60" hspace="20"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport">
+        <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60" hspace="20"/>
+      </a>
+    </td>
+  </tr>
+</table>
+  <p><b>NodeSupport赞助了本项目，感谢他们的支持！</b></p>
+  <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
+</div>
+
 ## ⭐ Star History
 
 感谢所有为本项目点亮 Star 的朋友们！🌟
 
-[![Star History Chart](https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date)](https://star-history.com/#7Sageer/sublink-worker&Date)
+<a href="https://star-history.com/#7Sageer/sublink-worker&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date" />
+ </picture>
+</a>

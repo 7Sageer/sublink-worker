@@ -1,12 +1,13 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
+import { t } from './i18n/index.js';
 
-export function generateHtml(xrayUrl, singboxUrl, clashUrl, baseUrl) {
+export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) {
   return `
     <!DOCTYPE html>
     <html lang="en">
       ${generateHead()}
-      ${generateBody(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+      ${generateBody(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
     </html>
   `;
 }
@@ -15,11 +16,11 @@ const generateHead = () => `
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sublink Worker是一款强大的在线订阅链接转换工具,支持V2Ray/Xray、SingBox、Clash等多种客户端，提供自定义规则和高效转换，帮助您轻松管理和优化代理节点。">
-    <meta name="keywords" content="Sublink, Worker, 订阅链接, 代理, Xray, SingBox, Clash, V2Ray, 自定义规则, 在线, 订阅转换, 机场订阅, 节点管理, 节点解析">
-    <title>Sublink Worker - 轻量高效的订阅转换工具 | 支持V2Ray/Xray、SingBox、Clash</title>
-    <meta property="og:title" content="Sublink Worker - 轻量高效的订阅链接转换工具">
-    <meta property="og:description" content="强大的在线订阅链接转换工具,支持多种代理协议和自定义规则">
+    <meta name="description" content="${t('pageDescription')}">
+    <meta name="keywords" content="${t('pageKeywords')}">
+    <title>${t('pageTitle')}</title>
+    <meta property="og:title" content="${t('ogTitle')}">
+    <meta property="og:description" content="${t('ogDescription')}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sublink-worker.sageer.me/">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
@@ -33,7 +34,7 @@ const generateHead = () => `
 
 
 
-const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
+const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
     ${generateGithubLink()}
@@ -43,15 +44,12 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
         <div class="card-body">
           ${generateForm()}
           <div id="subscribeLinksContainer">
-            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, baseUrl)}
+            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
           </div>
         </div>
       </div>
     </div>
     ${generateScripts()}
-    <!-- Cloudflare Web Analytics -->
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "67ed5892c109479cb0baddfaa9249c4e"}'></script>
-    <!-- End Cloudflare Web Analytics -->
   </body>
 `;
 
@@ -76,13 +74,13 @@ const generateCardHeader = () => `
 const generateForm = () => `
   <form method="POST" id="encodeForm">
     <div class="form-section">
-      <div class="form-section-title">Share URLs</div>
-      <textarea class="form-control" id="inputTextarea" name="input" required placeholder="vmess://abcd..." rows="3"></textarea>
+      <div class="form-section-title">${t('shareUrls')}</div>
+      <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
     </div>
 
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="advancedToggle">
-      <label class="form-check-label" for="advancedToggle">Advanced Options</label>
+      <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
     </div>
 
     <div id="advancedOptions">
@@ -92,11 +90,11 @@ const generateForm = () => `
 
       <div class="form-section">
         <div class="form-section-title d-flex align-items-center">
-          Base Config Settings(Optional)
+          ${t('baseConfigSettings')}
           <span class="tooltip-icon ms-2">
             <i class="fas fa-question-circle"></i>
             <span class="tooltip-content">
-              This feature is experimental and may not work as expected. You can paste your own base config here. Go to <a href="https://github.com/7Sageer/sublink-worker/blob/main/docs/base-config.md" target="_blank">docs</a> for more information.
+              ${t('baseConfigTooltip')}
             </span>
           </span>
         </div>
@@ -110,40 +108,53 @@ const generateForm = () => `
           <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
         </div>
         <div class="d-flex gap-2">
-          <button type="button" class="btn btn-secondary" onclick="saveConfig()">Save Config</button>
+          <button type="button" class="btn btn-secondary" onclick="saveConfig()">${t('saveConfig')}</button>
           <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
-            <i class="fas fa-trash-alt me-2"></i>Clear Config
+            <i class="fas fa-trash-alt me-2"></i>${t('clearConfig')}
           </button>
         </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title d-flex align-items-center">
+          ${t('UASettings')}
+          <span class="tooltip-icon ms-2">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              ${t('UAtip')}
+            </span>
+          </span>
+        </div>
+        <input type="text" class="form-control" id="customUA" placeholder="curl/7.74.0">
       </div>
     </div>
 
     <div class="d-flex gap-2 mt-4">
       <button type="submit" class="btn btn-primary flex-grow-1">
-        <i class="fas fa-sync-alt me-2"></i>Convert
+        <i class="fas fa-sync-alt me-2"></i>${t('convert')}
       </button>
       <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
-        <i class="fas fa-trash-alt me-2"></i>Clear
+        <i class="fas fa-trash-alt me-2"></i>${t('clear')}
       </button>
     </div>
   </form>
 `;
 
-const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
+const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <div class="mt-5">
-    <h2 class="mb-4">Your subscribe links:</h2>
-    ${generateLinkInput('Xray Link:', 'xrayLink', xrayUrl)}
+    ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
+    ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
     <div class="mb-3">
-      <label for="customShortCode" class="form-label">Custom Path (optional):</label>
+      <label for="customShortCode" class="form-label">${t('customPath')}</label>
       <div class="input-group flex-nowrap">
         <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
           ${baseUrl}/s/
         </span>
         <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
         <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
-          <option value="">Saved paths</option>
+          <option value="">${t('savedPaths')}</option>
         </select>
         <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
           <i class="fas fa-trash-alt"></i>
@@ -152,7 +163,7 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, baseUrl) => `
     </div>
     <div class="d-grid">
       <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-        <i class="fas fa-compress-alt me-2"></i>Shorten Links
+        <i class="fas fa-compress-alt me-2"></i>${t('shortenLinks')}
       </button>
     </div>
   </div>
@@ -183,7 +194,7 @@ const generateScripts = () => `
     ${applyPredefinedRulesFunction()}
     ${tooltipFunction()}
     ${submitFormFunction()}
-    ${customRuleFunctions}
+    ${customRuleFunctions()}
     ${generateQRCodeFunction()}
     ${customPathFunctions()}
     ${saveConfig()}
@@ -273,7 +284,7 @@ const copyToClipboardFunction = () => `
 `;
 
 const shortenAllUrlsFunction = () => `
-  let isShortening = false; // Add flag to track shortening status
+  let isShortening = false;
 
   async function shortenUrl(url, customShortCode) {
     saveCustomPath();
@@ -286,7 +297,6 @@ const shortenAllUrlsFunction = () => `
   }
 
   async function shortenAllUrls() {
-    // Prevent multiple clicks
     if (isShortening) {
       return;
     }
@@ -301,7 +311,6 @@ const shortenAllUrlsFunction = () => `
       const singboxLink = document.getElementById('singboxLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
-      // Check if links are already shortened
       if (singboxLink.value.includes('/b/')) {
         alert('Links are already shortened!');
         return;
@@ -311,10 +320,12 @@ const shortenAllUrlsFunction = () => `
 
       const xrayLink = document.getElementById('xrayLink');
       const clashLink = document.getElementById('clashLink');
+      const surgeLink = document.getElementById('surgeLink');
 
       xrayLink.value = window.location.origin + '/x/' + shortCode;
       singboxLink.value = window.location.origin + '/b/' + shortCode;
       clashLink.value = window.location.origin + '/c/' + shortCode;
+      surgeLink.value = window.location.origin + '/s/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to shorten URLs. Please try again.');
@@ -362,21 +373,23 @@ const darkModeToggleFunction = () => `
 const generateRuleSetSelection = () => `
   <div class="container">
     <div class="header-container">
-      <h4 class="header-title">Rule Selection</h4>
-      <span class="tooltip-icon">
-        <i class="fas fa-question-circle"></i>
-        <span class="tooltip-content">
-          These rules determine how traffic is directed through different proxies or directly. If you're unsure, you can use a predefined rule set.
-        </span>
-      </span>
+        <div class="form-section-title d-flex align-items-center">
+          ${t('ruleSelection')}
+          <span class="tooltip-icon ms-2">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              ${t('ruleSelectionTooltip')}
+            </span>
+          </span>
+        </div>
     </div>
 
     <div class="content-container mb-3">
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
-        <option value="custom">Custom</option>
-        <option value="minimal">Minimal</option>
-        <option value="balanced">Balanced</option>
-        <option value="comprehensive">Comprehensive</option>
+        <option value="custom">${t('custom')}</option>
+        <option value="minimal">${t('minimal')}</option>
+        <option value="balanced">${t('balanced')}</option>
+        <option value="comprehensive">${t('comprehensive')}</option>
       </select>
     </div>
     <div class="row" id="ruleCheckboxes">
@@ -384,21 +397,16 @@ const generateRuleSetSelection = () => `
         <div class="col-md-4 mb-2">
           <div class="form-check">
             <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
-            <label class="form-check-label" for="${rule.name}">${rule.outbound}</label>
+            <label class="form-check-label" for="${rule.name}">${t('outboundNames.' + rule.name)}</label>
           </div>
         </div>
       `).join('')}
     </div>
-    <div class="mt-4">
-      <h5>Custom Rules</h5>
-      <div class="form-check form-switch mb-3">
-        <input class="form-check-input" type="checkbox" id="crpinToggle">
-        <label class="form-check-label" for="crpinToggle">Pin Custom Rules</label>
-      </div>
+    <div class="mt-2">
       <div id="customRules">
       <!-- Custom rules will be dynamically added here -->
     </div>
-    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">Add Custom Rule</button>
+    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">${t('addCustomRule')}</button>
   </div>
   </div>
 `;
@@ -468,11 +476,15 @@ const submitFormFunction = () => `
     const form = event.target;
     const formData = new FormData(form);
     const inputString = formData.get('input');
+
+    const userAgent = document.getElementById('customUA').value;
     
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
-    localStorage.setItem('crpinToggle', document.getElementById('crpinToggle').checked);
+
+    // Save UserAgent data to localStorage
+    localStorage.setItem('userAgent', document.getElementById('customUA').value);
     
     // 保存 configEditor 和 configType 到 localStorage
     localStorage.setItem('configEditor', document.getElementById('configEditor').value);
@@ -487,7 +499,6 @@ const submitFormFunction = () => `
         .map(checkbox => checkbox.value);
     }
     
-    let pin = document.getElementById('crpinToggle').checked;
     const configEditor = document.getElementById('configEditor');
     const configId = new URLSearchParams(window.location.search).get('configId') || '';
 
@@ -502,14 +513,14 @@ const submitFormFunction = () => `
     }));
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
-    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}\${configParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&pin=\${pin}\${configParam}\`;
-
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
-
+    document.getElementById('surgeLink').value = surgeUrl;
     // Show the subscribe part
     const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
     subscribeLinksContainer.classList.remove('hide');
@@ -531,6 +542,12 @@ const submitFormFunction = () => `
       if (advancedToggle === 'true') {
         document.getElementById('advancedOptions').classList.add('show');
       }
+    }
+    
+    // Load userAgent
+    const savedUA = localStorage.getItem('userAgent');
+    if (savedUA) {
+      document.getElementById('customUA').value = savedUA;
     }
     
     // 加载 configEditor 和 configType
@@ -584,12 +601,14 @@ const submitFormFunction = () => `
     localStorage.removeItem('predefinedRules');
     localStorage.removeItem('configEditor');  // 添加清除 configEditor
     localStorage.removeItem('configType');    // 添加清除 configType
+    localStorage.removeItem('userAgent');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
     document.getElementById('configEditor').value = '';
     document.getElementById('configType').value = 'singbox';  // 重置为默认值
+    document.getElementById('customUA').value = '';
     
     localStorage.removeItem('customPath');
     document.getElementById('customShortCode').value = '';
@@ -614,8 +633,7 @@ const submitFormFunction = () => `
     document.getElementById('clearFormBtn').addEventListener('click', clearFormData);
   });
 `;
-
-const customRuleFunctions = `
+const customRuleFunctions = () => `
   let customRuleCount = 0;
 
   function addCustomRule() {
@@ -625,52 +643,52 @@ const customRuleFunctions = `
     newRuleDiv.dataset.ruleId = customRuleCount++;
     newRuleDiv.innerHTML = \`
       <div class="mb-2">
-        <label class="form-label">Outbound Name*</label>
-        <input type="text" class="form-control mb-2" name="customRuleName[]" placeholder="Rule Name" required>
+        <label class="form-label">${t('customRuleOutboundName')}</label>
+        <input type="text" class="form-control mb-2" name="customRuleName[]" placeholder="${t('customRuleOutboundName')}" required>
       </div>
       <div class="mb-2">
-        <label class="form-label">Geo-Site Rule Sets</label>
+        <label class="form-label">${t('customRuleGeoSite')}</label>
         <span class="tooltip-icon">
           <i class="fas fa-question-circle"></i>
           <span class="tooltip-content">
-            Site Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
+            ${t('customRuleGeoSiteTooltip')}
           </span>
         </span>
-        <input type="text" class="form-control" name="customRuleSite[]" placeholder="e.g., google,anthropic">
+        <input type="text" class="form-control" name="customRuleSite[]" placeholder="${t('customRuleGeoSitePlaceholder')}">
       </div>
       <div class="mb-2">
-        <label class="form-label">Geo-IP Rule Sets</label>
+        <label class="form-label">${t('customRuleGeoIP')}</label>
         <span class="tooltip-icon">
           <i class="fas fa-question-circle"></i>
           <span class="tooltip-content">
-            IP Rules in SingBox comes from https://github.com/lyc8503/sing-box-rules, that means your custom rules must be in the repos
+            ${t('customRuleGeoIPTooltip')}
           </span>
         </span>
-        <input type="text" class="form-control" name="customRuleIP[]" placeholder="e.g., private,cn">
+        <input type="text" class="form-control" name="customRuleIP[]" placeholder="${t('customRuleGeoIPPlaceholder')}">
       </div>
       <div class="mb-2">
-        <label class="form-label">Domain Suffix</label>
-        <input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="Domain Suffix (comma separated)">
+        <label class="form-label">${t('customRuleDomainSuffix')}</label>
+        <input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="${t('customRuleDomainSuffixPlaceholder')}">
       </div>
       <div class="mb-2">
-        <label class="form-label">Domain Keyword</label>
-        <input type="text" class="form-control mb-2" name="customRuleDomainKeyword[]" placeholder="Domain Keyword (comma separated)">
+        <label class="form-label">${t('customRuleDomainKeyword')}</label>
+        <input type="text" class="form-control mb-2" name="customRuleDomainKeyword[]" placeholder="${t('customRuleDomainKeywordPlaceholder')}">
       </div>
       <div class="mb-2">
-        <label class="form-label">IP CIDR</label>
-        <input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="IP CIDR (comma separated)">
+        <label class="form-label">${t('customRuleIPCIDR')}</label>
+        <input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="${t('customRuleIPCIDRPlaceholder')}">
       </div>
       <div class="mb-2">
-        <label class="form-label">Protocol</label>
+        <label class="form-label">${t('customRuleProtocol')}</label>
         <span class="tooltip-icon">
           <i class="fas fa-question-circle"></i>
           <span class="tooltip-content">
-            Protocol rules for specific traffic types. More details: https://sing-box.sagernet.org/configuration/route/sniff/
+            ${t('customRuleProtocolTooltip')}
           </span>
         </span>
-        <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="Protocol (comma separated, e.g, http,ssh,dns)">
+        <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="${t('customRuleProtocolPlaceholder')}">
       </div>
-      <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">Remove</button>
+      <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">${t('removeCustomRule')}</button>
     \`;
     customRulesDiv.appendChild(newRuleDiv);
   }

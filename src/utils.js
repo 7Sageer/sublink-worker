@@ -1,5 +1,15 @@
 const PATH_LENGTH = 7;
 
+// 自定义的字符串前缀检查函数
+export function checkStartsWith(str, prefix) {
+  if (str === undefined || str === null || prefix === undefined || prefix === null) {
+    return false;
+  }
+  str = String(str);
+  prefix = String(prefix);
+  return str.slice(0, prefix.length) === prefix;
+}
+
 
 // Base64 编码函数
 export function encodeBase64(input) {
@@ -126,23 +136,26 @@ export function parseServerInfo(serverInfo) {
 	const [paramsOnly, ...fragmentParts] = paramsPart.split('#');
 	const searchParams = new URLSearchParams(paramsOnly);
 	const params = Object.fromEntries(searchParams.entries());
-  
-	const name = fragmentParts.length > 0 ? decodeURIComponent(fragmentParts.join('#')) : '';
-  
+
+	let name = fragmentParts.length > 0 ? fragmentParts.join('#') : '';
+	try {
+	    name = decodeURIComponent(name);
+	} catch (error) { };
+	
 	return { addressPart, params, name };
   }
   
   export function createTlsConfig(params) {
 	let tls = { enabled: false };
-	if (params.security === 'xtls' || params.security === 'tls' || params.security === 'reality') {
+	if (params.security != 'none') {
 	  tls = {
 		enabled: true,
 		server_name: params.sni || params.host,
-		insecure: false,
-		utls: {
-		  enabled: true,
-		  fingerprint: "chrome"
-		},
+		insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+		// utls: {
+		//   enabled: true,
+		//   fingerprint: "chrome"
+		// },
 	  };
 	  if (params.security === 'reality') {
 		tls.reality = {

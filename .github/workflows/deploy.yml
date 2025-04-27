@@ -25,7 +25,7 @@ jobs:
       
       - name: Check and Create KV Namespace
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           KV_NAMESPACE="SUBLINK_KV"
@@ -47,7 +47,7 @@ jobs:
           
           if [ -z "$KV_ID" ]; then
               echo "KV namespace $KV_NAMESPACE does not exist. Creating..."
-              CREATE_OUTPUT=$(wrangler kv namespace create "$KV_NAMESPACE" 2>&1)
+              CREATE_OUTPUT=$(wrangler kv namespace create "sublink-worker-$KV_NAMESPACE" 2>&1)
               echo "Create KV namespace output: $CREATE_OUTPUT"
               KV_ID=$(echo "$CREATE_OUTPUT" | grep -o '[0-9a-f]\{32\}')
               
@@ -77,7 +77,7 @@ jobs:
           cat wrangler.toml
           
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@2.0.0
+        uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: deploy

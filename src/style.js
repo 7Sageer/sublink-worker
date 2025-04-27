@@ -217,15 +217,15 @@ export const generateStyles = () => `
     visibility: hidden;
     opacity: 0;
     background-color: var(--card-bg);
-    position: fixed; // 改为固定定位
+    position: fixed;
     background-color: var(--card-bg);
     color: var(--text-color);
     border: 1px solid var(--input-border);
     border-radius: 6px;
     padding: 10px;
-    z-index: 1000; // 提高z-index值
-    width: 300px;
-    max-width: 90vw; // 限制最大宽度
+    z-index: 1000;
+    width: 180px;
+    max-width: 90vw;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: opacity 0.3s, visibility 0.3s;
   }

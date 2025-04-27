@@ -1,8 +1,10 @@
-import { ConfigBuilder } from './SingboxConfigBuilder.js';
+import { SingboxConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
-import { encodeBase64, decodeBase64, GenerateWebPath, DeepCopy } from './utils.js';
-import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, CLASH_CONFIG } from './config.js';
+import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
+import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
+import { PREDEFINED_RULE_SETS } from './config.js';
+import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
 
 addEventListener('fetch', event => {
@@ -12,51 +14,29 @@ addEventListener('fetch', event => {
 async function handleRequest(request) {
   try {
     const url = new URL(request.url);
-
+    const lang = url.searchParams.get('lang');
+    setLanguage(lang || request.headers.get('accept-language')?.split(',')[0]);
     if (request.method === 'GET' && url.pathname === '/') {
       // Return the HTML form for GET requests
-      return new Response(generateHtml('', '', '', url.origin), {
+      return new Response(generateHtml('', '', '', '', url.origin), {
         headers: { 'Content-Type': 'text/html' }
       });
-    } else if (request.method === 'POST' && url.pathname === '/') {
-      const formData = await request.formData();
-      const inputString = formData.get('input');
-      const selectedRules = formData.getAll('selectedRules');
-      const customRuleDomains = formData.getAll('customRuleSite[]');
-      const customRuleIPs = formData.getAll('customRuleIP[]');
-      const customRuleNames = formData.getAll('customRuleName[]');
-      const customRules = customRuleDomains.map((domains, index) => ({
-        sites: domains.split(',').map(site => site.trim()),
-        ips: customRuleIPs[index].split(',').map(ip => ip.trim()),
-        outbound: customRuleNames[index]
-      }));
-      const pin = formData.get('pin');
-
-      if (!inputString) {
-        return new Response('Missing input parameter', { status: 400 });
-      }
-
-      // If no rules are selected, use the default rules
-      const rulesToUse = selectedRules.length > 0 ? selectedRules : ['广告拦截', '谷歌服务', '国外媒体', '电报消息'];
-
-      const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
-      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
-      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
-
-      return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl), {
-        headers: { 'Content-Type': 'text/html' }
-      });
-    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash')) {
+    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge')) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
-      let pin = url.searchParams.get('pin');
-
-      if (!inputString) {
-        return new Response('Missing config parameter', { status: 400 });
+      // 获取语言参数，如果为空则使用默认值
+      let lang = url.searchParams.get('lang') || 'zh-CN';
+      // Get custom UserAgent
+      let userAgent = url.searchParams.get('ua');
+      if (!userAgent) {
+        userAgent = 'curl/7.74.0';
       }
 
-      // Deal with predefined rules
+      if (!inputString) {
+        return new Response(t('missingConfig'), { status: 400 });
+      }
+
       if (PREDEFINED_RULE_SETS[selectedRules]) {
         selectedRules = PREDEFINED_RULE_SETS[selectedRules];
       } else {
@@ -83,34 +63,44 @@ async function handleRequest(request) {
         const customConfig = await SUBLINK_KV.get(configId);
         if (customConfig) {
           baseConfig = JSON.parse(customConfig);
-        } 
+        }
       }
 
-      // Env pin is use to pin customRules to top
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new ConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
+      } else if (url.pathname.startsWith('/clash')) {
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
       } else {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent)
+          .setSubscriptionUrl(url.href);
       }
 
       const config = await configBuilder.build();
 
+      // 设置正确的 Content-Type 和其他响应头
+      const headers = {
+        'content-type': url.pathname.startsWith('/singbox')
+          ? 'application/json; charset=utf-8'
+          : url.pathname.startsWith('/clash')
+            ? 'text/yaml; charset=utf-8'
+            : 'text/plain; charset=utf-8'
+      };
+
+      // 如果是 Surge 配置，添加 subscription-userinfo 头
+      if (url.pathname.startsWith('/surge')) {
+        headers['subscription-userinfo'] = 'upload=0; download=0; total=10737418240; expire=2546249531';
+      }
+
       return new Response(
         url.pathname.startsWith('/singbox') ? JSON.stringify(config, null, 2) : config,
-        {
-          headers: {
-            'content-type': url.pathname.startsWith('/singbox')
-              ? 'application/json; charset=utf-8'
-              : 'text/yaml; charset=utf-8'
-          }
-        }
+        { headers }
       );
 
     } else if (url.pathname === '/shorten') {
       const originalUrl = url.searchParams.get('url');
       if (!originalUrl) {
-        return new Response('Missing URL parameter', { status: 400 });
+        return new Response(t('missingUrl'), { status: 400 });
       }
 
       const shortCode = GenerateWebPath();
@@ -121,38 +111,29 @@ async function handleRequest(request) {
         headers: { 'Content-Type': 'application/json' }
       });
 
-    } else if (url.pathname === '/shorten-v2'){
+    } else if (url.pathname === '/shorten-v2') {
       const originalUrl = url.searchParams.get('url');
       let shortCode = url.searchParams.get('shortCode');
 
       if (!originalUrl) {
         return new Response('Missing URL parameter', { status: 400 });
       }
-      
+
       // Create a URL object to correctly parse the original URL
       const parsedUrl = new URL(originalUrl);
       const queryString = parsedUrl.search;
-      
+
       if (!shortCode) {
         shortCode = GenerateWebPath();
       }
 
       await SUBLINK_KV.put(shortCode, queryString);
-      
+
       return new Response(shortCode, {
         headers: { 'Content-Type': 'text/plain' }
       });
 
-    } else if (url.pathname.startsWith('/s/')) {
-      const shortCode = url.pathname.split('/')[2];
-      const originalUrl = await SUBLINK_KV.get(shortCode);
-
-      if (originalUrl === null) {
-        return new Response('Short URL not found', { status: 404 });
-      }
-
-      return Response.redirect(originalUrl, 302);
-    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/')) {
+    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
       const originalParam = await SUBLINK_KV.get(shortCode);
       let originalUrl;
@@ -163,10 +144,12 @@ async function handleRequest(request) {
         originalUrl = `${url.origin}/clash${originalParam}`;
       } else if (url.pathname.startsWith('/x/')) {
         originalUrl = `${url.origin}/xray${originalParam}`;
+      } else if (url.pathname.startsWith('/s/')) {
+        originalUrl = `${url.origin}/surge${originalParam}`;
       }
 
       if (originalUrl === null) {
-        return new Response('Short URL not found', { status: 404 });
+        return new Response(t('shortUrlNotFound'), { status: 404 });
       }
 
       return Response.redirect(originalUrl, 302);
@@ -176,11 +159,22 @@ async function handleRequest(request) {
       const proxylist = inputString.split('\n');
 
       const finalProxyList = [];
+      // Use custom UserAgent (for Xray) Hmmm...
+      let userAgent = url.searchParams.get('ua');
+      if (!userAgent) {
+        userAgent = 'curl/7.74.0';
+      }
+      let headers = new Headers({
+        "User-Agent"   : userAgent
+      });
 
       for (const proxy of proxylist) {
         if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
           try {
-            const response = await fetch(proxy)
+            const response = await fetch(proxy, {
+              method : 'GET',
+              headers : headers
+            })
             const text = await response.text();
             let decodedText;
             decodedText = decodeBase64(text.trim());
@@ -211,7 +205,7 @@ async function handleRequest(request) {
     } else if (url.pathname === '/config') {
       const { type, content } = await request.json();
       const configId = `${type}_${GenerateWebPath(8)}`;
-      
+
       try {
         let configString;
         if (type === 'clash') {
@@ -220,39 +214,39 @@ async function handleRequest(request) {
             const yamlConfig = yaml.load(content);
             configString = JSON.stringify(yamlConfig);
           } else {
-            configString = typeof content === 'object' 
+            configString = typeof content === 'object'
               ? JSON.stringify(content)
               : content;
           }
         } else {
           // singbox 配置处理
-          configString = typeof content === 'object' 
+          configString = typeof content === 'object'
             ? JSON.stringify(content)
             : content;
         }
 
         // 验证 JSON 格式
         JSON.parse(configString);
-        
-        await SUBLINK_KV.put(configId, configString, { 
+
+        await SUBLINK_KV.put(configId, configString, {
           expirationTtl: 60 * 60 * 24 * 30  // 30 days
         });
-        
+
         return new Response(configId, {
           headers: { 'Content-Type': 'text/plain' }
         });
       } catch (error) {
         console.error('Config validation error:', error);
-        return new Response('Invalid format: ' + error.message, {
+        return new Response(t('invalidFormat') + error.message, {
           status: 400,
           headers: { 'Content-Type': 'text/plain' }
         });
       }
     }
 
-    return new Response('Not Found', { status: 404 });
+    return new Response(t('notFound'), { status: 404 });
   } catch (error) {
     console.error('Error processing request:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response(t('internalError'), { status: 500 });
   }
 }
