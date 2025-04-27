@@ -104,6 +104,24 @@ npm run deploy
 
 本项目仅供学习交流使用，请勿用于非法用途。使用本项目所造成的一切后果由使用者自行承担，与开发者无关。
 
+## 💰 赞助
+
+<div align="center">
+  <h3>感谢以下赞助商对本项目的支持</h3>
+  <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; margin: 20px 0;">
+    <a href="https://yxvm.com/" target="_blank" title="YXVM">
+      <img src="https://yxvm.com/assets/img/logo.png" alt="YXVM" height="60"/>
+    </a>
+    <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport - 开源项目支持计划">
+      <div style="display: inline-flex; align-items: center; border-bottom: 1px solid #888; padding-bottom: 5px;">
+        <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60"/>
+        <span style="margin-left: 10px; font-size: 20px; font-weight: 500;">NodeSupport</span>
+      </div>
+    </a>
+  </div>
+  <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/7Sageer">@7Sageer</a></p>
+</div>
+
 ## ⭐ Star History
 
 感谢所有为本项目点亮 Star 的朋友们！🌟
