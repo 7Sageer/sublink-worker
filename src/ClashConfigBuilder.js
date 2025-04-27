@@ -86,7 +86,10 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     obfs: proxy.obfs.type,
                     'obfs-password': proxy.obfs.password,
                     password: proxy.password,
-                    auth: proxy.password,
+                    auth: proxy.auth,
+                    up: proxy.up_mbps,
+                    down: proxy.down_mbps,
+                    'recv-window-conn': proxy.recv_window_conn,
                     'skip-cert-verify': proxy.tls.insecure,
                 };
             case 'trojan':

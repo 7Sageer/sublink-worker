@@ -68,9 +68,9 @@ npm run deploy
 
 ## 📝 最近更新
 
-### 2025-04-23
+### 2025-04-27
 
-- 添加俄语支持[#162](https://github.com/7Sageer/sublink-worker/issues/162)
+- 提升Hysteria2协议兼容性
 
 ## 🔧 项目结构
 

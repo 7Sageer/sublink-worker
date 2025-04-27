@@ -9,6 +9,7 @@ export class ProxyParser {
 			case 'ss': return new ShadowsocksParser().parse(url);
 			case 'vmess': return new VmessParser().parse(url);
 			case 'vless': return new VlessParser().parse(url);
+      case 'hysteria':
       case 'hysteria2': 
       case 'hy2':
         return new Hysteria2Parser().parse(url);
@@ -20,7 +21,6 @@ export class ProxyParser {
 		}
 	}
 	}
-
 	class ShadowsocksParser {
 		parse(url) {
 			let parts = url.replace('ss://', '').split('#');
@@ -153,8 +153,24 @@ export class ProxyParser {
       class Hysteria2Parser {
         parse(url) {
           const { addressPart, params, name } = parseUrlParams(url);
-          const [uuid, serverInfo] = addressPart.split('@');
-          const { host, port } = parseServerInfo(serverInfo);
+          // 处理不包含 @ 的 URL 格式
+          let host, port;
+          let password = null;
+          
+          if (addressPart.includes('@')) {
+            const [uuid, serverInfo] = addressPart.split('@');
+            const parsed = parseServerInfo(serverInfo);
+            host = parsed.host;
+            port = parsed.port;
+            password = decodeURIComponent(uuid);
+          } else {
+            // 直接解析服务器地址和端口
+            const parsed = parseServerInfo(addressPart);
+            host = parsed.host;
+            port = parsed.port;
+            // 如果 URL 中没有 @，则尝试从 params.auth 获取密码
+            password = params.auth;
+          }
       
           const tls = createTlsConfig(params);
 
@@ -169,11 +185,14 @@ export class ProxyParser {
             type: "hysteria2",
             server: host,
             server_port: port,
-            password: decodeURIComponent(uuid),
+            password: password,
             tls: tls,
             obfs: obfs,
-            // up_mbps: 100,
-            // down_mbps: 100
+            auth: params.auth,
+            recv_window_conn: params.recv_window_conn,
+            insecure: Boolean(params.insecure),
+            up_mbps: params?.upmbps ? parseInt(params.upmbps) : undefined,
+            down_mbps: params?.downmbps ? parseInt(params.downmbps) : undefined
           };
         }
       }
