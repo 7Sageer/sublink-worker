@@ -110,16 +110,22 @@ npm run deploy
 
 <div align="center">
   <h3>感谢以下赞助商对本项目的支持</h3>
-  <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; margin: 20px 0;">
-    <a href="https://yxvm.com/" target="_blank" title="YXVM">
-      <img src="https://image.779477.xyz/yxvm.png" alt="YXVM" height="60"/>
-    </a>
-    <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport">
-      <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60"/>
-    </a>
-  </div>
+<table border="0">
+  <tr>
+    <td>
+      <a href="https://yxvm.com/" target="_blank" title="YXVM">
+        <img src="https://image.779477.xyz/yxvm.png" alt="YXVM" height="60" hspace="20"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport">
+        <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60" hspace="20"/>
+      </a>
+    </td>
+  </tr>
+</table>
   <p><b>NodeSupport赞助了本项目，感谢他们的支持！</b></p>
-  <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/7Sageer">@7Sageer</a></p>
+  <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
 </div>
 
 ## ⭐ Star History
