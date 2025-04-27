@@ -110,12 +110,11 @@ npm run deploy
   <h3>感谢以下赞助商对本项目的支持</h3>
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; margin: 20px 0;">
     <a href="https://yxvm.com/" target="_blank" title="YXVM">
-      <img src="https://yxvm.com/assets/img/logo.png" alt="YXVM" height="60"/>
+      <img src="https://image.779477.xyz/yxvm.png" alt="YXVM" height="60"/>
     </a>
     <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport - 开源项目支持计划">
       <div style="display: inline-flex; align-items: center; border-bottom: 1px solid #888; padding-bottom: 5px;">
         <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60"/>
-        <span style="margin-left: 10px; font-size: 20px; font-weight: 500;">NodeSupport</span>
       </div>
     </a>
   </div>
