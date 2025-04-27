@@ -16,6 +16,8 @@
       <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
     </a>
   </p>
+  
+  <p><b>本项目由 <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank">NodeSupport</a> 赞助支持</b></p>
 </div>
 
 ## 🚀 快速开始
@@ -112,12 +114,11 @@ npm run deploy
     <a href="https://yxvm.com/" target="_blank" title="YXVM">
       <img src="https://image.779477.xyz/yxvm.png" alt="YXVM" height="60"/>
     </a>
-    <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport - 开源项目支持计划">
-      <div style="display: inline-flex; align-items: center; border-bottom: 1px solid #888; padding-bottom: 5px;">
-        <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60"/>
-      </div>
+    <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport">
+      <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60"/>
     </a>
   </div>
+  <p><b>NodeSupport赞助了本项目，感谢他们的支持！</b></p>
   <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/7Sageer">@7Sageer</a></p>
 </div>
 
