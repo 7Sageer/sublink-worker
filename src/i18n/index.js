@@ -235,6 +235,84 @@ const translations = {
     },
     UASettings: 'Custom UserAgent',
     UAtip: 'By default it will use curl/7.74.0'
+  },
+  'ru': {
+    missingInput: 'Отсутствует входной параметр',
+    missingConfig: 'Отсутствует параметр конфигурации',
+    missingUrl: 'Отсутствует параметр URL',
+    shortUrlNotFound: 'Короткая ссылка не найдена',
+    internalError: 'Внутренняя ошибка сервера',
+    notFound: 'Не найдено',
+    invalidFormat: 'Недопустимый формат: ',
+    defaultRules: ['Блокировка рекламы', 'Сервисы Google', 'Зарубежные медиа', 'Telegram'],
+    configValidationError: 'Ошибка проверки конфигурации: ',
+    pageDescription: 'Sublink Worker - инструмент для преобразования ссылок подписки',
+    pageKeywords: 'ссылка подписки,преобразование,Xray,SingBox,Clash,Surge',
+    pageTitle: 'Sublink Worker - инструмент для преобразования ссылок подписки',
+    ogTitle: 'Sublink Worker - инструмент для преобразования ссылок подписки',
+    ogDescription: 'Мощный инструмент для преобразования ссылок подписки, поддерживающий различные форматы клиентов',
+    shareUrls: 'Поделиться ссылками',
+    urlPlaceholder: 'Введите здесь ваши ссылки подписки...',
+    advancedOptions: 'Расширенные настройки',
+    baseConfigSettings: 'Базовые настройки конфигурации',
+    baseConfigTooltip: 'Настройте базовую конфигурацию здесь',
+    saveConfig: 'Сохранить конфигурацию',
+    clearConfig: 'Очистить конфигурацию',
+    convert: 'Преобразовать',
+    clear: 'Очистить',
+    customPath: 'Пользовательский путь',
+    savedPaths: 'Сохранённые пути',
+    shortenLinks: 'Создать короткие ссылки',
+    ruleSelection: 'Выбор правил',
+    ruleSelectionTooltip: 'Выберите нужные наборы правил',
+    custom: 'Пользовательский',
+    minimal: 'Минимальный',
+    balanced: 'Сбалансированный',
+    comprehensive: 'Полный',
+    addCustomRule: 'Добавить пользовательское правило',
+    customRuleOutboundName: 'Имя выхода*',
+    customRuleGeoSite: 'Правила Geo-Site',
+    customRuleGeoSiteTooltip: 'Правила Site в SingBox берутся из https://github.com/lyc8503/sing-box-rules, значит ваши пользовательские правила должны быть в этом репозитории',
+    customRuleGeoSitePlaceholder: 'например: google,anthropic',
+    customRuleGeoIP: 'Правила Geo-IP',
+    customRuleGeoIPTooltip: 'Правила IP в SingBox берутся из https://github.com/lyc8503/sing-box-rules, значит ваши пользовательские правила должны быть в этом репозитории',
+    customRuleGeoIPPlaceholder: 'например: private,cn',
+    customRuleDomainSuffix: 'Суффикс домена',
+    customRuleDomainSuffixPlaceholder: 'Суффиксы домена (через запятую)',
+    customRuleDomainKeyword: 'Ключевые слова домена',
+    customRuleDomainKeywordPlaceholder: 'Ключевые слова домена (через запятую)',
+    customRuleIPCIDR: 'IP CIDR',
+    customRuleIPCIDRPlaceholder: 'IP CIDR (через запятую)',
+    customRuleProtocol: 'Тип протокола',
+    customRuleProtocolTooltip: 'Правила для определённых типов трафика. Подробнее: https://sing-box.sagernet.org/configuration/route/sniff/',
+    customRuleProtocolPlaceholder: 'Протоколы (через запятую, например: http,ssh,dns)',
+    removeCustomRule: 'Удалить',
+    outboundNames: {
+      'Auto Select': '⚡ Автовыбор',
+      'Node Select': '🚀 Выбор узла',
+      'Fall Back': '🐟 Резерв',
+      'Ad Block': '🛑 Блокировка рекламы',
+      'AI Services': '💬 AI-сервисы',
+      'Bilibili': '📺 Bilibili',
+      'Youtube': '📹 YouTube',
+      'Google': '🔍 Сервисы Google',
+      'Private': '🏠 Локальная сеть',
+      'Location:CN': '🔒 Сервисы Китая',
+      'Telegram': '📲 Telegram',
+      'Github': '🐱 GitHub',
+      'Microsoft': 'Ⓜ️ Сервисы Microsoft',
+      'Apple': '🍏 Сервисы Apple',
+      'Social Media': '🌐 Социальные сети',
+      'Streaming': '🎬 Стриминг',
+      'Gaming': '🎮 Игровые платформы',
+      'Education': '📚 Образовательные ресурсы',
+      'Financial': '💰 Финансовые сервисы',
+      'Cloud Services': '☁️ Облачные сервисы',
+      'Non-China': '🌐 За пределами Китая',
+      'GLOBAL': 'GLOBAL'
+    },
+    UASettings: 'Пользовательский UserAgent',
+    UAtip: 'По умолчанию используется curl/7.74.0'
   }
 };
 
@@ -250,6 +328,8 @@ export function setLanguage(lang) {
     currentLang = 'en-US';
   } else if(checkStartsWith(lang, 'fa')) {
     currentLang = 'fa';
+  } else if(checkStartsWith(lang, 'ru')) {
+    currentLang = 'ru';
   } else {
     currentLang = 'zh-CN';
   }

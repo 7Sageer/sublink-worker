@@ -131,7 +131,7 @@ API 支持以下预定义规则集:
 | Rule Name | Used Site Rules | Used IP Rules |
 |---|---|---|
 | Ad Block | category-ads-all |  |
-| AI Services | category-ai-chat-!cn |  |
+| AI Services | category-ai-!cn |  |
 | Bilibili | bilibili |  |
 | Youtube | youtube |  |
 | Google | google | google |
@@ -215,5 +215,3 @@ API 在出现问题时将返回适当的 HTTP 状态码和错误消息:
 ## 结论
 
 Sublink Worker API 提供了一种灵活而强大的方式来生成和管理代理配置。它支持多种代理协议、各种客户端类型和可自定义的路由规则。URL 缩短功能允许轻松共享和管理复杂的配置。
-
-如有任何问题或功能请求，欢迎联系[@7Sageer](https://github.com/7Sageer)。

@@ -151,11 +151,11 @@ export function parseServerInfo(serverInfo) {
 	  tls = {
 		enabled: true,
 		server_name: params.sni || params.host,
-		insecure: false,
-		utls: {
-		  enabled: true,
-		  fingerprint: "chrome"
-		},
+		insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+		// utls: {
+		//   enabled: true,
+		//   fingerprint: "chrome"
+		// },
 	  };
 	  if (params.security === 'reality') {
 		tls.reality = {
