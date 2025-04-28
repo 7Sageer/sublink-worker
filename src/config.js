@@ -401,7 +401,7 @@ export const SING_BOX_CONFIG = {
 			},
 			{
 				tag: "dns_resolver",
-				address: "114.114.114.114",
+				address: "223.5.5.5",
 				detour: "DIRECT"
 			},
 			{
