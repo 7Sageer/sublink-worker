@@ -190,7 +190,6 @@ export class ProxyParser {
             obfs: obfs,
             auth: params.auth,
             recv_window_conn: params.recv_window_conn,
-            insecure: Boolean(params.insecure),
             up_mbps: params?.upmbps ? parseInt(params.upmbps) : undefined,
             down_mbps: params?.downmbps ? parseInt(params.downmbps) : undefined
           };
