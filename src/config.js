@@ -460,17 +460,16 @@ export const SING_BOX_CONFIG = {
 		enabled: true,
 		server: 'time.apple.com',
 		server_port: 123,
-		interval: '30m',
-		detour: 'DIRECT'
+		interval: '30m'
 	},
 	inbounds: [
 		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
+		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true },
+		{ "type": "socks", "listen": "127.0.0.1", "listen_port": 2081, "tag": "REJECT-in" },
 	],
 	outbounds: [
-		{ type: 'direct', tag: 'DIRECT' },
-		{ type: 'block', tag: 'REJECT' },
-		{ type: 'dns', tag: 'dns-out' }
+		{ "type": "socks", "server": "127.0.0.1", "server_port": 2081, "tag": "REJECT" },
+		{ "type": "direct", "tag": "DIRECT" },
 	],
 	route : {
 		"rule_set": [
@@ -481,7 +480,16 @@ export const SING_BOX_CONFIG = {
                 "path": "geosite-geolocation-!cn.srs"
             }
 		],
-		rules: []
+		rules: [      
+			// {
+			// 	"inbound": ["REJECT-in"],
+			// 	"action": "reject"
+			// },
+			{
+				"inbound": ["DIRECT-in"],
+				"action": "direct"
+			}
+		]
 	},
 	experimental: {
 		cache_file: {
