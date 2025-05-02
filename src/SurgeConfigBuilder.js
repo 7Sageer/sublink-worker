@@ -118,6 +118,36 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
     addProxyToConfig(proxy) {
         this.config.proxies = this.config.proxies || [];
+        
+        // Get the name of the proxy to be added
+        const proxyName = this.getProxyName(proxy);
+        
+        // Check if there are proxies with similar names in existing proxies
+        const similarProxies = this.config.proxies
+            .map(p => this.getProxyName(p))
+            .filter(name => name.includes(proxyName));
+            
+        // Check if there is a proxy with identical configuration
+        const isIdentical = this.config.proxies.some(p => 
+            // Compare the remaining configuration after removing the name part
+            p.substring(p.indexOf('=')) === proxy.substring(proxy.indexOf('='))
+        );
+        
+        if (isIdentical) {
+            // If there is a proxy with identical configuration, skip adding it
+            return;
+        }
+        
+        // If there are proxies with similar names but different configurations, modify the name
+        if (similarProxies.length > 0) {
+            // Get the position of the equals sign
+            const equalsPos = proxy.indexOf('=');
+            if (equalsPos > 0) {
+                // Create a new proxy string with a number appended to the name
+                proxy = `${proxyName} ${similarProxies.length + 1}${proxy.substring(equalsPos)}`;
+            }
+        }
+        
         this.config.proxies.push(proxy);
     }
 
