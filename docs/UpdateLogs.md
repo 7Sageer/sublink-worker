@@ -1,5 +1,10 @@
 # 更新日志
 
+## 2025-05-02
+
+- 现在如果存在相同名称的代理，会自动进行重命名([#175](https://github.com/7Sageer/sublink-worker/pull/175))
+- 修复Singbox的DNS配置([#174](https://github.com/7Sageer/sublink-worker/pull/174))
+
 ## 2025-04-30
 
 - 完全适配Sing-Box 1.11

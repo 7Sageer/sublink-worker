@@ -68,10 +68,10 @@ npm run deploy
 
 ## 📝 最近更新
 
-### 2025-04-30
+### 2025-05-02
 
-- 完全适配Sing-Box 1.11
-- 出于Github最近的限制，Balance规则集添加了`Github`
+- 现在如果存在相同名称的代理，会自动进行重命名([#175](https://github.com/7Sageer/sublink-worker/pull/175))
+- 修复Singbox的DNS配置([#174](https://github.com/7Sageer/sublink-worker/pull/174))
 
 ## 🔧 项目结构
 
