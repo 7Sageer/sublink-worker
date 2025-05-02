@@ -4,7 +4,9 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const KV_NAMESPACE_NAME = 'sublink-worker-SUBLINK_KV';
+const KV_NAMESPACE = 'SUBLINK_KV';
+const WORKER_NAME = 'sublink-worker'
+const KV_NAMESPACE_NAME = `${WORKER_NAME}-${KV_NAMESPACE}`;
 const WRANGLER_CONFIG_PATH = path.join(__dirname, '..', 'wrangler.toml');
 
 // 执行wrangler命令并返回结果
@@ -53,7 +55,7 @@ function checkKvNamespaceExists() {
 // 创建KV namespace
 function createKvNamespace() {
   console.log(`创建KV namespace "${KV_NAMESPACE_NAME}"...`);
-  const output = runWranglerCommand(`kv namespace create "${KV_NAMESPACE_NAME}"`);
+  const output = runWranglerCommand(`kv namespace create "${KV_NAMESPACE}"`);
   
   try {
     // 尝试从输出中提取ID
