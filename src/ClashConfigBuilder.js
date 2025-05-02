@@ -140,6 +140,28 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addProxyToConfig(proxy) {
         this.config.proxies = this.config.proxies || [];
+    
+        // Find proxies with the same or partially matching name
+        const similarProxies = this.config.proxies.filter(p => p.name.includes(proxy.name));
+    
+        // Check if there is a proxy with identical data excluding the 'name' field
+        const isIdentical = similarProxies.some(p => {
+            const { name: _, ...restOfProxy } = proxy; // Exclude the 'name' attribute
+            const { name: __, ...restOfP } = p;       // Exclude the 'name' attribute
+            return JSON.stringify(restOfProxy) === JSON.stringify(restOfP);
+        });
+    
+        if (isIdentical) {
+            // If there is a proxy with identical data, skip adding it
+            return;
+        }
+    
+        // If there are proxies with similar names but different data, modify the name
+        if (similarProxies.length > 0) {
+            proxy.name = `${proxy.name} ${similarProxies.length + 1}`;
+        }
+    
+        // Add the proxy to the configuration
         this.config.proxies.push(proxy);
     }
 
