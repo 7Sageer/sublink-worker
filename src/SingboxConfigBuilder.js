@@ -126,7 +126,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.config.route.rules.unshift(
             { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: t('outboundNames.Node Select') }
+            { clash_mode: 'global', outbound: t('outboundNames.Node Select') },
+            { action: 'sniff' },
+            { protocol: 'dns', action: 'hijack-dns' }
         );
 
         this.config.route.auto_detect_interface = true;
