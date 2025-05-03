@@ -4,7 +4,10 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const KV_NAMESPACE_NAME = 'sublink-worker-SUBLINK_KV';
+const KV_NAMESPACE = 'SUBLINK_KV';
+const WORKER_NAME = 'sublink-worker'
+const KV_NAMESPACE_NAME = `${WORKER_NAME}-${KV_NAMESPACE}`;
+const LEGACY_KV_NAMESPACE_NAME = `${WORKER_NAME}-${WORKER_NAME}-${KV_NAMESPACE}`;  // 历史遗留的命名空间名称
 const WRANGLER_CONFIG_PATH = path.join(__dirname, '..', 'wrangler.toml');
 
 // 执行wrangler命令并返回结果
@@ -20,7 +23,7 @@ function runWranglerCommand(command) {
 
 // 检查KV namespace是否存在
 function checkKvNamespaceExists() {
-  console.log(`正在检查KV namespace "${KV_NAMESPACE_NAME}"是否存在...`);
+  console.log(`正在检查KV namespace "${KV_NAMESPACE_NAME}"和"${LEGACY_KV_NAMESPACE_NAME}"是否存在...`);
   const output = runWranglerCommand('kv namespace list');
   
   try {
@@ -28,16 +31,44 @@ function checkKvNamespaceExists() {
     const jsonMatch = output.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
       const namespaces = JSON.parse(jsonMatch[0]);
-      return namespaces.find(ns => ns.title === KV_NAMESPACE_NAME);
+      // 优先检查当前命名格式的命名空间
+      const primaryNamespace = namespaces.find(ns => ns.title === KV_NAMESPACE_NAME);
+      if (primaryNamespace) {
+        console.log(`找到命名空间: ${KV_NAMESPACE_NAME}`);
+        return primaryNamespace;
+      }
+      
+      // 如果当前格式不存在，检查遗留命名格式
+      const legacyNamespace = namespaces.find(ns => ns.title === LEGACY_KV_NAMESPACE_NAME);
+      if (legacyNamespace) {
+        console.log(`找到遗留命名空间: ${LEGACY_KV_NAMESPACE_NAME}`);
+        return legacyNamespace;
+      }
+      
+      return null;
     }
     
     // 如果没有匹配到JSON格式，就使用正则表达式查找namespace
-    const namespaceRegex = new RegExp(`"${KV_NAMESPACE_NAME}"\\s*([a-zA-Z0-9-]+)`);
-    const match = output.match(namespaceRegex);
+    // 首先尝试当前命名格式
+    let namespaceRegex = new RegExp(`"${KV_NAMESPACE_NAME}"\\s*([a-zA-Z0-9-]+)`);
+    let match = output.match(namespaceRegex);
     
     if (match) {
+      console.log(`找到命名空间: ${KV_NAMESPACE_NAME}`);
       return { 
         title: KV_NAMESPACE_NAME, 
+        id: match[1] 
+      };
+    }
+    
+    // 然后尝试遗留命名格式
+    namespaceRegex = new RegExp(`"${LEGACY_KV_NAMESPACE_NAME}"\\s*([a-zA-Z0-9-]+)`);
+    match = output.match(namespaceRegex);
+    
+    if (match) {
+      console.log(`找到遗留命名空间: ${LEGACY_KV_NAMESPACE_NAME}`);
+      return { 
+        title: LEGACY_KV_NAMESPACE_NAME, 
         id: match[1] 
       };
     }
@@ -53,7 +84,7 @@ function checkKvNamespaceExists() {
 // 创建KV namespace
 function createKvNamespace() {
   console.log(`创建KV namespace "${KV_NAMESPACE_NAME}"...`);
-  const output = runWranglerCommand(`kv namespace create "${KV_NAMESPACE_NAME}"`);
+  const output = runWranglerCommand(`kv namespace create "${KV_NAMESPACE}"`);
   
   try {
     // 尝试从输出中提取ID
