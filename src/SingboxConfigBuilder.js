@@ -56,12 +56,12 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.config.outbounds.unshift({
             type: "urltest",
             tag: t('outboundNames.Auto Select'),
-            outbounds: DeepCopy(proxyList.filter(proxy => proxy !== t('outboundNames.DIRECT'))),
+            outbounds: DeepCopy(proxyList),
         });
     }
 
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', t('outboundNames.Auto Select'));
+        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
         this.config.outbounds.unshift({
             type: "selector",
             tag: t('outboundNames.Node Select'),
