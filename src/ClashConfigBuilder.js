@@ -90,6 +90,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     up: proxy.up_mbps,
                     down: proxy.down_mbps,
                     'recv-window-conn': proxy.recv_window_conn,
+                    sni: proxy.tls?.server_name || '',
+                    'skip-cert-verify': proxy.tls?.insecure || true,
                 };
             case 'trojan':
                 return {
