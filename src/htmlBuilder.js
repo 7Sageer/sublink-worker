@@ -406,7 +406,10 @@ const generateRuleSetSelection = () => `
       <div id="customRules">
       <!-- Custom rules will be dynamically added here -->
     </div>
-    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">${t('addCustomRule')}</button>
+    <div class="d-flex gap-2 mt-2">
+      <button type="button" class="btn btn-secondary" onclick="addCustomRule()">${t('addCustomRule')}</button>
+      <button type="button" class="btn btn-secondary" onclick="addCustomRuleJSON()">${t('addCustomRuleJSON')}</button>
+    </div>
   </div>
   </div>
 `;
@@ -502,15 +505,7 @@ const submitFormFunction = () => `
     const configEditor = document.getElementById('configEditor');
     const configId = new URLSearchParams(window.location.search).get('configId') || '';
 
-    const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
-      site: rule.querySelector('input[name="customRuleSite[]"]').value,
-      ip: rule.querySelector('input[name="customRuleIP[]"]').value,
-      name: rule.querySelector('input[name="customRuleName[]"]').value,
-      domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value,
-      domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value,
-      ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value,
-      protocol: rule.querySelector('input[name="customRuleProtocol[]"]').value
-    }));
+    const customRules = parseCustomRules();
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
@@ -633,11 +628,31 @@ const submitFormFunction = () => `
     document.getElementById('clearFormBtn').addEventListener('click', clearFormData);
   });
 `;
+
 const customRuleFunctions = () => `
   let customRuleCount = 0;
 
+  function updateButtonsState() {
+    const addCustomBtn = document.querySelector('button[onclick="addCustomRule()"]');
+    const addCustomJSONBtn = document.querySelector('button[onclick="addCustomRuleJSON()"]');
+    const hasCustomRules = document.querySelectorAll('.custom-rule').length > 0;
+    const hasJSONRule = document.querySelectorAll('.custom-rule-json').length > 0;
+
+    // 如果有 JSON 规则，两个按钮都禁用
+    if (hasJSONRule) {
+      addCustomBtn.disabled = true;
+      addCustomJSONBtn.disabled = true;
+    } else {
+      // 如果有普通规则，只禁用 JSON 按钮
+      addCustomBtn.disabled = false;
+      addCustomJSONBtn.disabled = hasCustomRules;
+    }
+  }
+
   function addCustomRule() {
     const customRulesDiv = document.getElementById('customRules');
+    // 如果要添加普通规则，先移除所有 JSON 规则
+    document.querySelectorAll('.custom-rule-json').forEach(rule => rule.remove());
     const newRuleDiv = document.createElement('div');
     newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
     newRuleDiv.dataset.ruleId = customRuleCount++;
@@ -688,21 +703,94 @@ const customRuleFunctions = () => `
         </span>
         <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="${t('customRuleProtocolPlaceholder')}">
       </div>
-      <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">${t('removeCustomRule')}</button>
+      <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">${t('removeCustomRule')}</button>
     \`;
     customRulesDiv.appendChild(newRuleDiv);
+    updateButtonsState();
   }
 
-  function removeCustomRule(button) {
-    const ruleDiv = button.closest('.custom-rule');
+  function addCustomRuleJSON() {
+    const customRulesDiv = document.getElementById('customRules');
+    // 确保在添加 JSON 规则之前，移除所有普通规则
+    document.querySelectorAll('.custom-rule').forEach(rule => rule.remove()); 
+
+    const newRuleDiv = document.createElement('div');
+    newRuleDiv.className = 'custom-rule-json mb-3 p-3 border rounded';
+    newRuleDiv.dataset.ruleId = customRuleCount++;
+    newRuleDiv.innerHTML = \`
+      <div class="mb-2">
+        <label class="form-label">${t('customRuleJSON')}</label>
+        <span class="tooltip-icon">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            ${t('customRuleJSONTooltip')}
+          </span>
+        </span>
+        <textarea class="form-control" name="customRuleJSON[]" rows="10" placeholder='[
+  {
+    "name": "规则名称",
+    "site": "geosite:category",
+    "ip": "geoip:country",
+    "domain_suffix": "example.com",
+    "domain_keyword": "keyword",
+    "ip_cidr": "192.168.1.0/24",
+    "protocol": "tcp,udp"
+  }
+]'></textarea>
+      </div>
+      <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">${t('removeCustomRule')}</button>
+    \`;
+    customRulesDiv.appendChild(newRuleDiv);
+    updateButtonsState();
+  }
+
+  // 统一的移除函数
+  function removeRule(button) {
+    // 寻找最近的 .custom-rule 或 .custom-rule-json 父元素
+    const ruleDiv = button.closest('.custom-rule, .custom-rule-json');
     if (ruleDiv) {
-      ruleDiv.classList.add('removing');
-      ruleDiv.addEventListener('animationend', () => {
-        ruleDiv.remove();
-        customRuleCount--;
-      }, { once: true });
+      // 直接移除，不等待动画
+      ruleDiv.remove();
+      customRuleCount--; 
+      updateButtonsState();
     }
   }
+
+  function parseCustomRules() {
+    const customRules = [];
+    
+    // 处理普通表单规则
+    document.querySelectorAll('.custom-rule').forEach(rule => {
+      customRules.push({
+        name: rule.querySelector('input[name="customRuleName[]"]').value,
+        site: rule.querySelector('input[name="customRuleSite[]"]').value,
+        ip: rule.querySelector('input[name="customRuleIP[]"]').value,
+        domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value,
+        domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value,
+        ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value,
+        protocol: rule.querySelector('input[name="customRuleProtocol[]"]').value
+      });
+    });
+
+    // 处理 JSON 规则
+    document.querySelectorAll('.custom-rule-json').forEach(rule => {
+      try {
+        const jsonRules = JSON.parse(rule.querySelector('textarea[name="customRuleJSON[]"]').value);
+        if (Array.isArray(jsonRules)) {
+          customRules.push(...jsonRules);
+        }
+      } catch (error) {
+        console.error('Error parsing JSON rules:', error);
+      }
+    });
+
+    return customRules;
+  }
+
+  // 初始化按钮状态
+  document.addEventListener('DOMContentLoaded', function() {
+    updateButtonsState();
+  });
 `;
 
 const generateQRCodeFunction = () => `
