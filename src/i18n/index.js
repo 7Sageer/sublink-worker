@@ -52,6 +52,9 @@ const translations = {
     customRuleProtocolTooltip: '特定流量类型的协议规则。更多详情：https://sing-box.sagernet.org/configuration/route/sniff/',
     customRuleProtocolPlaceholder: '协议（用逗号分隔，例如：http,ssh,dns）',
     removeCustomRule: '移除',
+    addCustomRuleJSON: '添加JSON规则',
+    customRuleJSON: 'JSON规则',
+    customRuleJSONTooltip: '使用JSON格式添加自定义规则，支持批量添加',
     // 规则名称和出站名称的翻译
     outboundNames: {
       'Auto Select': '⚡ 自动选择',
@@ -131,6 +134,9 @@ const translations = {
     customRuleProtocolTooltip: 'Protocol rules for specific traffic types. More details: https://sing-box.sagernet.org/configuration/route/sniff/',
     customRuleProtocolPlaceholder: 'Protocols (comma separated, e.g., http,ssh,dns)',
     removeCustomRule: 'Remove',
+    addCustomRuleJSON: 'Add JSON Rule',
+    customRuleJSON: 'JSON Rule',
+    customRuleJSONTooltip: 'Add custom rules using JSON format, supports batch adding',
     outboundNames:{
       'Auto Select': '⚡ Auto Select',
       'Node Select': '🚀 Node Select',
@@ -209,6 +215,9 @@ const translations = {
     customRuleProtocolTooltip: 'قوانین پروتکل برای انواع خاص ترافیک. جزئیات بیشتر: https://sing-box.sagernet.org/configuration/route/sniff/',
     customRuleProtocolPlaceholder: 'پروتکل‌ها (با کاما جدا شده، مثلاً: http,ssh,dns)',
     removeCustomRule: 'حذف',
+    addCustomRuleJSON: 'افزودن قانون JSON',
+    customRuleJSON: 'قانون JSON',
+    customRuleJSONTooltip: 'افزودن قوانین سفارشی با استفاده از فرمت JSON، پشتیبانی از افزودن دسته‌ای',
     outboundNames: {
       'Auto Select': '⚡ انتخاب خودکار',
       'Node Select': '🚀 انتخاب نود',
@@ -287,6 +296,9 @@ const translations = {
     customRuleProtocolTooltip: 'Правила для определённых типов трафика. Подробнее: https://sing-box.sagernet.org/configuration/route/sniff/',
     customRuleProtocolPlaceholder: 'Протоколы (через запятую, например: http,ssh,dns)',
     removeCustomRule: 'Удалить',
+    addCustomRuleJSON: 'Добавить правило JSON',
+    customRuleJSON: 'Правило JSON',
+    customRuleJSONTooltip: 'Добавление пользовательских правил в формате JSON, поддерживает пакетное добавление',
     outboundNames: {
       'Auto Select': '⚡ Автовыбор',
       'Node Select': '🚀 Выбор узла',
