@@ -525,6 +525,124 @@ const submitFormFunction = () => `
     subscribeLinksContainer.scrollIntoView({ behavior: 'smooth' });
   }
 
+  function parseUrlAndFillForm(url) {
+    try {
+      const urlObj = new URL(url);
+      const params = new URLSearchParams(urlObj.search);
+      
+      // 解析基础配置
+      const config = params.get('config');
+      if (config) {
+        // 将解码后的原始订阅链接显示在输入框中
+        const decodedConfig = decodeURIComponent(config);
+        document.getElementById('inputTextarea').value = decodedConfig;
+      }
+
+      // 解析 UserAgent
+      const ua = params.get('ua');
+      if (ua) {
+        document.getElementById('customUA').value = decodeURIComponent(ua);
+      }
+
+      // 解析规则选择
+      const selectedRules = params.get('selectedRules');
+      if (selectedRules) {
+        try {
+          const decodedRules = decodeURIComponent(selectedRules).replace(/^"|"$/g, '');
+          // 检查是否是预置规则
+          if (['minimal', 'balanced', 'comprehensive'].includes(decodedRules)) {
+            const predefinedRules = document.getElementById('predefinedRules');
+            predefinedRules.value = decodedRules;
+            // 根据预置规则集选中对应的复选框
+            const rulesToApply = ${JSON.stringify(PREDEFINED_RULE_SETS)};
+            const checkboxes = document.querySelectorAll('.rule-checkbox');
+            checkboxes.forEach(checkbox => {
+              checkbox.checked = rulesToApply[decodedRules].includes(checkbox.value);
+            });
+          } else {
+            // 处理自定义规则（JSON数组）
+            const rules = JSON.parse(decodedRules);
+            if (Array.isArray(rules)) {
+              document.getElementById('predefinedRules').value = 'custom';
+              // 一次循环处理所有复选框
+              const checkboxes = document.querySelectorAll('.rule-checkbox');
+              checkboxes.forEach(checkbox => {
+                checkbox.checked = rules.includes(checkbox.value);
+              });
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing selected rules:', e);
+        }
+      }
+
+      // 解析自定义规则
+      const customRules = params.get('customRules');
+      if (customRules) {
+        try {
+          const rules = JSON.parse(decodeURIComponent(customRules));
+          if (Array.isArray(rules) && rules.length > 0) {
+            // 清除现有的自定义规则
+            document.querySelectorAll('.custom-rule, .custom-rule-json').forEach(rule => rule.remove());
+            
+            // 添加新的自定义规则
+            addCustomRuleJSON();
+            const ruleDiv = document.querySelector('.custom-rule-json');
+            if (ruleDiv) {
+              ruleDiv.querySelector('textarea[name="customRuleJSON[]"]').value = JSON.stringify(rules, null, 2);
+            }
+            
+          }
+        } catch (e) {
+          console.error('Error parsing custom rules:', e);
+        }
+      }
+
+      // 解析配置 ID
+      const configId = params.get('configId');
+      if (configId) {
+        // 获取配置内容
+        fetch(\`/config?type=singbox&id=\${configId}\`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.content) {
+              document.getElementById('configEditor').value = data.content;
+              document.getElementById('configType').value = data.type || 'singbox';
+            }
+          })
+          .catch(error => console.error('Error fetching config:', error));
+      }
+
+      // 显示高级选项
+      document.getElementById('advancedToggle').checked = true;
+      document.getElementById('advancedOptions').classList.add('show');
+    } catch (e) {
+      console.error('Error parsing URL:', e);
+    }
+  }
+
+  // 添加输入框事件监听
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputTextarea = document.getElementById('inputTextarea');
+    let lastValue = '';
+    
+    inputTextarea.addEventListener('input', function() {
+      const currentValue = this.value.trim();
+      
+      // if (currentValue && currentValue !== lastValue && 
+      // 检查是否是项目生成的链接，移除对 lastValue 的比较，无论相同都解析链接
+      if (currentValue && 
+          (currentValue.includes('/singbox?') || 
+           currentValue.includes('/clash?') || 
+           currentValue.includes('/surge?') || 
+           currentValue.includes('/xray?'))) {
+        parseUrlAndFillForm(currentValue);
+      }
+      
+      lastValue = currentValue;
+    });
+  });
+
   function loadSavedFormData() {
     const savedInput = localStorage.getItem('inputTextarea');
     if (savedInput) {
