@@ -675,22 +675,63 @@ const submitFormFunction = () => `
     }
   }
 
+  // 检测是否是短链
+  function isShortUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      return pathParts.length >= 3 && ['b', 'c', 'x', 's'].includes(pathParts[1]) && pathParts[2];
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // 自动解析短链
+  async function autoResolveShortUrl(shortUrl) {
+    try {
+      const response = await fetch(\`/resolve?url=\${encodeURIComponent(shortUrl)}\`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const originalUrl = data.originalUrl;
+        
+        // 用原始URL替换输入框中的短链
+        document.getElementById('inputTextarea').value = originalUrl;
+        
+        // 解析原始URL到表单
+        parseUrlAndFillForm(originalUrl);
+        
+        return true;
+      } else {
+        console.error('Failed to resolve short URL:', await response.text());
+        return false;
+      }
+    } catch (error) {
+      console.error('Error resolving short URL:', error);
+      return false;
+    }
+  }
+
   // 添加输入框事件监听
   document.addEventListener('DOMContentLoaded', function() {
     const inputTextarea = document.getElementById('inputTextarea');
     let lastValue = '';
     
-    inputTextarea.addEventListener('input', function() {
+    inputTextarea.addEventListener('input', async function() {
       const currentValue = this.value.trim();
       
-      // if (currentValue && currentValue !== lastValue && 
-      // 检查是否是项目生成的链接，移除对 lastValue 的比较，无论相同都解析链接
-      if (currentValue && 
-          (currentValue.includes('/singbox?') || 
-           currentValue.includes('/clash?') || 
-           currentValue.includes('/surge?') || 
-           currentValue.includes('/xray?'))) {
-        parseUrlAndFillForm(currentValue);
+      if (currentValue && currentValue !== lastValue) {
+        // 首先检查是否是短链
+        if (isShortUrl(currentValue)) {
+          await autoResolveShortUrl(currentValue);
+        }
+        // 然后检查是否是项目生成的完整链接
+        else if (currentValue.includes('/singbox?') || 
+                 currentValue.includes('/clash?') || 
+                 currentValue.includes('/surge?') || 
+                 currentValue.includes('/xray?')) {
+          parseUrlAndFillForm(currentValue);
+        }
       }
       
       lastValue = currentValue;
@@ -1231,6 +1272,7 @@ const saveConfig = () => `
     });
   }
 `;
+
 
 const clearConfig = () => `
   function clearConfig() {

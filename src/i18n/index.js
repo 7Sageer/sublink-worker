@@ -6,6 +6,7 @@ const translations = {
     missingConfig: '缺少配置参数',
     missingUrl: '缺少URL参数',
     shortUrlNotFound: '短链接未找到',
+    invalidShortUrl: '无效的短链接',
     internalError: '内部服务器错误',
     notFound: '未找到',
     invalidFormat: '无效格式：',
@@ -110,6 +111,7 @@ const translations = {
     missingConfig: 'Missing config parameter',
     missingUrl: 'Missing URL parameter',
     shortUrlNotFound: 'Short URL not found',
+    invalidShortUrl: 'Invalid short URL',
     internalError: 'Internal Server Error',
     notFound: 'Not Found',
     invalidFormat: 'Invalid format: ',
@@ -213,6 +215,7 @@ const translations = {
     missingConfig: 'پارامتر پیکربندی وجود ندارد',
     missingUrl: 'پارامتر URL وجود ندارد',
     shortUrlNotFound: 'لینک کوتاه پیدا نشد',
+    invalidShortUrl: 'لینک کوتاه نامعتبر',
     internalError: 'خطای داخلی سرور',
     notFound: 'یافت نشد',
     invalidFormat: 'فرمت نامعتبر: ',
@@ -308,14 +311,15 @@ const translations = {
       'Non-China': '🌐 خارج از چین',
       'GLOBAL': 'GLOBAL'
     },
-    UASettings: 'Custom UserAgent',
-    UAtip: 'By default it will use curl/7.74.0'
+    UASettings: 'UserAgent سفارشی',
+    UAtip: 'به طور پیش‌فرض از curl/7.74.0 استفاده می‌کند'
   },
   'ru': {
     missingInput: 'Отсутствует входной параметр',
     missingConfig: 'Отсутствует параметр конфигурации',
     missingUrl: 'Отсутствует параметр URL',
     shortUrlNotFound: 'Короткая ссылка не найдена',
+    invalidShortUrl: 'Недопустимая короткая ссылка',
     internalError: 'Внутренняя ошибка сервера',
     notFound: 'Не найдено',
     invalidFormat: 'Недопустимый формат: ',
