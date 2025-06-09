@@ -414,47 +414,94 @@ const generateCustomRulesTabs = () => `
   </div>
 `;
 
-        <div class="custom-rules-content">
-          <!-- Form View -->
-          <div id="formView" class="custom-rules-view active">
-            <div class="conversion-controls">
-              <button type="button" class="btn btn-outline-primary btn-sm" onclick="addCustomRule()">
-                <i class="fas fa-plus me-1"></i>${t('addCustomRule')}
-              </button>
-              <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllCustomRules()">
-                <i class="fas fa-trash me-1"></i>${t('clearAll')}
-              </button>
-            </div>
-            <div id="customRules">
-              <!-- Custom rules will be dynamically added here -->
-            </div>
-            <div id="emptyFormMessage" class="empty-state" style="display: none;">
-              <i class="fas fa-plus-circle fa-2x mb-2"></i>
-              <p>${t('noCustomRulesForm')}</p>
-            </div>
-          </div>
+const generateCustomRulesContent = () => `
+  <div class="custom-rules-content">
+    ${generateFormView()}
+    ${generateJSONView()}
+  </div>
+`;
 
-          <!-- JSON View -->
-          <div id="jsonView" class="custom-rules-view">
-            <div class="conversion-controls">
-              <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllCustomRules()">
-                <i class="fas fa-trash me-1"></i>${t('clearAll')}
-              </button>
-            </div>
-            <div id="customRulesJSON">
-              <div class="mb-2">
-                <label class="form-label">${t('customRuleJSON')}</label>
-                <div class="json-textarea-container">
-                  <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
-                            oninput="validateJSONRealtime(this)"></textarea>
-                  <div class="json-validation-message" style="display: none;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
+const generateFormView = () => `
+  <div id="formView" class="custom-rules-view active">
+    <div class="conversion-controls">
+      <button type="button" class="btn btn-outline-primary btn-sm" onclick="addCustomRule()">
+        <i class="fas fa-plus me-1"></i>${t('addCustomRule')}
+      </button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllCustomRules()">
+        <i class="fas fa-trash me-1"></i>${t('clearAll')}
+      </button>
+    </div>
+    <div id="customRules">
+      <!-- Custom rules will be dynamically added here -->
+    </div>
+    <div id="emptyFormMessage" class="empty-state" style="display: none;">
+      <i class="fas fa-plus-circle fa-2x mb-2"></i>
+      <p>${t('noCustomRulesForm')}</p>
+    </div>
+  </div>
+`;
+
+const generateJSONView = () => `
+  <div id="jsonView" class="custom-rules-view">
+    <div class="conversion-controls">
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllCustomRules()">
+        <i class="fas fa-trash me-1"></i>${t('clearAll')}
+      </button>
+    </div>
+    <div id="customRulesJSON">
+      <div class="mb-2">
+        <label class="form-label">${t('customRuleJSON')}</label>
+        <div class="json-textarea-container">
+          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
+                    oninput="validateJSONRealtime(this)"></textarea>
+          <div class="json-validation-message" style="display: none;"></div>
         </div>
       </div>
     </div>
+  </div>
+`;
+
+const generateBaseConfigSection = () => `
+  <div class="form-section">
+    <div class="form-section-title d-flex align-items-center">
+      ${t('baseConfigSettings')}
+      <span class="tooltip-icon ms-2">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('baseConfigTooltip')}
+        </span>
+      </span>
+    </div>
+    <div class="mb-3">
+      <select class="form-select" id="configType">
+        <option value="singbox">SingBox (JSON)</option>
+        <option value="clash">Clash (YAML)</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary" onclick="saveConfig()">${t('saveConfig')}</button>
+      <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
+        <i class="fas fa-trash-alt me-2"></i>${t('clearConfig')}
+      </button>
+    </div>
+  </div>
+`;
+
+const generateUASection = () => `
+  <div class="form-section">
+    <div class="form-section-title d-flex align-items-center">
+      ${t('UASettings')}
+      <span class="tooltip-icon ms-2">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('UAtip')}
+        </span>
+      </span>
+    </div>
+    <input type="text" class="form-control" id="customUA" placeholder="curl/7.74.0">
   </div>
 `;
 
@@ -624,13 +671,11 @@ const submitFormFunction = () => `
         try {
           const rules = JSON.parse(decodeURIComponent(customRules));
           if (Array.isArray(rules) && rules.length > 0) {
-            // 清除现有的自定义规则
+            // Clear existing custom rules
             document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
             
-            // 先切换到 JSON 视图
+            // Switch to JSON view and write rules
             switchCustomRulesTab('json');
-            
-            // 将规则写入 JSON 编辑框
             const jsonTextarea = document.querySelector('#customRulesJSON textarea');
             if (jsonTextarea) {
               jsonTextarea.value = JSON.stringify(rules, null, 2);
@@ -702,7 +747,7 @@ const submitFormFunction = () => `
     }
   }
 
-  // 添加输入框事件监听
+  // Add input box event listener
   document.addEventListener('DOMContentLoaded', function() {
     const inputTextarea = document.getElementById('inputTextarea');
     let lastValue = '';
@@ -839,12 +884,7 @@ const customRuleFunctions = () => `
   function switchCustomRulesTab(tab) {
     try {
       currentTab = tab;
-    try {
-      currentTab = tab;
 
-      // Update tab buttons
-      document.querySelectorAll('.custom-rules-tab').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(tab + 'Tab').classList.add('active');
       // Update tab buttons
       document.querySelectorAll('.custom-rules-tab').forEach(btn => btn.classList.remove('active'));
       document.getElementById(tab + 'Tab').classList.add('active');
@@ -853,7 +893,7 @@ const customRuleFunctions = () => `
       document.querySelectorAll('.custom-rules-view').forEach(view => view.classList.remove('active'));
       document.getElementById(tab + 'View').classList.add('active');
 
-      // 自动转换视图
+      // Automatic view conversion
       if (tab === 'json') {
         convertFormToJSON();
       } else {
@@ -863,7 +903,7 @@ const customRuleFunctions = () => `
       updateEmptyMessages();
     } catch (error) {
       console.error('Error switching tabs:', error);
-      // 如果切换过程中出错，确保视图正确显示
+      // Ensure the view is correctly displayed if an error occurs during the switch
       document.querySelectorAll('.custom-rules-view').forEach(view => view.classList.remove('active'));
       document.getElementById(tab + 'View').classList.add('active');
     }
@@ -881,7 +921,6 @@ const customRuleFunctions = () => `
     newRuleDiv.dataset.ruleId = customRuleCount++;
     newRuleDiv.innerHTML = \`
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="mb-0">${t('customRule')} #\${getNextRuleNumber()}</h6>
         <h6 class="mb-0">${t('customRule')} #\${getNextRuleNumber()}</h6>
         <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
           <i class="fas fa-times"></i>
@@ -953,23 +992,23 @@ const customRuleFunctions = () => `
     if (confirm('${t('confirmClearAllRules')}')) {
       document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
       document.querySelectorAll('.custom-rule-json').forEach(rule => rule.remove());
-      customRuleCount = 0; // 重置计数器
+      customRuleCount = 0; 
       updateEmptyMessages();
     }
   }
 
-  // 添加获取下一个规则序号的函数
+  // Add a function to get the next rule number
   function getNextRuleNumber() {
     const existingRules = document.querySelectorAll('.custom-rule');
     return existingRules.length + 1;
   }
 
-  // 修改移除规则函数，更新序号
+  // Modify the remove rule function to update the sequence number
   function removeRule(button) {
     const ruleDiv = button.closest('.custom-rule, .custom-rule-json');
     if (ruleDiv) {
       ruleDiv.remove();
-      // 更新剩余规则的序号
+      // Update the sequence number of the remaining rules
       document.querySelectorAll('.custom-rule').forEach((rule, index) => {
         const titleElement = rule.querySelector('h6');
         if (titleElement) {
@@ -999,7 +1038,7 @@ const customRuleFunctions = () => `
       }
     });
 
-    // 更新 JSON 编辑框内容
+    // Update JSON editor content
     const jsonTextarea = document.querySelector('#customRulesJSON textarea');
     if (jsonTextarea) {
       jsonTextarea.value = JSON.stringify(formRules, null, 2);
@@ -1018,19 +1057,7 @@ const customRuleFunctions = () => `
       if (!Array.isArray(rules)) {
         throw new Error('${t('mustBeArray')}');
       }
-    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
-    if (!jsonTextarea || !jsonTextarea.value.trim()) {
-      return;
-    }
 
-    try {
-      const rules = JSON.parse(jsonTextarea.value.trim());
-      if (!Array.isArray(rules)) {
-        throw new Error('${t('mustBeArray')}');
-      }
-
-      // Clear existing form rules
-      document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
       // Clear existing form rules
       document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
 
@@ -1087,11 +1114,68 @@ const customRuleFunctions = () => `
       });
     } catch (error) {
       console.error('Error converting JSON to form:', error);
-      // 如果转换过程中出错，清空表单视图
+      // If an error occurs during the conversion, clear the form view
       document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
     }
 
     updateEmptyMessages();
+  }
+
+  function validateJSONRealtime(textarea) {
+    const messageDiv = textarea.parentNode.querySelector('.json-validation-message');
+    const jsonText = textarea.value.trim();
+    // Clear previous validation state
+    textarea.classList.remove('json-valid', 'json-invalid');
+    messageDiv.style.display = 'none';
+    messageDiv.classList.remove('valid', 'invalid');
+    if (!jsonText) {
+      return; // Don't validate empty textarea
+    }
+    try {
+      const rules = JSON.parse(jsonText);
+      if (!Array.isArray(rules)) {
+        throw new Error('${t('mustBeArray')}');
+      }
+      const errors = [];
+      rules.forEach((ruleData, ruleIndex) => {
+        if (!ruleData.name || !ruleData.name.trim()) {
+          errors.push(\`${t('rule')} #\${ruleIndex + 1}: ${t('nameRequired')}\`);
+        }
+      });
+      if (errors.length > 0) {
+        throw new Error(errors.join('; '));
+      }
+      // Valid JSON
+      textarea.classList.add('json-valid');
+      messageDiv.textContent = \`✓ ${t('validJSON')} (\${rules.length} ${t('rules')})\`;
+      messageDiv.classList.add('valid');
+      messageDiv.style.display = 'block';
+    } catch (error) {
+      // Invalid JSON
+      textarea.classList.add('json-invalid');
+      messageDiv.textContent = \`✗ \${error.message}\`;
+      messageDiv.classList.add('invalid');
+      messageDiv.style.display = 'block';
+    }
+  }
+
+  function validateJSON() {
+    let allValid = true;
+    let errorMessages = [];
+    document.querySelectorAll('.custom-rule-json').forEach((rule, index) => {
+      const textarea = rule.querySelector('textarea[name="customRuleJSON[]"]');
+      validateJSONRealtime(textarea);
+      if (textarea.classList.contains('json-invalid')) {
+        allValid = false;
+        const messageDiv = textarea.parentNode.querySelector('.json-validation-message');
+        errorMessages.push(\`JSON #\${index + 1}: \${messageDiv.textContent.replace('✗ ', '')}\`);
+      }
+    });
+    if (allValid) {
+      alert('${t('allJSONValid')}');
+    } else {
+      alert('${t('jsonValidationErrors')}:\\n\\n' + errorMessages.join('\\n'));
+    }
   }
 
   function parseCustomRules() {
@@ -1114,11 +1198,10 @@ const customRuleFunctions = () => `
       }
     });
 
-    // 处理 JSON 规则
+    // Process JSON rules
     const jsonTextarea = document.querySelector('#customRulesJSON textarea');
     if (jsonTextarea && jsonTextarea.value.trim()) {
       try {
-        const jsonRules = JSON.parse(jsonTextarea.value.trim());
         const jsonRules = JSON.parse(jsonTextarea.value.trim());
         if (Array.isArray(jsonRules)) {
           customRules.push(...jsonRules.filter(r => r.name && r.name.trim()));
@@ -1126,7 +1209,6 @@ const customRuleFunctions = () => `
       } catch (error) {
         console.error('Error parsing JSON rules:', error);
       }
-    }
     }
 
     return customRules;
@@ -1136,11 +1218,6 @@ const customRuleFunctions = () => `
   document.addEventListener('DOMContentLoaded', function() {
     updateEmptyMessages();
 
-    // Initialize real-time validation for JSON textarea
-    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
-    if (jsonTextarea && jsonTextarea.value.trim()) {
-      validateJSONRealtime(jsonTextarea);
-    }
     // Initialize real-time validation for JSON textarea
     const jsonTextarea = document.querySelector('#customRulesJSON textarea');
     if (jsonTextarea && jsonTextarea.value.trim()) {
@@ -1161,32 +1238,6 @@ const customRuleFunctions = () => `
     });
 
     observer.observe(document.getElementById('customRules'), { childList: true, subtree: true });
-  });
-
-  function addCustomRuleJSON() {
-    const customRulesJSONDiv = document.getElementById('customRulesJSON');
-    const newRuleDiv = document.createElement('div');
-    newRuleDiv.className = 'custom-rule-json mb-3 p-3 border rounded';
-    newRuleDiv.dataset.ruleId = customRuleCount++;
-    newRuleDiv.innerHTML = \`
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="mb-0">${t('customRuleJSON')}</h6>
-        <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleJSON')}</label>
-        <div class="json-textarea-container">
-          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
-                    oninput="validateJSONRealtime(this)"></textarea>
-          <div class="json-validation-message" style="display: none;"></div>
-        </div>
-      </div>
-    \`;
-    customRulesJSONDiv.appendChild(newRuleDiv);
-    updateEmptyMessages();
-  }
   });
 
   function addCustomRuleJSON() {
@@ -1313,7 +1364,6 @@ const saveConfig = () => `
     });
   }
 `;
-
 
 const clearConfig = () => `
   function clearConfig() {
