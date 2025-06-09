@@ -32,8 +32,6 @@ const generateHead = () => `
   </head>
 `;
 
-
-
 const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
@@ -71,101 +69,57 @@ const generateCardHeader = () => `
   </div>
 `;
 
+// Form Components
 const generateForm = () => `
   <form method="POST" id="encodeForm">
-    <div class="form-section">
-      <div class="form-section-title">${t('shareUrls')}</div>
-      <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
-    </div>
-
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="advancedToggle">
-      <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
-    </div>
-
-    <div id="advancedOptions">
-      <div class="form-section">
-        ${generateRuleSetSelection()}
-      </div>
-
-      <div class="form-section">
-        <div class="form-section-title d-flex align-items-center">
-          ${t('baseConfigSettings')}
-          <span class="tooltip-icon ms-2">
-            <i class="fas fa-question-circle"></i>
-            <span class="tooltip-content">
-              ${t('baseConfigTooltip')}
-            </span>
-          </span>
-        </div>
-        <div class="mb-3">
-          <select class="form-select" id="configType">
-            <option value="singbox">SingBox (JSON)</option>
-            <option value="clash">Clash (YAML)</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
-        </div>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-secondary" onclick="saveConfig()">${t('saveConfig')}</button>
-          <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
-            <i class="fas fa-trash-alt me-2"></i>${t('clearConfig')}
-          </button>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <div class="form-section-title d-flex align-items-center">
-          ${t('UASettings')}
-          <span class="tooltip-icon ms-2">
-            <i class="fas fa-question-circle"></i>
-            <span class="tooltip-content">
-              ${t('UAtip')}
-            </span>
-          </span>
-        </div>
-        <input type="text" class="form-control" id="customUA" placeholder="curl/7.74.0">
-      </div>
-    </div>
-
-    <div class="d-flex gap-2 mt-4">
-      <button type="submit" class="btn btn-primary flex-grow-1">
-        <i class="fas fa-sync-alt me-2"></i>${t('convert')}
-      </button>
-      <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
-        <i class="fas fa-trash-alt me-2"></i>${t('clear')}
-      </button>
-    </div>
+    ${generateShareUrlsSection()}
+    ${generateAdvancedOptionsToggle()}
+    ${generateAdvancedOptions()}
+    ${generateButtonContainer()}
   </form>
 `;
 
+const generateShareUrlsSection = () => `
+  <div class="form-section">
+    <div class="form-section-title">${t('shareUrls')}</div>
+    <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
+  </div>
+`;
+
+const generateAdvancedOptionsToggle = () => `
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="advancedToggle">
+    <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
+  </div>
+`;
+
+const generateAdvancedOptions = () => `
+  <div id="advancedOptions">
+    ${generateRuleSetSelection()}
+    ${generateBaseConfigSection()}
+    ${generateUASection()}
+  </div>
+`;
+
+const generateButtonContainer = () => `
+  <div class="button-container d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary flex-grow-1">
+      <i class="fas fa-sync-alt me-2"></i>${t('convert')}
+    </button>
+    <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
+      <i class="fas fa-trash-alt me-2"></i>${t('clear')}
+    </button>
+  </div>
+`;
+
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
-  <div class="mt-5">
+  <div class="mt-4">
     ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
-    <div class="mb-3">
-      <label for="customShortCode" class="form-label">${t('customPath')}</label>
-      <div class="input-group flex-nowrap">
-        <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
-          ${baseUrl}/s/
-        </span>
-        <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
-        <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
-          <option value="">${t('savedPaths')}</option>
-        </select>
-        <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </div>
-    </div>
-    <div class="d-grid">
-      <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-        <i class="fas fa-compress-alt me-2"></i>${t('shortenLinks')}
-      </button>
-    </div>
+    ${generateCustomPathSection(baseUrl)}
+    ${generateShortenButton()}
   </div>
 `;
 
@@ -182,6 +136,32 @@ const generateLinkInput = (label, id, value) => `
         <i class="fas fa-qrcode"></i>
       </button>
     </div>
+  </div>
+`;
+
+const generateCustomPathSection = (baseUrl) => `
+  <div class="mb-4 mt-3">
+    <label for="customShortCode" class="form-label">${t('customPath')}</label>
+    <div class="input-group flex-nowrap">
+      <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
+        ${baseUrl}/s/
+      </span>
+      <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
+      <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
+        <option value="">${t('savedPaths')}</option>
+      </select>
+      <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+    </div>
+  </div>
+`;
+
+const generateShortenButton = () => `
+  <div class="d-grid mt-3">
+    <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
+      <i class="fas fa-compress-alt me-2"></i>${t('shortenLinks')}
+    </button>
   </div>
 `;
 
@@ -371,19 +351,16 @@ const darkModeToggleFunction = () => `
 `;
 
 const generateRuleSetSelection = () => `
-  <div class="container">
-    <div class="header-container">
-        <div class="form-section-title d-flex align-items-center">
-          ${t('ruleSelection')}
-          <span class="tooltip-icon ms-2">
-            <i class="fas fa-question-circle"></i>
-            <span class="tooltip-content">
-              ${t('ruleSelectionTooltip')}
-            </span>
-          </span>
-        </div>
+  <div class="form-section">
+    <div class="form-section-title d-flex align-items-center">
+      ${t('ruleSelection')}
+      <span class="tooltip-icon ms-2">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('ruleSelectionTooltip')}
+        </span>
+      </span>
     </div>
-
     <div class="content-container mb-3">
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
         <option value="custom">${t('custom')}</option>
@@ -393,21 +370,138 @@ const generateRuleSetSelection = () => `
       </select>
     </div>
     <div class="row" id="ruleCheckboxes">
-      ${UNIFIED_RULES.map(rule => `
-        <div class="col-md-4 mb-2">
-          <div class="form-check">
-            <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
-            <label class="form-check-label" for="${rule.name}">${t('outboundNames.' + rule.name)}</label>
-          </div>
-        </div>
-      `).join('')}
+      ${UNIFIED_RULES.map(rule => generateRuleCheckbox(rule)).join('')}
     </div>
-    <div class="mt-2">
-      <div id="customRules">
+    ${generateCustomRulesSection()}
+  </div>
+`;
+
+const generateRuleCheckbox = (rule) => `
+  <div class="col-md-4 mb-2">
+    <div class="form-check">
+      <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
+      <label class="form-check-label" for="${rule.name}">${t('outboundNames.' + rule.name)}</label>
+    </div>
+  </div>
+`;
+
+const generateCustomRulesSection = () => `
+  <div class="mt-2">
+    <div class="custom-rules-section-header">
+      <h5 class="custom-rules-section-title">${t('customRulesSection')}</h5>
+      <span class="tooltip-icon">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('customRulesSectionTooltip')}
+        </span>
+      </span>
+    </div>
+    <div class="custom-rules-container">
+      ${generateCustomRulesTabs()}
+      ${generateCustomRulesContent()}
+    </div>
+  </div>
+`;
+
+const generateCustomRulesTabs = () => `
+  <div class="custom-rules-tabs">
+    <button type="button" class="custom-rules-tab active" onclick="switchCustomRulesTab('form')" id="formTab">
+      <i class="fas fa-edit me-2"></i>${t('customRulesForm')}
+    </button>
+    <button type="button" class="custom-rules-tab" onclick="switchCustomRulesTab('json')" id="jsonTab">
+      <i class="fas fa-code me-2"></i>${t('customRulesJSON')}
+    </button>
+  </div>
+`;
+
+const generateCustomRulesContent = () => `
+  <div class="custom-rules-content">
+    ${generateFormView()}
+    ${generateJSONView()}
+  </div>
+`;
+
+const generateFormView = () => `
+  <div id="formView" class="custom-rules-view active">
+    <div class="conversion-controls">
+      <button type="button" class="btn btn-outline-primary btn-sm" onclick="addCustomRule()">
+        <i class="fas fa-plus me-1"></i>${t('addCustomRule')}
+      </button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllCustomRules()">
+        <i class="fas fa-trash me-1"></i>${t('clearAll')}
+      </button>
+    </div>
+    <div id="customRules">
       <!-- Custom rules will be dynamically added here -->
     </div>
-    <button type="button" class="btn btn-secondary mt-2" onclick="addCustomRule()">${t('addCustomRule')}</button>
+    <div id="emptyFormMessage" class="empty-state" style="display: none;">
+      <i class="fas fa-plus-circle fa-2x mb-2"></i>
+      <p>${t('noCustomRulesForm')}</p>
+    </div>
   </div>
+`;
+
+const generateJSONView = () => `
+  <div id="jsonView" class="custom-rules-view">
+    <div class="conversion-controls">
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllCustomRules()">
+        <i class="fas fa-trash me-1"></i>${t('clearAll')}
+      </button>
+    </div>
+    <div id="customRulesJSON">
+      <div class="mb-2">
+        <label class="form-label">${t('customRuleJSON')}</label>
+        <div class="json-textarea-container">
+          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
+                    oninput="validateJSONRealtime(this)"></textarea>
+          <div class="json-validation-message" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
+const generateBaseConfigSection = () => `
+  <div class="form-section">
+    <div class="form-section-title d-flex align-items-center">
+      ${t('baseConfigSettings')}
+      <span class="tooltip-icon ms-2">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('baseConfigTooltip')}
+        </span>
+      </span>
+    </div>
+    <div class="mb-3">
+      <select class="form-select" id="configType">
+        <option value="singbox">SingBox (JSON)</option>
+        <option value="clash">Clash (YAML)</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary" onclick="saveConfig()">${t('saveConfig')}</button>
+      <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
+        <i class="fas fa-trash-alt me-2"></i>${t('clearConfig')}
+      </button>
+    </div>
+  </div>
+`;
+
+const generateUASection = () => `
+  <div class="form-section">
+    <div class="form-section-title d-flex align-items-center">
+      ${t('UASettings')}
+      <span class="tooltip-icon ms-2">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('UAtip')}
+        </span>
+      </span>
+    </div>
+    <input type="text" class="form-control" id="customUA" placeholder="curl/7.74.0">
   </div>
 `;
 
@@ -486,7 +580,7 @@ const submitFormFunction = () => `
     // Save UserAgent data to localStorage
     localStorage.setItem('userAgent', document.getElementById('customUA').value);
     
-    // 保存 configEditor 和 configType 到 localStorage
+    // Save configEditor and configType to localStorage
     localStorage.setItem('configEditor', document.getElementById('configEditor').value);
     localStorage.setItem('configType', document.getElementById('configType').value);
     
@@ -502,15 +596,7 @@ const submitFormFunction = () => `
     const configEditor = document.getElementById('configEditor');
     const configId = new URLSearchParams(window.location.search).get('configId') || '';
 
-    const customRules = Array.from(document.querySelectorAll('.custom-rule')).map(rule => ({
-      site: rule.querySelector('input[name="customRuleSite[]"]').value,
-      ip: rule.querySelector('input[name="customRuleIP[]"]').value,
-      name: rule.querySelector('input[name="customRuleName[]"]').value,
-      domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value,
-      domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value,
-      ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value,
-      protocol: rule.querySelector('input[name="customRuleProtocol[]"]').value
-    }));
+    const customRules = parseCustomRules();
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
@@ -529,6 +615,163 @@ const submitFormFunction = () => `
     // Scroll to the subscribe part
     subscribeLinksContainer.scrollIntoView({ behavior: 'smooth' });
   }
+
+  function parseUrlAndFillForm(url) {
+    try {
+      const urlObj = new URL(url);
+      const params = new URLSearchParams(urlObj.search);
+      
+      // Parse base configuration
+      const config = params.get('config');
+      if (config) {
+        const decodedConfig = decodeURIComponent(config);
+        document.getElementById('inputTextarea').value = decodedConfig;
+      }
+
+      // Parse UserAgent
+      const ua = params.get('ua');
+      if (ua) {
+        document.getElementById('customUA').value = decodeURIComponent(ua);
+      }
+
+      // Parse rule selection
+      const selectedRules = params.get('selectedRules');
+      if (selectedRules) {
+        try {
+          const decodedRules = decodeURIComponent(selectedRules).replace(/^"|"$/g, '');
+          // Check if it's a predefined rule set
+          if (['minimal', 'balanced', 'comprehensive'].includes(decodedRules)) {
+            const predefinedRules = document.getElementById('predefinedRules');
+            predefinedRules.value = decodedRules;
+            // Apply predefined rules to checkboxes
+            const rulesToApply = ${JSON.stringify(PREDEFINED_RULE_SETS)};
+            const checkboxes = document.querySelectorAll('.rule-checkbox');
+            checkboxes.forEach(checkbox => {
+              checkbox.checked = rulesToApply[decodedRules].includes(checkbox.value);
+            });
+          } else {
+            // Handle custom rules (JSON array)
+            const rules = JSON.parse(decodedRules);
+            if (Array.isArray(rules)) {
+              document.getElementById('predefinedRules').value = 'custom';
+              const checkboxes = document.querySelectorAll('.rule-checkbox');
+              checkboxes.forEach(checkbox => {
+                checkbox.checked = rules.includes(checkbox.value);
+              });
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing selected rules:', e);
+        }
+      }
+
+      // Parse custom rules
+      const customRules = params.get('customRules');
+      if (customRules) {
+        try {
+          const rules = JSON.parse(decodeURIComponent(customRules));
+          if (Array.isArray(rules) && rules.length > 0) {
+            // Clear existing custom rules
+            document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
+            
+            // Switch to JSON view and write rules
+            switchCustomRulesTab('json');
+            const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+            if (jsonTextarea) {
+              jsonTextarea.value = JSON.stringify(rules, null, 2);
+              validateJSONRealtime(jsonTextarea);
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing custom rules:', e);
+        }
+      }
+
+      // Parse configuration ID
+      const configId = params.get('configId');
+      if (configId) {
+        // Fetch configuration content
+        fetch(\`/config?type=singbox&id=\${configId}\`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.content) {
+              document.getElementById('configEditor').value = data.content;
+              document.getElementById('configType').value = data.type || 'singbox';
+            }
+          })
+          .catch(error => console.error('Error fetching config:', error));
+      }
+
+      // Show advanced options
+      document.getElementById('advancedToggle').checked = true;
+      document.getElementById('advancedOptions').classList.add('show');
+    } catch (e) {
+      console.error('Error parsing URL:', e);
+    }
+  }
+
+  // 检测是否是短链
+  function isShortUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      return pathParts.length >= 3 && ['b', 'c', 'x', 's'].includes(pathParts[1]) && pathParts[2];
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // 自动解析短链
+  async function autoResolveShortUrl(shortUrl) {
+    try {
+      const response = await fetch(\`/resolve?url=\${encodeURIComponent(shortUrl)}\`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const originalUrl = data.originalUrl;
+        
+        // 用原始URL替换输入框中的短链
+        document.getElementById('inputTextarea').value = originalUrl;
+        
+        // 解析原始URL到表单
+        parseUrlAndFillForm(originalUrl);
+        
+        return true;
+      } else {
+        console.error('Failed to resolve short URL:', await response.text());
+        return false;
+      }
+    } catch (error) {
+      console.error('Error resolving short URL:', error);
+      return false;
+    }
+  }
+
+  // Add input box event listener
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputTextarea = document.getElementById('inputTextarea');
+    let lastValue = '';
+    
+    inputTextarea.addEventListener('input', async function() {
+      const currentValue = this.value.trim();
+      
+      if (currentValue && currentValue !== lastValue) {
+        // 首先检查是否是短链
+        if (isShortUrl(currentValue)) {
+          await autoResolveShortUrl(currentValue);
+        }
+        // 然后检查是否是项目生成的完整链接
+        else if (currentValue.includes('/singbox?') || 
+                 currentValue.includes('/clash?') || 
+                 currentValue.includes('/surge?') || 
+                 currentValue.includes('/xray?')) {
+          parseUrlAndFillForm(currentValue);
+        }
+      }
+      
+      lastValue = currentValue;
+    });
+  });
 
   function loadSavedFormData() {
     const savedInput = localStorage.getItem('inputTextarea');
@@ -550,7 +793,7 @@ const submitFormFunction = () => `
       document.getElementById('customUA').value = savedUA;
     }
     
-    // 加载 configEditor 和 configType
+    // Load configEditor and configType
     const savedConfig = localStorage.getItem('configEditor');
     const savedConfigType = localStorage.getItem('configType');
     
@@ -599,15 +842,15 @@ const submitFormFunction = () => `
     localStorage.removeItem('advancedToggle');
     localStorage.removeItem('selectedRules');
     localStorage.removeItem('predefinedRules');
-    localStorage.removeItem('configEditor');  // 添加清除 configEditor
-    localStorage.removeItem('configType');    // 添加清除 configType
+    localStorage.removeItem('configEditor'); 
+    localStorage.removeItem('configType');
     localStorage.removeItem('userAgent');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
     document.getElementById('configEditor').value = '';
-    document.getElementById('configType').value = 'singbox';  // 重置为默认值
+    document.getElementById('configType').value = 'singbox'; 
     document.getElementById('customUA').value = '';
     
     localStorage.removeItem('customPath');
@@ -633,8 +876,43 @@ const submitFormFunction = () => `
     document.getElementById('clearFormBtn').addEventListener('click', clearFormData);
   });
 `;
+
 const customRuleFunctions = () => `
   let customRuleCount = 0;
+  let currentTab = 'form';
+
+  function switchCustomRulesTab(tab) {
+    try {
+      currentTab = tab;
+
+      // Update tab buttons
+      document.querySelectorAll('.custom-rules-tab').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tab + 'Tab').classList.add('active');
+
+      // Update views
+      document.querySelectorAll('.custom-rules-view').forEach(view => view.classList.remove('active'));
+      document.getElementById(tab + 'View').classList.add('active');
+
+      // Automatic view conversion
+      if (tab === 'json') {
+        convertFormToJSON();
+      } else {
+        convertJSONToForm();
+      }
+
+      updateEmptyMessages();
+    } catch (error) {
+      console.error('Error switching tabs:', error);
+      // Ensure the view is correctly displayed if an error occurs during the switch
+      document.querySelectorAll('.custom-rules-view').forEach(view => view.classList.remove('active'));
+      document.getElementById(tab + 'View').classList.add('active');
+    }
+  }
+
+  function updateEmptyMessages() {
+    const hasFormRules = document.querySelectorAll('.custom-rule').length > 0;
+    document.getElementById('emptyFormMessage').style.display = hasFormRules ? 'none' : 'block';
+  }
 
   function addCustomRule() {
     const customRulesDiv = document.getElementById('customRules');
@@ -642,41 +920,53 @@ const customRuleFunctions = () => `
     newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
     newRuleDiv.dataset.ruleId = customRuleCount++;
     newRuleDiv.innerHTML = \`
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleOutboundName')}</label>
-        <input type="text" class="form-control mb-2" name="customRuleName[]" placeholder="${t('customRuleOutboundName')}" required>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">${t('customRule')} #\${getNextRuleNumber()}</h6>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleGeoSite')}</label>
-        <span class="tooltip-icon">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            ${t('customRuleGeoSiteTooltip')}
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label">${t('customRuleOutboundName')}</label>
+          <input type="text" class="form-control" name="customRuleName[]" placeholder="${t('customRuleOutboundName')}" required>
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label">${t('customRuleGeoSite')}</label>
+          <span class="tooltip-icon">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              ${t('customRuleGeoSiteTooltip')}
+            </span>
           </span>
-        </span>
-        <input type="text" class="form-control" name="customRuleSite[]" placeholder="${t('customRuleGeoSitePlaceholder')}">
+          <input type="text" class="form-control" name="customRuleSite[]" placeholder="${t('customRuleGeoSitePlaceholder')}">
+        </div>
       </div>
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleGeoIP')}</label>
-        <span class="tooltip-icon">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            ${t('customRuleGeoIPTooltip')}
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label">${t('customRuleGeoIP')}</label>
+          <span class="tooltip-icon">
+            <i class="fas fa-question-circle"></i>
+            <span class="tooltip-content">
+              ${t('customRuleGeoIPTooltip')}
+            </span>
           </span>
-        </span>
-        <input type="text" class="form-control" name="customRuleIP[]" placeholder="${t('customRuleGeoIPPlaceholder')}">
+          <input type="text" class="form-control" name="customRuleIP[]" placeholder="${t('customRuleGeoIPPlaceholder')}">
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label">${t('customRuleDomainSuffix')}</label>
+          <input type="text" class="form-control" name="customRuleDomainSuffix[]" placeholder="${t('customRuleDomainSuffixPlaceholder')}">
+        </div>
       </div>
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleDomainSuffix')}</label>
-        <input type="text" class="form-control mb-2" name="customRuleDomainSuffix[]" placeholder="${t('customRuleDomainSuffixPlaceholder')}">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleDomainKeyword')}</label>
-        <input type="text" class="form-control mb-2" name="customRuleDomainKeyword[]" placeholder="${t('customRuleDomainKeywordPlaceholder')}">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">${t('customRuleIPCIDR')}</label>
-        <input type="text" class="form-control mb-2" name="customRuleIPCIDR[]" placeholder="${t('customRuleIPCIDRPlaceholder')}">
+      <div class="row">
+        <div class="col-md-6 mb-2">
+          <label class="form-label">${t('customRuleDomainKeyword')}</label>
+          <input type="text" class="form-control" name="customRuleDomainKeyword[]" placeholder="${t('customRuleDomainKeywordPlaceholder')}">
+        </div>
+        <div class="col-md-6 mb-2">
+          <label class="form-label">${t('customRuleIPCIDR')}</label>
+          <input type="text" class="form-control" name="customRuleIPCIDR[]" placeholder="${t('customRuleIPCIDRPlaceholder')}">
+        </div>
       </div>
       <div class="mb-2">
         <label class="form-label">${t('customRuleProtocol')}</label>
@@ -686,22 +976,293 @@ const customRuleFunctions = () => `
             ${t('customRuleProtocolTooltip')}
           </span>
         </span>
-        <input type="text" class="form-control mb-2" name="customRuleProtocol[]" placeholder="${t('customRuleProtocolPlaceholder')}">
+        <input type="text" class="form-control" name="customRuleProtocol[]" placeholder="${t('customRuleProtocolPlaceholder')}">
       </div>
-      <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomRule(this)">${t('removeCustomRule')}</button>
     \`;
     customRulesDiv.appendChild(newRuleDiv);
+    updateEmptyMessages();
+
+    // Switch to form tab if not already there
+    if (currentTab !== 'form') {
+      switchCustomRulesTab('form');
+    }
   }
 
-  function removeCustomRule(button) {
-    const ruleDiv = button.closest('.custom-rule');
-    if (ruleDiv) {
-      ruleDiv.classList.add('removing');
-      ruleDiv.addEventListener('animationend', () => {
-        ruleDiv.remove();
-        customRuleCount--;
-      }, { once: true });
+  function clearAllCustomRules() {
+    if (confirm('${t('confirmClearAllRules')}')) {
+      document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
+      document.querySelectorAll('.custom-rule-json').forEach(rule => rule.remove());
+      customRuleCount = 0; 
+      updateEmptyMessages();
     }
+  }
+
+  // Add a function to get the next rule number
+  function getNextRuleNumber() {
+    const existingRules = document.querySelectorAll('.custom-rule');
+    return existingRules.length + 1;
+  }
+
+  // Modify the remove rule function to update the sequence number
+  function removeRule(button) {
+    const ruleDiv = button.closest('.custom-rule, .custom-rule-json');
+    if (ruleDiv) {
+      ruleDiv.remove();
+      // Update the sequence number of the remaining rules
+      document.querySelectorAll('.custom-rule').forEach((rule, index) => {
+        const titleElement = rule.querySelector('h6');
+        if (titleElement) {
+          titleElement.textContent = \`${t('customRule')} #\${index + 1}\`;
+        }
+      });
+      updateEmptyMessages();
+    }
+  }
+
+  function convertFormToJSON() {
+    const formRules = [];
+    document.querySelectorAll('.custom-rule').forEach(rule => {
+      const ruleData = {
+        name: rule.querySelector('input[name="customRuleName[]"]').value || '',
+        site: rule.querySelector('input[name="customRuleSite[]"]').value || '',
+        ip: rule.querySelector('input[name="customRuleIP[]"]').value || '',
+        domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value || '',
+        domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value || '',
+        ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value || '',
+        protocol: rule.querySelector('input[name="customRuleProtocol[]"]').value || ''
+      };
+
+      // Only add rules that have at least a name
+      if (ruleData.name.trim()) {
+        formRules.push(ruleData);
+      }
+    });
+
+    // Update JSON editor content
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (jsonTextarea) {
+      jsonTextarea.value = JSON.stringify(formRules, null, 2);
+      validateJSONRealtime(jsonTextarea);
+    }
+  }
+
+  function convertJSONToForm() {
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (!jsonTextarea || !jsonTextarea.value.trim()) {
+      return;
+    }
+
+    try {
+      const rules = JSON.parse(jsonTextarea.value.trim());
+      if (!Array.isArray(rules)) {
+        throw new Error('${t('mustBeArray')}');
+      }
+
+      // Clear existing form rules
+      document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
+
+      // Convert each JSON rule to form
+      rules.forEach((ruleData, index) => {
+        if (ruleData && ruleData.name) {
+          const customRulesDiv = document.getElementById('customRules');
+          const newRuleDiv = document.createElement('div');
+          newRuleDiv.className = 'custom-rule mb-3 p-3 border rounded';
+          newRuleDiv.innerHTML = \`
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">${t('customRule')} #\${index + 1}</h6>
+              <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <label class="form-label">${t('customRuleOutboundName')}</label>
+                <input type="text" class="form-control" name="customRuleName[]" value="\${ruleData.name || ''}" required>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label">${t('customRuleGeoSite')}</label>
+                <input type="text" class="form-control" name="customRuleSite[]" value="\${ruleData.site || ''}">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <label class="form-label">${t('customRuleGeoIP')}</label>
+                <input type="text" class="form-control" name="customRuleIP[]" value="\${ruleData.ip || ''}">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label">${t('customRuleDomainSuffix')}</label>
+                <input type="text" class="form-control" name="customRuleDomainSuffix[]" value="\${ruleData.domain_suffix || ''}">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <label class="form-label">${t('customRuleDomainKeyword')}</label>
+                <input type="text" class="form-control" name="customRuleDomainKeyword[]" value="\${ruleData.domain_keyword || ''}">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label">${t('customRuleIPCIDR')}</label>
+                <input type="text" class="form-control" name="customRuleIPCIDR[]" value="\${ruleData.ip_cidr || ''}">
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">${t('customRuleProtocol')}</label>
+              <input type="text" class="form-control" name="customRuleProtocol[]" value="\${ruleData.protocol || ''}">
+            </div>
+          \`;
+          customRulesDiv.appendChild(newRuleDiv);
+        }
+      });
+    } catch (error) {
+      console.error('Error converting JSON to form:', error);
+      // If an error occurs during the conversion, clear the form view
+      document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
+    }
+
+    updateEmptyMessages();
+  }
+
+  function validateJSONRealtime(textarea) {
+    const messageDiv = textarea.parentNode.querySelector('.json-validation-message');
+    const jsonText = textarea.value.trim();
+    // Clear previous validation state
+    textarea.classList.remove('json-valid', 'json-invalid');
+    messageDiv.style.display = 'none';
+    messageDiv.classList.remove('valid', 'invalid');
+    if (!jsonText) {
+      return; // Don't validate empty textarea
+    }
+    try {
+      const rules = JSON.parse(jsonText);
+      if (!Array.isArray(rules)) {
+        throw new Error('${t('mustBeArray')}');
+      }
+      const errors = [];
+      rules.forEach((ruleData, ruleIndex) => {
+        if (!ruleData.name || !ruleData.name.trim()) {
+          errors.push(\`${t('rule')} #\${ruleIndex + 1}: ${t('nameRequired')}\`);
+        }
+      });
+      if (errors.length > 0) {
+        throw new Error(errors.join('; '));
+      }
+      // Valid JSON
+      textarea.classList.add('json-valid');
+      messageDiv.textContent = \`✓ ${t('validJSON')} (\${rules.length} ${t('rules')})\`;
+      messageDiv.classList.add('valid');
+      messageDiv.style.display = 'block';
+    } catch (error) {
+      // Invalid JSON
+      textarea.classList.add('json-invalid');
+      messageDiv.textContent = \`✗ \${error.message}\`;
+      messageDiv.classList.add('invalid');
+      messageDiv.style.display = 'block';
+    }
+  }
+
+  function validateJSON() {
+    let allValid = true;
+    let errorMessages = [];
+    document.querySelectorAll('.custom-rule-json').forEach((rule, index) => {
+      const textarea = rule.querySelector('textarea[name="customRuleJSON[]"]');
+      validateJSONRealtime(textarea);
+      if (textarea.classList.contains('json-invalid')) {
+        allValid = false;
+        const messageDiv = textarea.parentNode.querySelector('.json-validation-message');
+        errorMessages.push(\`JSON #\${index + 1}: \${messageDiv.textContent.replace('✗ ', '')}\`);
+      }
+    });
+    if (allValid) {
+      alert('${t('allJSONValid')}');
+    } else {
+      alert('${t('jsonValidationErrors')}:\\n\\n' + errorMessages.join('\\n'));
+    }
+  }
+
+  function parseCustomRules() {
+    const customRules = [];
+
+    // Process ordinary form rules
+    document.querySelectorAll('.custom-rule').forEach(rule => {
+      const ruleData = {
+        name: rule.querySelector('input[name="customRuleName[]"]').value || '',
+        site: rule.querySelector('input[name="customRuleSite[]"]').value || '',
+        ip: rule.querySelector('input[name="customRuleIP[]"]').value || '',
+        domain_suffix: rule.querySelector('input[name="customRuleDomainSuffix[]"]').value || '',
+        domain_keyword: rule.querySelector('input[name="customRuleDomainKeyword[]"]').value || '',
+        ip_cidr: rule.querySelector('input[name="customRuleIPCIDR[]"]').value || '',
+        protocol: rule.querySelector('input[name="customRuleProtocol[]"]').value || ''
+      };
+
+      if (ruleData.name.trim()) {
+        customRules.push(ruleData);
+      }
+    });
+
+    // Process JSON rules
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (jsonTextarea && jsonTextarea.value.trim()) {
+      try {
+        const jsonRules = JSON.parse(jsonTextarea.value.trim());
+        if (Array.isArray(jsonRules)) {
+          customRules.push(...jsonRules.filter(r => r.name && r.name.trim()));
+        }
+      } catch (error) {
+        console.error('Error parsing JSON rules:', error);
+      }
+    }
+
+    return customRules;
+  }
+
+  // Initialize interface state
+  document.addEventListener('DOMContentLoaded', function() {
+    updateEmptyMessages();
+
+    // Initialize real-time validation for JSON textarea
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (jsonTextarea && jsonTextarea.value.trim()) {
+      validateJSONRealtime(jsonTextarea);
+    }
+
+    // Initialize tooltips for dynamically added content
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1 && node.querySelectorAll) {
+              initTooltips();
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.getElementById('customRules'), { childList: true, subtree: true });
+  });
+
+  function addCustomRuleJSON() {
+    const customRulesJSONDiv = document.getElementById('customRulesJSON');
+    const newRuleDiv = document.createElement('div');
+    newRuleDiv.className = 'custom-rule-json mb-3 p-3 border rounded';
+    newRuleDiv.dataset.ruleId = customRuleCount++;
+    newRuleDiv.innerHTML = \`
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">${t('customRuleJSON')}</h6>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">${t('customRuleJSON')}</label>
+        <div class="json-textarea-container">
+          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
+                    oninput="validateJSONRealtime(this)"></textarea>
+          <div class="json-validation-message" style="display: none;"></div>
+        </div>
+      </div>
+    \`;
+    customRulesJSONDiv.appendChild(newRuleDiv);
+    updateEmptyMessages();
   }
 `;
 

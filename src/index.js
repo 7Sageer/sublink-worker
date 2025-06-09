@@ -242,6 +242,49 @@ async function handleRequest(request) {
           headers: { 'Content-Type': 'text/plain' }
         });
       }
+    } else if (url.pathname === '/resolve') {
+      const shortUrl = url.searchParams.get('url');
+      if (!shortUrl) {
+        return new Response(t('missingUrl'), { status: 400 });
+      }
+
+      try {
+        const urlObj = new URL(shortUrl);
+        const pathParts = urlObj.pathname.split('/');
+        
+        if (pathParts.length < 3) {
+          return new Response(t('invalidShortUrl'), { status: 400 });
+        }
+
+        const prefix = pathParts[1]; // b, c, x, s
+        const shortCode = pathParts[2];
+
+        if (!['b', 'c', 'x', 's'].includes(prefix)) {
+          return new Response(t('invalidShortUrl'), { status: 400 });
+        }
+
+        const originalParam = await SUBLINK_KV.get(shortCode);
+        if (originalParam === null) {
+          return new Response(t('shortUrlNotFound'), { status: 404 });
+        }
+
+        let originalUrl;
+        if (prefix === 'b') {
+          originalUrl = `${url.origin}/singbox${originalParam}`;
+        } else if (prefix === 'c') {
+          originalUrl = `${url.origin}/clash${originalParam}`;
+        } else if (prefix === 'x') {
+          originalUrl = `${url.origin}/xray${originalParam}`;
+        } else if (prefix === 's') {
+          originalUrl = `${url.origin}/surge${originalParam}`;
+        }
+
+        return new Response(JSON.stringify({ originalUrl }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        return new Response(t('invalidShortUrl'), { status: 400 });
+      }
     }
 
     return new Response(t('notFound'), { status: 404 });

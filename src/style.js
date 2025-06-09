@@ -84,6 +84,27 @@ export const generateStyles = () => `
     background: var(--section-bg);
   }
 
+  /* Ensure form button containers have proper spacing */
+  .card-body .d-flex {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Target the convert/clear button container specifically */
+  /* Ensure consistent spacing with other form elements */
+  .card-body > form > .d-flex.gap-2.mt-4 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .button-container {
+    margin-left: 1.5rem !important;
+    margin-right: 1.5rem !important;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+    
   .form-section-title {
     font-size: 1.1rem;
     font-weight: 600;
@@ -178,6 +199,16 @@ export const generateStyles = () => `
     top: 20px;
     right: 20px;
     z-index: 1000;
+    color: var(--text-color);
+    border-color: var(--input-border);
+    background-color: var(--card-bg);
+    transition: all 0.3s var(--transition-timing);
+  }
+
+  #darkModeToggle:hover {
+    background-color: var(--dropdown-hover-bg);
+    border-color: var(--text-color);
+    color: var(--text-color);
   }
 
   .github-link {
@@ -330,9 +361,372 @@ export const generateStyles = () => `
   }
 
   #advancedOptions.show {
-    max-height: 2000px;
+    max-height: none;
     opacity: 1;
     transform: translateY(0);
+    overflow: visible;
+  }
+
+  /* Custom Rules Section */
+  .custom-rules-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .custom-rules-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--section-border);
+  }
+
+  .custom-rules-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    margin-right: 0.5rem;
+  }
+
+  /* Custom Rules Container Styling */
+  .custom-rules-container {
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+    overflow: hidden;
+  }
+
+  #customRules, #customRulesJSON {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    background-color: var(--input-bg);
+  }
+
+  #customRules:empty, #customRulesJSON:empty {
+    padding: 0;
+  }
+
+  /* Custom Rules Section Header */
+  .custom-rules-section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--section-border);
+  }
+
+  .custom-rules-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    margin-right: 0.75rem;
+  }
+
+  /* Custom Rules Tabs */
+  .custom-rules-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--input-border);
+    background-color: var(--card-bg);
+  }
+
+  .custom-rules-tab {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: all 0.3s var(--transition-timing);
+    border-bottom: 3px solid transparent;
+    font-size: 0.95rem;
+  }
+
+  .custom-rules-tab:hover {
+    background-color: var(--dropdown-hover-bg);
+    color: var(--dropdown-hover-text);
+  }
+
+  .custom-rules-tab.active {
+    color: #6a11cb;
+    border-bottom-color: #6a11cb;
+    background-color: var(--dropdown-hover-bg);
+    font-weight: 600;
+  }
+
+  /* Dark mode specific adjustments for custom rules tabs */
+  [data-theme="dark"] .custom-rules-tab {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .custom-rules-tab:hover {
+    background-color: var(--dropdown-hover-bg);
+    color: var(--dropdown-hover-text);
+  }
+
+  [data-theme="dark"] .custom-rules-tab.active {
+    color: #8a4fff;
+    border-bottom-color: #8a4fff;
+    background-color: var(--dropdown-hover-bg);
+  }
+
+  .custom-rules-content {
+    min-height: 200px;
+  }
+
+  .custom-rules-view {
+    display: none;
+  }
+
+  .custom-rules-view.active {
+    display: block;
+  }
+
+  /* Conversion Controls */
+  .conversion-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.875rem;
+    background-color: var(--section-bg);
+    border-radius: 8px;
+    border: 1px solid var(--section-border);
+  }
+
+  .conversion-controls .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.875rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    transition: all 0.3s var(--transition-timing);
+  }
+
+  .conversion-controls .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .conversion-controls .btn-outline-primary {
+    border-color: #6a11cb;
+    color: #6a11cb;
+    background-color: transparent;
+  }
+
+  .conversion-controls .btn-outline-primary:hover {
+    background-color: #6a11cb;
+    border-color: #6a11cb;
+    color: white;
+  }
+
+  .conversion-controls .btn-outline-secondary {
+    border-color: var(--input-border);
+    color: var(--text-color);
+    background-color: transparent;
+  }
+
+  .conversion-controls .btn-outline-secondary:hover {
+    background-color: var(--dropdown-hover-bg);
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  .conversion-controls .btn-outline-info {
+    border-color: #17a2b8;
+    color: #17a2b8;
+    background-color: transparent;
+  }
+
+  .conversion-controls .btn-outline-info:hover {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+  }
+
+  .conversion-controls .btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    background-color: transparent;
+  }
+
+  .conversion-controls .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+  }
+
+  /* Dark mode specific button adjustments */
+  [data-theme="dark"] .conversion-controls .btn-outline-primary {
+    border-color: #8a4fff;
+    color: #8a4fff;
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-primary:hover {
+    background-color: #8a4fff;
+    border-color: #8a4fff;
+    color: white;
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-secondary {
+    border-color: var(--input-border);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-secondary:hover {
+    background-color: var(--dropdown-hover-bg);
+    border-color: var(--text-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-info {
+    border-color: #20c997;
+    color: #20c997;
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-info:hover {
+    background-color: #20c997;
+    border-color: #20c997;
+    color: white;
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-danger {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+  }
+
+  [data-theme="dark"] .conversion-controls .btn-outline-danger:hover {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+    color: white;
+  }
+
+  /* Empty State Messages */
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--placeholder-color);
+    background-color: var(--section-bg);
+    border-radius: 8px;
+    margin: 1rem;
+  }
+
+  .empty-state i {
+    color: var(--placeholder-color);
+    margin-bottom: 0.75rem;
+  }
+
+  .empty-state p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  /* JSON Validation States */
+  .json-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+  }
+
+  .json-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+  }
+
+  .json-validation-message {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s var(--transition-timing);
+  }
+
+  .json-validation-message.valid {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+  }
+
+  .json-validation-message.invalid {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+  }
+
+  /* Dark mode support for validation messages */
+  [data-theme="dark"] .json-validation-message.valid {
+    color: #75b798;
+    background-color: rgba(40, 167, 69, 0.2);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+  }
+
+  [data-theme="dark"] .json-validation-message.invalid {
+    color: #f1aeb5;
+    background-color: rgba(220, 53, 69, 0.2);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+  }
+
+  .json-textarea-container {
+    position: relative;
+  }
+
+  /* Custom Rule Cards */
+  .custom-rule, .custom-rule-json {
+    margin-bottom: 1rem;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    transition: all 0.3s var(--transition-timing);
+    padding: 1rem;
+  }
+
+  .custom-rule:hover, .custom-rule-json:hover {
+    border-color: #6a11cb;
+    box-shadow: 0 2px 8px rgba(106, 17, 203, 0.1);
+  }
+
+  .custom-rule h6, .custom-rule-json h6 {
+    color: var(--text-color);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .custom-rule .form-label, .custom-rule-json .form-label {
+    color: var(--text-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .custom-rule .form-control, .custom-rule-json .form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+  }
+
+  .custom-rule .form-control:focus, .custom-rule-json .form-control:focus {
+    background-color: var(--input-bg);
+    border-color: #6a11cb;
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+  }
+
+  .custom-rule .form-control::placeholder, .custom-rule-json .form-control::placeholder {
+    color: var(--placeholder-color);
+  }
+
+  /* Dark mode specific adjustments for custom rule cards */
+  [data-theme="dark"] .custom-rule:hover,
+  [data-theme="dark"] .custom-rule-json:hover {
+    border-color: #8a4fff;
+    box-shadow: 0 2px 8px rgba(138, 79, 255, 0.2);
+  }
+
+  [data-theme="dark"] .custom-rule .form-control:focus,
+  [data-theme="dark"] .custom-rule-json .form-control:focus {
+    border-color: #8a4fff;
+    box-shadow: 0 0 0 0.2rem rgba(138, 79, 255, 0.25);
   }
 
   .header-container {
@@ -409,6 +803,7 @@ export const generateStyles = () => `
     transition: max-height 0.5s var(--transition-timing),
                 opacity 0.3s var(--transition-timing),
                 transform 0.3s var(--transition-timing);
+    padding: 1.5rem 1.5rem;
   }
 
   #subscribeLinksContainer.show {
@@ -420,6 +815,120 @@ export const generateStyles = () => `
   #subscribeLinksContainer.hide {
     max-height: 0;
     opacity: 0;
+  }
+
+  #subscribeLinksContainer .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  #subscribeLinksContainer .mt-4 {
+    margin-top: 1.5rem !important;
+  }
+
+  #subscribeLinksContainer .mt-3 {
+    margin-top: 1.25rem !important;
+  }
+
+  #subscribeLinksContainer .mb-5 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  #subscribeLinksContainer .mt-5 {
+    margin-top: 1.5rem !important;
+  }
+
+  /* Add consistent spacing between link sections */
+  #subscribeLinksContainer .input-group {
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  #subscribeLinksContainer .form-label {
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  /* Ensure proper spacing for all form elements within the container */
+  #subscribeLinksContainer .mb-4 {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Ensure all button containers within cards have proper spacing */
+  /* Fix button container spacing without interfering with gap-2 */
+  .card-body .d-grid {
+    margin-left: 1.5rem !important;
+    margin-right: 1.5rem !important;
+  }
+
+  /* Form sections should not add extra padding to button containers */
+  .form-section .d-flex.gap-2 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Add subtle visual separation between sections */
+  #subscribeLinksContainer > div:not(:last-child) {
+    border-bottom: 1px solid var(--input-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Remove border from the button container and ensure proper spacing */
+  #subscribeLinksContainer .d-grid {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Responsive spacing adjustments */
+  @media (max-width: 768px) {
+    #subscribeLinksContainer {
+      padding: 1rem 1rem !important;
+    }
+
+    #subscribeLinksContainer .mb-4 {
+      margin-bottom: 1rem !important;
+    }
+
+    #subscribeLinksContainer .mt-4 {
+      margin-top: 1rem !important;
+    }
+
+    #subscribeLinksContainer .mt-3 {
+      margin-top: 0.75rem !important;
+    }
+
+    #subscribeLinksContainer .mb-5 {
+      margin-bottom: 1rem !important;
+    }
+
+    #subscribeLinksContainer .mt-5 {
+      margin-top: 1rem !important;
+    }
+
+    /* Adjust button container spacing for mobile */
+    .card-body .d-grid {
+      margin-left: 1rem !important;
+      margin-right: 1rem !important;
+    }
+
+    /* Form sections should not add extra spacing on mobile */
+    .form-section .d-flex.gap-2 {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    /* Add horizontal margin to main form button containers on mobile */
+    .card-body > form > .d-flex.gap-2.mt-4,
+    .card-body .d-flex.gap-2.mt-4 {
+      margin-left: 1rem !important;
+      margin-right: 1rem !important;
+    }
   }
 
   .form-select option {
@@ -470,7 +979,7 @@ export const generateStyles = () => `
     transition: all var(--transition-speed) var(--transition-timing);
   }
 
-  /* 高级选项展开/收起动画 */
+  /* 高级选项展开/收起动画 - Updated to remove height constraints */
   #advancedOptions {
     max-height: 0;
     opacity: 0;
@@ -482,26 +991,13 @@ export const generateStyles = () => `
   }
 
   #advancedOptions.show {
-    max-height: 2000px;
+    max-height: none;
     opacity: 1;
     transform: translateY(0);
+    overflow: visible;
   }
 
-  /* 订阅链接容器动画 */
-  #subscribeLinksContainer {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: max-height 0.5s var(--transition-timing),
-                opacity 0.3s var(--transition-timing),
-                transform 0.3s var(--transition-timing);
-  }
 
-  #subscribeLinksContainer.show {
-    max-height: 1000px;
-    opacity: 1;
-    transform: translateY(0);
-  }
 
   /* 按钮悬停动画 */
   .btn {
