@@ -32,8 +32,6 @@ const generateHead = () => `
   </head>
 `;
 
-
-
 const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
@@ -71,64 +69,39 @@ const generateCardHeader = () => `
   </div>
 `;
 
+// Form Components
 const generateForm = () => `
   <form method="POST" id="encodeForm">
-    <div class="form-section">
-      <div class="form-section-title">${t('shareUrls')}</div>
-      <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
-    </div>
+    ${generateShareUrlsSection()}
+    ${generateAdvancedOptionsToggle()}
+    ${generateAdvancedOptions()}
+    ${generateButtonContainer()}
+  </form>
+`;
 
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="advancedToggle">
-      <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
-    </div>
+const generateShareUrlsSection = () => `
+  <div class="form-section">
+    <div class="form-section-title">${t('shareUrls')}</div>
+    <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
+  </div>
+`;
 
-    <div id="advancedOptions">
-      <div class="form-section">
-        ${generateRuleSetSelection()}
-      </div>
+const generateAdvancedOptionsToggle = () => `
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="advancedToggle">
+    <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
+  </div>
+`;
 
-      <div class="form-section">
-        <div class="form-section-title d-flex align-items-center">
-          ${t('baseConfigSettings')}
-          <span class="tooltip-icon ms-2">
-            <i class="fas fa-question-circle"></i>
-            <span class="tooltip-content">
-              ${t('baseConfigTooltip')}
-            </span>
-          </span>
-        </div>
-        <div class="mb-3">
-          <select class="form-select" id="configType">
-            <option value="singbox">SingBox (JSON)</option>
-            <option value="clash">Clash (YAML)</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
-        </div>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-secondary" onclick="saveConfig()">${t('saveConfig')}</button>
-          <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
-            <i class="fas fa-trash-alt me-2"></i>${t('clearConfig')}
-          </button>
-        </div>
-      </div>
+const generateAdvancedOptions = () => `
+  <div id="advancedOptions">
+    ${generateRuleSetSelection()}
+    ${generateBaseConfigSection()}
+    ${generateUASection()}
+  </div>
+`;
 
-      <div class="form-section">
-        <div class="form-section-title d-flex align-items-center">
-          ${t('UASettings')}
-          <span class="tooltip-icon ms-2">
-            <i class="fas fa-question-circle"></i>
-            <span class="tooltip-content">
-              ${t('UAtip')}
-            </span>
-          </span>
-        </div>
-        <input type="text" class="form-control" id="customUA" placeholder="curl/7.74.0">
-      </div>
-    </div>
-
+const generateButtonContainer = () => `
   <div class="button-container d-flex gap-2 mt-4">
     <button type="submit" class="btn btn-primary flex-grow-1">
       <i class="fas fa-sync-alt me-2"></i>${t('convert')}
@@ -137,7 +110,6 @@ const generateForm = () => `
       <i class="fas fa-trash-alt me-2"></i>${t('clear')}
     </button>
   </div>
-  </form>
 `;
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
@@ -146,26 +118,8 @@ const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
-    <div class="mb-4 mt-3">
-      <label for="customShortCode" class="form-label">${t('customPath')}</label>
-      <div class="input-group flex-nowrap">
-        <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
-          ${baseUrl}/s/
-        </span>
-        <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
-        <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
-          <option value="">${t('savedPaths')}</option>
-        </select>
-        <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </div>
-    </div>
-    <div class="d-grid mt-3">
-      <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
-        <i class="fas fa-compress-alt me-2"></i>${t('shortenLinks')}
-      </button>
-    </div>
+    ${generateCustomPathSection(baseUrl)}
+    ${generateShortenButton()}
   </div>
 `;
 
@@ -182,6 +136,32 @@ const generateLinkInput = (label, id, value) => `
         <i class="fas fa-qrcode"></i>
       </button>
     </div>
+  </div>
+`;
+
+const generateCustomPathSection = (baseUrl) => `
+  <div class="mb-4 mt-3">
+    <label for="customShortCode" class="form-label">${t('customPath')}</label>
+    <div class="input-group flex-nowrap">
+      <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
+        ${baseUrl}/s/
+      </span>
+      <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
+      <select id="savedCustomPaths" class="form-select" style="max-width: 200px;">
+        <option value="">${t('savedPaths')}</option>
+      </select>
+      <button class="btn btn-outline-danger" type="button" onclick="deleteSelectedPath()">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+    </div>
+  </div>
+`;
+
+const generateShortenButton = () => `
+  <div class="d-grid mt-3">
+    <button class="btn btn-primary btn-lg" type="button" onclick="shortenAllUrls()">
+      <i class="fas fa-compress-alt me-2"></i>${t('shortenLinks')}
+    </button>
   </div>
 `;
 
@@ -371,19 +351,16 @@ const darkModeToggleFunction = () => `
 `;
 
 const generateRuleSetSelection = () => `
-  <div class="container">
-    <div class="header-container">
-        <div class="form-section-title d-flex align-items-center">
-          ${t('ruleSelection')}
-          <span class="tooltip-icon ms-2">
-            <i class="fas fa-question-circle"></i>
-            <span class="tooltip-content">
-              ${t('ruleSelectionTooltip')}
-            </span>
-          </span>
-        </div>
+  <div class="form-section">
+    <div class="form-section-title d-flex align-items-center">
+      ${t('ruleSelection')}
+      <span class="tooltip-icon ms-2">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('ruleSelectionTooltip')}
+        </span>
+      </span>
     </div>
-
     <div class="content-container mb-3">
       <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
         <option value="custom">${t('custom')}</option>
@@ -393,34 +370,49 @@ const generateRuleSetSelection = () => `
       </select>
     </div>
     <div class="row" id="ruleCheckboxes">
-      ${UNIFIED_RULES.map(rule => `
-        <div class="col-md-4 mb-2">
-          <div class="form-check">
-            <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
-            <label class="form-check-label" for="${rule.name}">${t('outboundNames.' + rule.name)}</label>
-          </div>
-        </div>
-      `).join('')}
+      ${UNIFIED_RULES.map(rule => generateRuleCheckbox(rule)).join('')}
     </div>
-    <div class="mt-2">
-      <div class="custom-rules-section-header">
-        <h5 class="custom-rules-section-title">${t('customRulesSection')}</h5>
-        <span class="tooltip-icon">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            ${t('customRulesSectionTooltip')}
-          </span>
+    ${generateCustomRulesSection()}
+  </div>
+`;
+
+const generateRuleCheckbox = (rule) => `
+  <div class="col-md-4 mb-2">
+    <div class="form-check">
+      <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
+      <label class="form-check-label" for="${rule.name}">${t('outboundNames.' + rule.name)}</label>
+    </div>
+  </div>
+`;
+
+const generateCustomRulesSection = () => `
+  <div class="mt-2">
+    <div class="custom-rules-section-header">
+      <h5 class="custom-rules-section-title">${t('customRulesSection')}</h5>
+      <span class="tooltip-icon">
+        <i class="fas fa-question-circle"></i>
+        <span class="tooltip-content">
+          ${t('customRulesSectionTooltip')}
         </span>
-      </div>
-      <div class="custom-rules-container">
-        <div class="custom-rules-tabs">
-          <button type="button" class="custom-rules-tab active" onclick="switchCustomRulesTab('form')" id="formTab">
-            <i class="fas fa-edit me-2"></i>${t('customRulesForm')}
-          </button>
-          <button type="button" class="custom-rules-tab" onclick="switchCustomRulesTab('json')" id="jsonTab">
-            <i class="fas fa-code me-2"></i>${t('customRulesJSON')}
-          </button>
-        </div>
+      </span>
+    </div>
+    <div class="custom-rules-container">
+      ${generateCustomRulesTabs()}
+      ${generateCustomRulesContent()}
+    </div>
+  </div>
+`;
+
+const generateCustomRulesTabs = () => `
+  <div class="custom-rules-tabs">
+    <button type="button" class="custom-rules-tab active" onclick="switchCustomRulesTab('form')" id="formTab">
+      <i class="fas fa-edit me-2"></i>${t('customRulesForm')}
+    </button>
+    <button type="button" class="custom-rules-tab" onclick="switchCustomRulesTab('json')" id="jsonTab">
+      <i class="fas fa-code me-2"></i>${t('customRulesJSON')}
+    </button>
+  </div>
+`;
 
         <div class="custom-rules-content">
           <!-- Form View -->
@@ -541,7 +533,7 @@ const submitFormFunction = () => `
     // Save UserAgent data to localStorage
     localStorage.setItem('userAgent', document.getElementById('customUA').value);
     
-    // 保存 configEditor 和 configType 到 localStorage
+    // Save configEditor and configType to localStorage
     localStorage.setItem('configEditor', document.getElementById('configEditor').value);
     localStorage.setItem('configType', document.getElementById('configType').value);
     
@@ -582,41 +574,39 @@ const submitFormFunction = () => `
       const urlObj = new URL(url);
       const params = new URLSearchParams(urlObj.search);
       
-      // 解析基础配置
+      // Parse base configuration
       const config = params.get('config');
       if (config) {
-        // 将解码后的原始订阅链接显示在输入框中
         const decodedConfig = decodeURIComponent(config);
         document.getElementById('inputTextarea').value = decodedConfig;
       }
 
-      // 解析 UserAgent
+      // Parse UserAgent
       const ua = params.get('ua');
       if (ua) {
         document.getElementById('customUA').value = decodeURIComponent(ua);
       }
 
-      // 解析规则选择
+      // Parse rule selection
       const selectedRules = params.get('selectedRules');
       if (selectedRules) {
         try {
           const decodedRules = decodeURIComponent(selectedRules).replace(/^"|"$/g, '');
-          // 检查是否是预置规则
+          // Check if it's a predefined rule set
           if (['minimal', 'balanced', 'comprehensive'].includes(decodedRules)) {
             const predefinedRules = document.getElementById('predefinedRules');
             predefinedRules.value = decodedRules;
-            // 根据预置规则集选中对应的复选框
+            // Apply predefined rules to checkboxes
             const rulesToApply = ${JSON.stringify(PREDEFINED_RULE_SETS)};
             const checkboxes = document.querySelectorAll('.rule-checkbox');
             checkboxes.forEach(checkbox => {
               checkbox.checked = rulesToApply[decodedRules].includes(checkbox.value);
             });
           } else {
-            // 处理自定义规则（JSON数组）
+            // Handle custom rules (JSON array)
             const rules = JSON.parse(decodedRules);
             if (Array.isArray(rules)) {
               document.getElementById('predefinedRules').value = 'custom';
-              // 一次循环处理所有复选框
               const checkboxes = document.querySelectorAll('.rule-checkbox');
               checkboxes.forEach(checkbox => {
                 checkbox.checked = rules.includes(checkbox.value);
@@ -628,7 +618,7 @@ const submitFormFunction = () => `
         }
       }
 
-      // 解析自定义规则
+      // Parse custom rules
       const customRules = params.get('customRules');
       if (customRules) {
         try {
@@ -652,10 +642,10 @@ const submitFormFunction = () => `
         }
       }
 
-      // 解析配置 ID
+      // Parse configuration ID
       const configId = params.get('configId');
       if (configId) {
-        // 获取配置内容
+        // Fetch configuration content
         fetch(\`/config?type=singbox&id=\${configId}\`)
           .then(response => response.json())
           .then(data => {
@@ -667,7 +657,7 @@ const submitFormFunction = () => `
           .catch(error => console.error('Error fetching config:', error));
       }
 
-      // 显示高级选项
+      // Show advanced options
       document.getElementById('advancedToggle').checked = true;
       document.getElementById('advancedOptions').classList.add('show');
     } catch (e) {
@@ -758,7 +748,7 @@ const submitFormFunction = () => `
       document.getElementById('customUA').value = savedUA;
     }
     
-    // 加载 configEditor 和 configType
+    // Load configEditor and configType
     const savedConfig = localStorage.getItem('configEditor');
     const savedConfigType = localStorage.getItem('configType');
     
@@ -807,15 +797,15 @@ const submitFormFunction = () => `
     localStorage.removeItem('advancedToggle');
     localStorage.removeItem('selectedRules');
     localStorage.removeItem('predefinedRules');
-    localStorage.removeItem('configEditor');  // 添加清除 configEditor
-    localStorage.removeItem('configType');    // 添加清除 configType
+    localStorage.removeItem('configEditor'); 
+    localStorage.removeItem('configType');
     localStorage.removeItem('userAgent');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
     document.getElementById('configEditor').value = '';
-    document.getElementById('configType').value = 'singbox';  // 重置为默认值
+    document.getElementById('configType').value = 'singbox'; 
     document.getElementById('customUA').value = '';
     
     localStorage.removeItem('customPath');
@@ -849,7 +839,12 @@ const customRuleFunctions = () => `
   function switchCustomRulesTab(tab) {
     try {
       currentTab = tab;
+    try {
+      currentTab = tab;
 
+      // Update tab buttons
+      document.querySelectorAll('.custom-rules-tab').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tab + 'Tab').classList.add('active');
       // Update tab buttons
       document.querySelectorAll('.custom-rules-tab').forEach(btn => btn.classList.remove('active'));
       document.getElementById(tab + 'Tab').classList.add('active');
@@ -886,6 +881,7 @@ const customRuleFunctions = () => `
     newRuleDiv.dataset.ruleId = customRuleCount++;
     newRuleDiv.innerHTML = \`
       <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">${t('customRule')} #\${getNextRuleNumber()}</h6>
         <h6 class="mb-0">${t('customRule')} #\${getNextRuleNumber()}</h6>
         <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
           <i class="fas fa-times"></i>
@@ -1022,7 +1018,19 @@ const customRuleFunctions = () => `
       if (!Array.isArray(rules)) {
         throw new Error('${t('mustBeArray')}');
       }
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (!jsonTextarea || !jsonTextarea.value.trim()) {
+      return;
+    }
 
+    try {
+      const rules = JSON.parse(jsonTextarea.value.trim());
+      if (!Array.isArray(rules)) {
+        throw new Error('${t('mustBeArray')}');
+      }
+
+      // Clear existing form rules
+      document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
       // Clear existing form rules
       document.querySelectorAll('.custom-rule').forEach(rule => rule.remove());
 
@@ -1089,7 +1097,7 @@ const customRuleFunctions = () => `
   function parseCustomRules() {
     const customRules = [];
 
-    // 处理普通表单规则
+    // Process ordinary form rules
     document.querySelectorAll('.custom-rule').forEach(rule => {
       const ruleData = {
         name: rule.querySelector('input[name="customRuleName[]"]').value || '',
@@ -1111,6 +1119,7 @@ const customRuleFunctions = () => `
     if (jsonTextarea && jsonTextarea.value.trim()) {
       try {
         const jsonRules = JSON.parse(jsonTextarea.value.trim());
+        const jsonRules = JSON.parse(jsonTextarea.value.trim());
         if (Array.isArray(jsonRules)) {
           customRules.push(...jsonRules.filter(r => r.name && r.name.trim()));
         }
@@ -1118,14 +1127,20 @@ const customRuleFunctions = () => `
         console.error('Error parsing JSON rules:', error);
       }
     }
+    }
 
     return customRules;
   }
 
-  // 初始化界面状态
+  // Initialize interface state
   document.addEventListener('DOMContentLoaded', function() {
     updateEmptyMessages();
 
+    // Initialize real-time validation for JSON textarea
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (jsonTextarea && jsonTextarea.value.trim()) {
+      validateJSONRealtime(jsonTextarea);
+    }
     // Initialize real-time validation for JSON textarea
     const jsonTextarea = document.querySelector('#customRulesJSON textarea');
     if (jsonTextarea && jsonTextarea.value.trim()) {
@@ -1146,6 +1161,32 @@ const customRuleFunctions = () => `
     });
 
     observer.observe(document.getElementById('customRules'), { childList: true, subtree: true });
+  });
+
+  function addCustomRuleJSON() {
+    const customRulesJSONDiv = document.getElementById('customRulesJSON');
+    const newRuleDiv = document.createElement('div');
+    newRuleDiv.className = 'custom-rule-json mb-3 p-3 border rounded';
+    newRuleDiv.dataset.ruleId = customRuleCount++;
+    newRuleDiv.innerHTML = \`
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">${t('customRuleJSON')}</h6>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">${t('customRuleJSON')}</label>
+        <div class="json-textarea-container">
+          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
+                    oninput="validateJSONRealtime(this)"></textarea>
+          <div class="json-validation-message" style="display: none;"></div>
+        </div>
+      </div>
+    \`;
+    customRulesJSONDiv.appendChild(newRuleDiv);
+    updateEmptyMessages();
+  }
   });
 
   function addCustomRuleJSON() {
