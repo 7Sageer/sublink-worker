@@ -208,7 +208,7 @@ const translations = {
       'Cloud Services': '☁️ Cloud Services',
       'Non-China': '🌐 Non-China',
       'GLOBAL': 'GLOBAL',
-      'Singapore Auto Select': '🇸🇬 Singapore Auto Select'
+      'Singapore Auto Select': 'Singapore Auto Select'
     }
   },
   'fa': {

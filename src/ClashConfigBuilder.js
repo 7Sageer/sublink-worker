@@ -181,11 +181,16 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addSingaporeAutoSelectGroup(proxyList) {
+        let proxiesForGroup = DeepCopy(proxyList).filter(proxy => proxy.includes('🇸🇬'));
+        if (proxiesForGroup.length === 0) {
+            proxiesForGroup = ['DIRECT'];
+        }
+
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
             name: '新加坡优选',
             type: 'url-test',
-            proxies: DeepCopy(proxyList),
+            proxies: proxiesForGroup,
             url: 'https://www.gstatic.com/generate_204',
             interval: 300,
             lazy: false
