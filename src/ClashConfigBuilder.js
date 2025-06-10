@@ -180,8 +180,11 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addSingaporeAutoSelectGroup(proxyList) {
-        const singaporeProxies = proxyList.filter(proxy => proxy.includes('新加坡') || proxy.includes('SG'));
-        // Always create the Singapore Auto Select group, even if no Singapore proxies are found
+        let singaporeProxies = proxyList.filter(proxy => proxy.includes('新加坡') || proxy.includes('SG'));
+        // If no Singapore proxies are found, add 'DIRECT' as a fallback
+        if (singaporeProxies.length === 0) {
+            singaporeProxies.push('DIRECT');
+        }
         this.config['proxy-groups'].push({
             name: t('outboundNames.Singapore Auto Select'),
             type: 'url-test',
