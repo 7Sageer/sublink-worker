@@ -170,7 +170,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addAutoSelectGroup(proxyList) {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
-            // If no Singapore proxies are found, add all proxies as a fallback
+
             name: t('outboundNames.Auto Select'),
             type: 'url-test',
             proxies: DeepCopy(proxyList),
@@ -183,7 +183,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addSingaporeAutoSelectGroup(proxyList) {
         let proxiesForGroup = DeepCopy(proxyList).filter(proxy => proxy.includes('🇸🇬'));
         if (proxiesForGroup.length === 0) {
-            proxiesForGroup = ['DIRECT'];
+            proxiesForGroup = DeepCopy(proxyList);
         }
 
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
@@ -198,10 +198,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
-        proxyList.push(t('outboundNames.Singapore Auto Select'));
+        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'), t('outboundNames.Singapore Auto Select'));
         this.config['proxy-groups'].push({
-            // If no Singapore proxies are found, add all proxies as a fallback
+
             type: "select",
             name: t('outboundNames.Node Select'),
             proxies: proxyList
@@ -212,7 +211,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
                 this.config['proxy-groups'].push({
-            // If no Singapore proxies are found, add all proxies as a fallback
+
                     type: "select",
                     name: t(`outboundNames.${outbound}`),
                     proxies: [t('outboundNames.Node Select'), t('outboundNames.Singapore Auto Select'), ...proxyList]
@@ -225,7 +224,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config['proxy-groups'].push({
-            // If no Singapore proxies are found, add all proxies as a fallback
+
                     type: "select",
                     name: t(`outboundNames.${rule.name}`),
                     proxies: [t('outboundNames.Node Select'), ...proxyList]
@@ -236,7 +235,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addFallBackGroup(proxyList) {
         this.config['proxy-groups'].push({
-            // If no Singapore proxies are found, add all proxies as a fallback
+
             type: "select",
             name: t('outboundNames.Fall Back'),
             proxies: [t('outboundNames.Node Select'), ...proxyList]
