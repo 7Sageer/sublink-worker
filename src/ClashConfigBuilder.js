@@ -197,13 +197,29 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         });
     }
 
+    addUSAutoSelectGroup(proxyList) {
+        let proxiesForGroup = DeepCopy(proxyList).filter(proxy => proxy.includes('🇺🇸'));
+        if (proxiesForGroup.length === 0) {
+            proxiesForGroup = DeepCopy(proxyList);
+        }
+
+        this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+        this.config['proxy-groups'].push({
+            name: t('outboundNames.US Auto Select'),
+            type: 'url-test',
+            proxies: proxiesForGroup,
+            url: 'https://www.gstatic.com/generate_204',
+            interval: 300,
+            lazy: false
+        });
+    }
+
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'), t('outboundNames.Singapore Auto Select'), t('outboundNames.US Auto Select'));
         this.config['proxy-groups'].push({
 
             type: "select",
             name: t('outboundNames.Node Select'),
-            proxies: proxyList
+            proxies: ['DIRECT', 'REJECT', t('outboundNames.Auto Select'), t('outboundNames.Singapore Auto Select'), t('outboundNames.US Auto Select'), ...proxyList]
         });
     }
 
