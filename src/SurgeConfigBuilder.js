@@ -283,3 +283,10 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         }
     }
 }
+
+// 在方法调用后添加分号
+this.createProxyGroup(
+    t('outboundNames.Singapore Premium'), 
+    'url-test', 
+    singaporeProxies
+); // ← 添加分号

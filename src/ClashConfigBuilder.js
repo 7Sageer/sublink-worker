@@ -276,3 +276,19 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         return yaml.dump(this.config);
     }
 }
+
+    // 修复对象声明结尾分号
+    this.config['proxy-groups'].push({
+        type: 'url-test',
+        name: t('outboundNames.Singapore Premium'),
+        proxies: filteredProxies,
+        url: 'https://www.gstatic.com/generate_204',
+        interval: 300
+    });
+    
+    // 修复规则组声明分号
+    this.config['proxy-groups'].push({
+        type: 'select',
+        name: t(`outboundNames.${rule.name}`),
+        proxies: [t('outboundNames.Node Select'), ...proxyList]
+    });
