@@ -194,6 +194,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         if (singaporeProxies.length === 0) {
             singaporeProxies = DeepCopy(proxyList);
         }
+        this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
             // If no Singapore proxies are found, add all proxies as a fallback
             name: t('outboundNames.Singapore Auto Select'),
