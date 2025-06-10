@@ -7,9 +7,14 @@ import { PREDEFINED_RULE_SETS } from './config.js';
 import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+export default {
+  async fetch(request, env, ctx) {
+    // Make SUBLINK_KV available globally for convenience within handleRequest
+    // This is a common pattern but be mindful of global state if your worker grows complex
+    globalThis.SUBLINK_KV = env.SUBLINK_KV;
+    return handleRequest(request);
+  },
+};
 
 async function handleRequest(request) {
   try {
