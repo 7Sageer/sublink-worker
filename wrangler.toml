@@ -14,7 +14,3 @@ kv_namespaces = [
 # Add the following to enable ES module syntax
 [build]
 command = "" # No build command needed if already using ES modules
-
-[[migrations]]
-tag = "v1"
-new_classes = ["DurableObjectExample"]
