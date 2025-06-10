@@ -191,7 +191,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         this.config['proxy-groups'].push({
             name: t('outboundNames.Singapore Auto Select'),
             type: 'url-test',
-            proxies: DeepCopy(singaporeProxies),
+            proxies: proxyList,
             url: 'https://www.gstatic.com/generate_204',
             interval: 300,
             lazy: false
