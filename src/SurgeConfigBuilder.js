@@ -151,11 +151,13 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         this.config.proxies.push(proxy);
     }
 
-    createProxyGroup(name, type, options = [], extraConfig = '') {
-        const baseOptions = type === 'url-test' ? [] : ['DIRECT', 'REJECT-DROP'];
-        const proxyNames = this.getProxies().map(proxy => this.getProxyName(proxy));
-        const allOptions = [...baseOptions, ...options, ...proxyNames];
-        return `${name} = ${type}, ${allOptions.join(', ')}${extraConfig}`;
+    // Add method definition
+    createProxyGroup(groupConfig) {
+        return {
+            name: groupConfig.name,
+            type: groupConfig.type,
+            proxies: groupConfig.proxies
+        };
     }
 
     addAutoSelectGroup(proxyList) {
