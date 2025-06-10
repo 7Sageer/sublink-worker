@@ -4,14 +4,14 @@ import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, disableConversion = false) {
         if (baseConfig === undefined) {
             baseConfig = SING_BOX_CONFIG;
             if (baseConfig.dns && baseConfig.dns.servers) {
                 baseConfig.dns.servers[0].detour = t('outboundNames.Node Select');
             }
         }
-        super(inputString, baseConfig, lang, userAgent);
+        super(inputString, baseConfig, lang, userAgent, disableConversion);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
     }
@@ -25,6 +25,12 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
+        if (this.disableConversion) {
+            return proxy; // Singbox expects proxy objects, so direct return is fine.
+        }
+        // Original Singbox convertProxy logic was to return proxy as is, 
+        // which means it expects the input proxy format to be compatible.
+        // This remains unchanged if conversion is not disabled.
         return proxy;
     }
 

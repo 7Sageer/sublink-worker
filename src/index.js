@@ -18,9 +18,44 @@ async function handleRequest(request) {
     setLanguage(lang || request.headers.get('accept-language')?.split(',')[0]);
     if (request.method === 'GET' && url.pathname === '/') {
       // Return the HTML form for GET requests
+      // The generateHtml function might need to be updated if it needs to know about disableConversion for initial state
       return new Response(generateHtml('', '', '', '', url.origin), {
         headers: { 'Content-Type': 'text/html' }
       });
+    } else if (request.method === 'POST' && url.pathname === '/') {
+      // Handle form submission from the main page
+      const formData = await request.formData();
+      const input = formData.get('input');
+      const selectedRules = formData.get('selectedRules') || 'minimal';
+      const customRules = formData.get('customRules') || '[]';
+      const baseConfig = formData.get('baseConfig');
+      const ua = formData.get('ua');
+      const disableConversion = formData.get('disableConversion') === 'on'; // Checkbox value is 'on' when checked
+
+      const params = new URLSearchParams();
+      params.append('config', input);
+      params.append('selectedRules', selectedRules);
+      params.append('customRules', customRules);
+      if (baseConfig) {
+        params.append('baseConfig', baseConfig);
+      }
+      if (ua) {
+        params.append('ua', ua);
+      }
+      if (disableConversion) {
+        params.append('disableConversion', 'true');
+      }
+
+      // Construct the URLs for each config type
+      const xrayUrl = `${url.origin}/xray?${params.toString()}`;
+      const singboxUrl = `${url.origin}/singbox?${params.toString()}`;
+      const clashUrl = `${url.origin}/clash?${params.toString()}`;
+      const surgeUrl = `${url.origin}/surge?${params.toString()}`;
+
+      return new Response(generateHtml(encodeBase64(xrayUrl), singboxUrl, clashUrl, surgeUrl, url.origin), {
+        headers: { 'Content-Type': 'text/html' }
+      });
+
     } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge')) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
@@ -32,6 +67,8 @@ async function handleRequest(request) {
       if (!userAgent) {
         userAgent = 'curl/7.74.0';
       }
+      // Get disableConversion parameter
+      const disableConversion = url.searchParams.get('disableConversion') === 'true';
 
       if (!inputString) {
         return new Response(t('missingConfig'), { status: 400 });
@@ -68,11 +105,11 @@ async function handleRequest(request) {
 
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
+        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, disableConversion);
       } else if (url.pathname.startsWith('/clash')) {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, disableConversion);
       } else {
-        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent)
+        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, disableConversion)
           .setSubscriptionUrl(url.href);
       }
 

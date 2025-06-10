@@ -4,13 +4,14 @@ import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent) {
+    constructor(inputString, baseConfig, lang, userAgent, disableConversion = false) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
         setLanguage(lang);
         this.userAgent = userAgent;
+        this.disableConversion = disableConversion;
     }
 
     async build() {
@@ -147,9 +148,13 @@ export class BaseConfigBuilder {
         const validItems = customItems.filter(item => item != null);
         validItems.forEach(item => {
             if (item?.tag) {
-                const convertedProxy = this.convertProxy(item);
-                if (convertedProxy) {
-                    this.addProxyToConfig(convertedProxy);
+                if (this.disableConversion) {
+                    this.addProxyToConfig(item); // Add original item if conversion is disabled
+                } else {
+                    const convertedProxy = this.convertProxy(item);
+                    if (convertedProxy) {
+                        this.addProxyToConfig(convertedProxy);
+                    }
                 }
             }
         });

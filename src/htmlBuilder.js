@@ -51,6 +51,16 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   </body>
 `;
 
+const generateDisableConversionSwitch = () => `
+  <div class="form-section mt-3">
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="disableConversionSwitch">
+      <label class="form-check-label" for="disableConversionSwitch">${t('disableConversion')}</label>
+    </div>
+    <small class="form-text text-muted">${t('disableConversionHelp')}</small>
+  </div>
+`;
+
 const generateDarkModeToggle = () => `
   <button id="darkModeToggle" class="btn btn-outline-secondary">
     <i class="fas fa-moon"></i>
@@ -98,6 +108,7 @@ const generateAdvancedOptions = () => `
     ${generateRuleSetSelection()}
     ${generateBaseConfigSection()}
     ${generateUASection()}
+    ${generateDisableConversionSwitch()}
   </div>
 `;
 
@@ -179,6 +190,7 @@ const generateScripts = () => `
     ${customPathFunctions()}
     ${saveConfig()}
     ${clearConfig()}
+    ${handleDisableConversionSwitchState()}
   </script>
 `;
 
@@ -1325,6 +1337,19 @@ const generateQRCodeFunction = () => `
         document.body.removeChild(modal);
       }, { once: true });
     }
+  }
+
+  function handleDisableConversionSwitchState() {
+    const disableConversionSwitch = document.getElementById('disableConversionSwitch');
+    if (!disableConversionSwitch) return; // Element might not exist if advanced options are hidden
+    const savedDisableConversion = localStorage.getItem('disableConversion');
+    if (savedDisableConversion !== null) {
+      disableConversionSwitch.checked = savedDisableConversion === 'true';
+    }
+
+    disableConversionSwitch.addEventListener('change', function() {
+      localStorage.setItem('disableConversion', this.checked);
+    });
   }
 `;
 

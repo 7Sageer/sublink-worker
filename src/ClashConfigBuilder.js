@@ -5,11 +5,11 @@ import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, disableConversion = false) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
-        super(inputString, baseConfig, lang, userAgent);
+        super(inputString, baseConfig, lang, userAgent, disableConversion);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
     }
@@ -23,6 +23,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
+        if (this.disableConversion) {
+            return proxy;
+        }
         switch(proxy.type) {
             case 'shadowsocks':
                 return {

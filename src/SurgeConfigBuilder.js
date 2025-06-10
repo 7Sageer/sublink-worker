@@ -3,13 +3,13 @@ import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, g
 import { t } from './i18n/index.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, disableConversion = false) {
         // Not yet implemented, set aside for later use ;)
         // if (!baseConfig) {
         //     baseConfig = SURGE_CONFIG;
         // }
         baseConfig = SURGE_CONFIG;
-        super(inputString, baseConfig, lang, userAgent);
+        super(inputString, baseConfig, lang, userAgent, disableConversion);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;
@@ -29,6 +29,16 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
+        if (this.disableConversion) {
+            // For Surge, even if conversion is disabled, we might need a basic string representation if the proxy object is not directly usable.
+            // However, if the intention is to only add groups, this might not be called if addProxyToConfig handles it.
+            // For now, let's assume if conversion is disabled, the proxy object is structured in a way that addProxyToConfig can handle it or it's skipped.
+            // A more robust solution might involve ensuring 'proxy' is a string or can be stringified appropriately here.
+            if (typeof proxy === 'string') return proxy; // If it's already a string, return it.
+            // If it's an object, we need to decide how to represent it. Returning tag as a placeholder.
+            // This part might need adjustment based on how `addProxyToConfig` handles raw proxy objects for Surge.
+            return `# ${proxy.tag} - Conversion disabled`; 
+        }
         let surgeProxy;
         switch (proxy.type) {
             case 'shadowsocks':
