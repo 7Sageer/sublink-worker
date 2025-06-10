@@ -119,6 +119,10 @@ export class BaseConfigBuilder {
         throw new Error('addAutoSelectGroup must be implemented in child class');
     }
 
+    addUSAutoSelectGroup(proxyList) {
+        throw new Error('addUSAutoSelectGroup must be implemented in child class');
+    }
+
     addNodeSelectGroup(proxyList) {
         throw new Error('addNodeSelectGroup must be implemented in child class');
     }
