@@ -181,17 +181,11 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addSingaporeAutoSelectGroup(proxyList) {
-        let singaporeProxies = DeepCopy(proxyList);
-        // If singaporeProxies is still empty after DeepCopy, use DIRECT as fallback
-        if (singaporeProxies.length === 0) {
-            singaporeProxies = ['DIRECT'];
-        }
-
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
             name: t('outboundNames.Singapore Auto Select'),
             type: 'url-test',
-            proxies: proxyList,
+            proxies: DeepCopy(proxyList),
             url: 'https://www.gstatic.com/generate_204',
             interval: 300,
             lazy: false
