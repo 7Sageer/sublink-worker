@@ -188,7 +188,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
-            name: '新加坡优选',
+            name: t('outboundNames.Singapore Auto Select'),
             type: 'url-test',
             proxies: proxiesForGroup,
             url: 'https://www.gstatic.com/generate_204',
