@@ -101,7 +101,8 @@ const translations = {
       'Financial': '💰 金融服务',
       'Cloud Services': '☁️ 云服务',
       'Non-China': '🌐 非中国',
-      'GLOBAL': 'GLOBAL'
+      'GLOBAL': 'GLOBAL',
+      'Singapore Auto Select': '🇸🇬 新加坡优选'
     },
     UASettings: '自定义UserAgent',
     UAtip: '默认值curl/7.74.0'
@@ -185,7 +186,29 @@ const translations = {
     jsonValidationErrors: 'JSON validation errors',
     // 补充国际化配置
     outboundNames: {
-    'Singapore Premium': ['新加坡优选', 'Singapore Premium']
+      'Auto Select': '⚡ Auto Select',
+      'Node Select': '🚀 Node Select',
+      'Fall Back': '🐟 Fall Back',
+      'Ad Block': '🛑 Ad Block',
+      'AI Services': '💬 AI Services',
+      'Bilibili': '📺 Bilibili',
+      'Youtube': '📹 Youtube',
+      'Google': '🔍 Google Services',
+      'Private': '🏠 Private Network',
+      'Location:CN': '🔒 China Services',
+      'Telegram': '📲 Telegram Messages',
+      'Github': '🐱 Github',
+      'Microsoft': 'Ⓜ️ Microsoft Services',
+      'Apple': '🍏 Apple Services',
+      'Social Media': '🌐 Social Media',
+      'Streaming': '🎬 Streaming',
+      'Gaming': '🎮 Gaming Platforms',
+      'Education': '📚 Educational Resources',
+      'Financial': '💰 Financial Services',
+      'Cloud Services': '☁️ Cloud Services',
+      'Non-China': '🌐 Non-China',
+      'GLOBAL': 'GLOBAL',
+      'Singapore Auto Select': '🇸🇬 Singapore Auto Select'
     }
   },
   'fa': {

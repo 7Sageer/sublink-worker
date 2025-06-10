@@ -78,6 +78,10 @@ async function handleRequest(request) {
 
       const config = await configBuilder.build();
 
+      if (configBuilder instanceof ClashConfigBuilder) {
+        configBuilder.addSingaporeAutoSelectGroup(configBuilder.getProxies().map(p => p.name));
+      }
+
       // 设置正确的 Content-Type 和其他响应头
       const headers = {
         'content-type': url.pathname.startsWith('/singbox')
