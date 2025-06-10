@@ -76,11 +76,10 @@ async function handleRequest(request) {
           .setSubscriptionUrl(url.href);
       }
 
-      const config = await configBuilder.build();
-
       if (configBuilder instanceof ClashConfigBuilder) {
         configBuilder.addSingaporeAutoSelectGroup(configBuilder.getProxies().map(p => p.name));
       }
+      const config = await configBuilder.build();
 
       // 设置正确的 Content-Type 和其他响应头
       const headers = {
