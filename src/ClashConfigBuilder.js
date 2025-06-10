@@ -180,7 +180,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addSingaporeAutoSelectGroup(proxyList) {
-        let singaporeProxies = proxyList.filter(proxy => proxy.includes('新加坡') || proxy.includes('SG'));
+        let singaporeProxies = proxyList.filter(proxy => proxy.includes('新加坡') || proxy.includes('SG') || proxy.includes('Singapore') || proxy.includes('SGP'));
         // If no Singapore proxies are found, add 'DIRECT' as a fallback
         if (singaporeProxies.length === 0) {
             singaporeProxies.push('DIRECT');
