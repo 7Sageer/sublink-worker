@@ -77,7 +77,7 @@ async function handleRequest(request) {
       }
 
       if (configBuilder instanceof ClashConfigBuilder) {
-        configBuilder.addSingaporeAutoSelectGroup(configBuilder.getProxies().map(p => p.name));
+
       }
       const config = await configBuilder.build();
 
