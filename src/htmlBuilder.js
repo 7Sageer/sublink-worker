@@ -190,7 +190,9 @@ const generateScripts = () => `
     ${customPathFunctions()}
     ${saveConfig()}
     ${clearConfig()}
-    ${handleDisableConversionSwitchState()}
+    document.addEventListener('DOMContentLoaded', function() {
+      ${handleDisableConversionSwitchState()}
+    });
   </script>
 `;
 
