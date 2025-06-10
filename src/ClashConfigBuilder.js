@@ -238,6 +238,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             ...ip_rule_providers
         };
 
+        // 确保 this.config.rules 被初始化为数组
+        this.config.rules = this.config.rules || [];
+
         // 使用RULE-SET规则格式替代原有的GEOSITE/GEOIP
         // Rule-Set & Domain-Set:  To reduce DNS leaks and unnecessary DNS queries,
         // domain & non-IP rules must precede IP rules
@@ -276,19 +279,3 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         return yaml.dump(this.config);
     }
 }
-
-    // 修复对象声明结尾分号
-    this.config['proxy-groups'].push({
-        type: 'url-test',
-        name: t('outboundNames.Singapore Premium'),
-        proxies: filteredProxies,
-        url: 'https://www.gstatic.com/generate_204',
-        interval: 300
-    });
-    
-    // 修复规则组声明分号
-    this.config['proxy-groups'].push({
-        type: 'select',
-        name: t(`outboundNames.${rule.name}`),
-        proxies: [t('outboundNames.Node Select'), ...proxyList]
-    });
