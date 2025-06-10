@@ -102,7 +102,8 @@ const translations = {
       'Cloud Services': '☁️ 云服务',
       'Non-China': '🌐 非中国',
       'GLOBAL': 'GLOBAL',
-      'Singapore Auto Select': '新加坡优选'
+      'Singapore Auto Select': '新加坡优选',
+      'US Auto Select': '美国优选'
     },
     UASettings: '自定义UserAgent',
     UAtip: '默认值curl/7.74.0'
@@ -208,8 +209,10 @@ const translations = {
       'Cloud Services': '☁️ Cloud Services',
       'Non-China': '🌐 Non-China',
       'GLOBAL': 'GLOBAL',
-      'Singapore Auto Select': 'Singapore Auto Select'
-    }
+      'Singapore Auto Select': 'Singapore Auto Select',
+      'US Auto Select': 'US Auto Select'
+    },
+    UASettings: 'Custom UserAgent'
   },
   'fa': {
     missingInput: 'پارامتر ورودی وجود ندارد',

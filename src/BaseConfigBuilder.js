@@ -152,6 +152,7 @@ export class BaseConfigBuilder {
         const proxyList = this.getProxyList();
 
         this.addSingaporeAutoSelectGroup(proxyList);
+        this.addUSAutoSelectGroup(proxyList);
         this.addAutoSelectGroup(proxyList);
         this.addNodeSelectGroup(proxyList);
         this.addOutboundGroups(outbounds, proxyList);
