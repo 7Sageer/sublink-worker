@@ -154,7 +154,7 @@ export class ProxyParser {
         parse(url) {
           const { addressPart, params, name } = parseUrlParams(url);
           // 处理不包含 @ 的 URL 格式
-          let host, port;
+          let host, port, server_ports;
           let password = null;
           
           if (addressPart.includes('@')) {
@@ -162,12 +162,14 @@ export class ProxyParser {
             const parsed = parseServerInfo(serverInfo);
             host = parsed.host;
             port = parsed.port;
+            server_ports = parsed.server_ports;
             password = decodeURIComponent(uuid);
           } else {
             // 直接解析服务器地址和端口
             const parsed = parseServerInfo(addressPart);
             host = parsed.host;
             port = parsed.port;
+            server_ports = parsed.server_ports;
             // 如果 URL 中没有 @，则尝试从 params.auth 获取密码
             password = params.auth;
           }
@@ -180,7 +182,7 @@ export class ProxyParser {
             obfs.password = params['obfs-password'];
           };
       
-          return {
+          const config = {
             tag: name,
             type: "hysteria2",
             server: host,
@@ -193,6 +195,13 @@ export class ProxyParser {
             up_mbps: params?.upmbps ? parseInt(params.upmbps) : undefined,
             down_mbps: params?.downmbps ? parseInt(params.downmbps) : undefined
           };
+          
+          // Add server_ports if multiple ports are detected
+          if (server_ports) {
+            config.server_ports = server_ports.replace("-",":");
+          }
+          
+          return config;
         }
       }
 

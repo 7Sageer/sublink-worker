@@ -125,6 +125,39 @@ export function parseServerInfo(serverInfo) {
 	  host = serverInfo.slice(0, lastColonIndex);
 	  port = serverInfo.slice(lastColonIndex + 1);
 	}
+	
+	// Clean port string to remove any trailing characters
+	if (port) {
+		port = port.replace(/[^\d,-]/g, '');
+	}
+	
+	// Handle multiple ports for hysteria2
+	if (port && port.includes(',')) {
+		// Handle mixed format: 123,5000-6000 or discrete ports: 123,456,789
+		const portParts = port.split(',');
+		const parsedPorts = [];
+		
+		for (const part of portParts) {
+			const trimmedPart = part.trim();
+			if (trimmedPart.includes('-')) {
+				// Port range
+				parsedPorts.push(trimmedPart);
+			} else {
+				// Single port
+				parsedPorts.push(parseInt(trimmedPart));
+			}
+		}
+		
+		const firstPort = typeof parsedPorts[0] === 'string' ? 
+			parseInt(parsedPorts[0].split('-')[0]) : parsedPorts[0];
+		
+		return { host, port: firstPort, server_ports: parsedPorts };
+	} else if (port && port.includes('-')) {
+		// Port range: 5000-6000
+		const [start, end] = port.split('-').map(p => parseInt(p.trim()));
+		return { host, port: start, server_ports: `${start}-${end}` };
+	}
+	
 	return { host, port: parseInt(port) };
   }
   
