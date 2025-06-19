@@ -61,7 +61,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        proxyList.unshift('DIRECT', t('outboundNames.Auto Select'));
         this.config.outbounds.unshift({
             type: "selector",
             tag: t('outboundNames.Node Select'),
@@ -102,52 +102,55 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules);
-        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules,this.customRules);
+        const generatedRules = generateRules(this.selectedRules, this.customRules);
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
+        this.config.route.rules = []; // Initialize/clear rules array
 
-        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
-            this.config.route.rules.push({
-                domain_suffix: rule.domain_suffix,
-                domain_keyword: rule.domain_keyword,
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-            });
-        });
+        const adBlockOutboundName = 'Ad Block';
 
-        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
-            this.config.route.rules.push({
-                rule_set: [
-                ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
-                ],
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-            });
-        });
+        generatedRules.forEach(rule => {
+            const ruleConfig = {};
+            if (rule.domain_suffix && rule.domain_suffix.length > 0 && rule.domain_suffix.some(d => d !== '')) {
+                ruleConfig.domain_suffix = rule.domain_suffix.filter(d => d !== '');
+            }
+            if (rule.domain_keyword && rule.domain_keyword.length > 0 && rule.domain_keyword.some(d => d !== '')) {
+                ruleConfig.domain_keyword = rule.domain_keyword.filter(d => d !== '');
+            }
+            if (rule.protocol && rule.protocol.length > 0 && rule.protocol.some(p => p !== '')) {
+                ruleConfig.protocol = rule.protocol.filter(p => p !== '');
+            }
 
-        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
-            this.config.route.rules.push({
-                rule_set: [
-                ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
-                ],
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-          });
-        });
+            const siteRuleSetNames = rule.site_rules && rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : [];
+            const ipRuleSetNames = rule.ip_rules && rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip.trim()}-ip`);
+            const combinedRuleSets = [...siteRuleSetNames, ...ipRuleSetNames].filter(rs => rs !== '');
 
-        rules.filter(rule => !!rule.ip_cidr).map(rule => {
-            this.config.route.rules.push({
-                ip_cidr: rule.ip_cidr,
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-            });
+            if (combinedRuleSets.length > 0) {
+                ruleConfig.rule_set = combinedRuleSets;
+            }
+
+            if (rule.ip_cidr && rule.ip_cidr.length > 0 && rule.ip_cidr.some(ip => ip !== '')) {
+                ruleConfig.ip_cidr = rule.ip_cidr.filter(ip => ip !== '');
+            }
+
+            // Ensure the rule has at least one matcher
+            const hasMatchers = ruleConfig.domain_suffix || ruleConfig.domain_keyword || ruleConfig.rule_set || ruleConfig.ip_cidr || ruleConfig.protocol;
+
+            if (hasMatchers) {
+                if (rule.outbound === adBlockOutboundName) {
+                    ruleConfig.action = "reject";
+                } else {
+                    ruleConfig.outbound = t(`outboundNames.${rule.outbound}`);
+                }
+                this.config.route.rules.push(ruleConfig);
+            }
         });
 
         this.config.route.rules.unshift(
             { clash_mode: 'direct', outbound: 'DIRECT' },
             { clash_mode: 'global', outbound: t('outboundNames.Node Select') },
-            { action: 'sniff' },
+            { action: 'sniff' }, // Ensure sniff is added correctly as per original logic. The prompt mentioned {action: 'sniff'}
             { protocol: 'dns', action: 'hijack-dns' }
         );
 

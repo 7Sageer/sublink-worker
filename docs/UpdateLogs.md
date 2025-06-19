@@ -4,6 +4,9 @@
 
 - 现在如果存在相同名称的代理，会自动进行重命名([#175](https://github.com/7Sageer/sublink-worker/pull/175))
 - 修复Singbox的DNS配置([#174](https://github.com/7Sageer/sublink-worker/pull/174))
+- 更新 `sing-box` 配置生成以符合 `sing-box v1.11.0+` 规范。
+- 将已弃用的“特殊出站”（如 `type: "block"`）替换为“规则操作”（例如，广告拦截规则使用 `action: "reject"`）。
+- 此更改解决了 `sing-box` 可能出现的弃用警告，并确保了未来的兼容性。
 
 ## 2025-04-30
 

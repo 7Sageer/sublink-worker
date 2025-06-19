@@ -467,7 +467,6 @@ export const SING_BOX_CONFIG = {
 		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
 	],
 	outbounds: [
-		{ type: 'block', tag: 'REJECT' },
 		{ type: "direct", tag: 'DIRECT' }
 	],
 	route : {
