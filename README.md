@@ -95,6 +95,41 @@ For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
     └── BaseConfig.md        # Basic configuration feature introduction
 ```
 
+## Local Development / Deployment
+
+To run this project locally for development or testing, follow these steps:
+
+### Prerequisites
+
+*   [Node.js](https://nodejs.org/) (which includes npm) installed on your system.
+*   Git for cloning the repository.
+
+### Steps
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/your-repo-name.git
+    cd your-repo-name
+    ```
+    (Replace `your-username/your-repo-name` with the actual repository URL)
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the local development server:**
+    ```bash
+    npm run dev
+    ```
+    This command uses `wrangler dev`, which will start a local server (usually on `http://localhost:8787`) and simulate the Cloudflare environment, including KV storage. Any data written to KV namespaces (like `SUBLINK_KV`) will be stored locally in a `.wrangler` directory within your project.
+
+### KV Namespace Note
+
+The script `npm run setup-kv` (or `node scripts/setup-kv.js`) is intended for managing the KV namespace in a *deployed* Cloudflare Workers environment. It interacts with your Cloudflare account to create or find the necessary KV namespace and updates `wrangler.toml` accordingly.
+
+**You do not need to run `npm run setup-kv` for local development with `npm run dev`**, as `wrangler dev` handles local KV simulation automatically.
+
 ## 🤝 Contribution
 
 Issues and Pull Requests are welcome to improve this project.
