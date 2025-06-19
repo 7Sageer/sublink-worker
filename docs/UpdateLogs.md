@@ -5,8 +5,31 @@
 - 现在如果存在相同名称的代理，会自动进行重命名([#175](https://github.com/7Sageer/sublink-worker/pull/175))
 - 修复Singbox的DNS配置([#174](https://github.com/7Sageer/sublink-worker/pull/174))
 - 更新 `sing-box` 配置生成以符合 `sing-box v1.11.0+` 规范。
-- 将已弃用的“特殊出站”（如 `type: "block"`）替换为“规则操作”（例如，广告拦截规则使用 `action: "reject"`）。
-- 此更改解决了 `sing-box` 可能出现的弃用警告，并确保了未来的兼容性。
+  - 将已弃用的“特殊出站”（如 `type: "block"`）替换为“规则操作”（例如，广告拦截规则使用 `action: "reject"`）。
+  - 此更改解决了 `sing-box` 可能出现的弃用警告，并确保了未来的兼容性。
+- **重构：增强 Clash 和 Sing-box 的代理组/出站结构**
+  - **Clash 更新详情:**
+    - 引入了受通用高级配置启发的层级式代理组结构。
+    - 添加/修改的关键组:
+      - `🔄 Lazy Config` (fallback: Node Select, Auto Select, Global Direct) - 主要策略路由器。
+      - `🎯 Global Direct` (select: DIRECT)
+      - `🛑 Global Block` (select: REJECT, DIRECT)
+      - `🔰 Node Select` (select: Auto Select, Global Direct, ...节点)
+      - `♻️ 自动选择` (url-test: ...节点)
+      - `🐟 Uncaught Fish` (select: Lazy Config, Node Select, 等) - MATCH 规则的目标。
+    - 特定服务组 (例如 Google, Netflix) 现在提供如 'Lazy Config', 'Node Select' 等选项，以实现更精细的控制。
+    - 'Ad Block' (广告拦截) 规则现在指向 'Global Block' (全局拦截) 组。
+  - **Sing-box 更新详情:**
+    - 将层级式路由理念应用于 Sing-box 出站。
+    - 添加/修改的关键出站:
+      - `Lazy Config` (selector: Node Select, Auto Select, DIRECT) - 主要策略路由器。
+      - `Node Select` (selector: Auto Select, DIRECT, ...节点)
+      - `Auto Select` (urltest: ...节点)
+      - `Uncaught Fish` (selector: Lazy Config, Node Select, 等) - `route.final` 的目标。
+    - 特定服务选择器出站 (例如 Google, Netflix) 现在提供如 'Lazy Config', 'Node Select', 'Auto Select', 'DIRECT', 及特定节点等选项。
+    - 'Ad Block' (广告拦截) 规则继续使用 `action: "reject"`。
+  - **通用说明:**
+    - 这些更改提供了更强大和灵活的路由功能。维护自定义 i18n 文件的用户应添加新的组名翻译键 (例如 `outboundNames.Lazy Config`, `outboundNames.Global Direct`)。
 
 ## 2025-04-30
 
