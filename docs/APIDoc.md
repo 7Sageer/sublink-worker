@@ -31,7 +31,7 @@ https://your-worker-domain.workers.dev
 
 **示例**:
 ```
-/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D
+/singbox?config=vmess%3A%2F%2Fexample&selectedRules=balanced&customRules=%5B%7B%22site%22%3A%22example.com%22%2C%22ip%22%3A%22192.168.1.1%22%2C%22domain_suffix%22%3A%22.com%22%2C%22ip_cidr%22%3A%2210.0.0.0%2F8%22%2C%22name%22%3A%22MyCustomRule%22%7D%5D
 ```
 
 #### Clash 配置
@@ -155,26 +155,26 @@ Singbox 的规则集来自 [https://github.com/lyc8503/sing-box-rules](https://g
 
 除了使用预定义规则集,您还可以在 `customRules` 参数中提供自定义规则列表作为 JSON 数组。每个自定义规则应包含以下字段:
 
-- `sites`: 域名规则数组
-- `ips`: IP 规则数组
-- `domain_suffix`: 域名后缀规则数组
-- `domain_keyword`: 域名关键词规则数组
-- `ip_cidr`: IP CIDR 规则数组
-- `protocol`: 协议规则数组
-- `outbound`: 出站名称
+- `site`: 域名规则，逗号分隔的字符串
+- `ip`: IP 规则，逗号分隔的字符串
+- `domain_suffix`: 域名后缀规则，逗号分隔的字符串
+- `domain_keyword`: 域名关键词规则，逗号分隔的字符串
+- `ip_cidr`: IP CIDR 规则，逗号分隔的字符串
+- `protocol`: 协议规则，逗号分隔的字符串
+- `name`: 出站名称
 
 示例:
 
 ```json
 [
   {
-    "sites": ["google", "anthropic"],
-    "ips": ["private", "cn"],
-    "domain_suffix": [".com", ".org"],
-    "domain_keyword": ["Mijia Cloud", "push.apple"],
-    "ip_cidr": ["192.168.0.0/16", "10.0.0.0/8"],
-    "protocol": ["http", "tls", "dns"],
-    "outbound": "🤪 MyCustomRule"
+    "site": "google,anthropic",
+    "ip": "private,cn",
+    "domain_suffix": ".com,.org",
+    "domain_keyword": "Mijia Cloud,push.apple",
+    "ip_cidr": "192.168.0.0/16,10.0.0.0/8",
+    "protocol": "http,tls,dns",
+    "name": "🤪 MyCustomRule"
   }
 ]
 ```
@@ -204,7 +204,7 @@ API 在出现问题时将返回适当的 HTTP 状态码和错误消息:
 
 2. 生成带有置顶自定义规则的 Clash 配置:
    ```
-   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22sites%22%3A%5B%22example.com%22%5D%2C%22ips%22%3A%5B%22192.168.1.1%22%5D%2C%22domain_suffix%22%3A%5B%22.com%22%5D%2C%22domain_keyword%22%3A%5B%22Mijia%20Cloud%22%5D%2C%22ip_cidr%22%3A%5B%2210.0.0.0%2F8%22%5D%2C%22outbound%22%3A%22MyCustomRule%22%7D%5D&pin=true
+   /clash?config=vless%3A%2F%2Fexample&customRules=%5B%7B%22site%22%3A%22example.com%22%2C%22ip%22%3A%22192.168.1.1%22%2C%22domain_suffix%22%3A%22.com%22%2C%22domain_keyword%22%3A%22Mijia%20Cloud%22%2C%22ip_cidr%22%3A%2210.0.0.0%2F8%22%2C%22name%22%3A%22MyCustomRule%22%7D%5D&pin=true
    ```
 
 3. 缩短 URL:
