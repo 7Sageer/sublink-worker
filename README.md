@@ -52,6 +52,7 @@ npm run deploy
 - Sing-Box
 - Clash
 - Xray/V2Ray
+- LOON
 
 ### Web Interface Features
 - User-friendly operation interface

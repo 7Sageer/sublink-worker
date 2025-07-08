@@ -175,3 +175,5 @@ test
 .editorconfig
 .prettierrc
 package-lock.json
+
+.idea

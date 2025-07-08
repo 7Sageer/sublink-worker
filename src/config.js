@@ -567,3 +567,25 @@ export const SURGE_CONFIG = {
         'hide-udp': false
     }
 };
+
+export const LOON_CONFIG = {
+    'general': {
+        'ipv6': false,
+        'skip-proxy': '127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,17.0.0.0/8,localhost,*.local',
+        'bypass-tun': '10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.0.0.0/24,192.0.2.0/24,192.88.99.0/24,192.168.0.0/16,198.51.100.0/24,203.0.113.0/24,224.0.0.0/4,255.255.255.255/32',
+        'dns-server': 'system,119.29.29.29,223.5.5.5',
+        'allow-udp-proxy': false,
+        'allow-wifi-access': false,
+        'wifi-access-http-port': 7222,
+        'wifi-access-socks5-port': 7221,
+        'proxy-test-url': 'http://cp.cloudflare.com/generate_204',
+        'internet-test-url': 'http://www.apple.com/library/test/success.html',
+        'test-timeout': 3,
+        'interface-mode': 'auto',
+        'sni-sniffing': true,
+        'disable-stun': false,
+        'disconnect-on-policy-change': false,
+        'switch-node-after-failure-times': 3,
+        'resource-parser': 'https://raw.githubusercontent.com/Peng-YM/Sub-Store/master/backend/dist/sub-store-parser.loon.min.js'
+    }
+};

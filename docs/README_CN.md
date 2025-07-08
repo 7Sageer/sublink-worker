@@ -50,6 +50,7 @@ npm run deploy
 - Sing-Box
 - Clash
 - Xray/V2Ray
+- LOON
 
 ### Web 界面特性
 - 用户友好的操作界面

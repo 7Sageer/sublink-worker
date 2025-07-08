@@ -2,9 +2,10 @@ import { SingboxConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
+import { LoonConfigBuilder } from './LoonConfigBuilder.js';
 import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
-import { t, setLanguage } from './i18n/index.js';
+import { t, setLanguage } from './i18n';
 import yaml from 'js-yaml';
 
 addEventListener('fetch', event => {
@@ -18,10 +19,10 @@ async function handleRequest(request) {
     setLanguage(lang || request.headers.get('accept-language')?.split(',')[0]);
     if (request.method === 'GET' && url.pathname === '/') {
       // Return the HTML form for GET requests
-      return new Response(generateHtml('', '', '', '', url.origin), {
+      return new Response(generateHtml('', '', '', '', '', url.origin), {
         headers: { 'Content-Type': 'text/html' }
       });
-    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge')) {
+    } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge') || url.pathname.startsWith('/loon')) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
@@ -71,6 +72,9 @@ async function handleRequest(request) {
         configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
       } else if (url.pathname.startsWith('/clash')) {
         configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
+      } else if (url.pathname.startsWith('/loon')) {
+        configBuilder = new LoonConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent)
+          .setSubscriptionUrl(url.href);
       } else {
         configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent)
           .setSubscriptionUrl(url.href);
@@ -87,8 +91,8 @@ async function handleRequest(request) {
             : 'text/plain; charset=utf-8'
       };
 
-      // 如果是 Surge 配置，添加 subscription-userinfo 头
-      if (url.pathname.startsWith('/surge')) {
+      // 如果是 Surge 或 Loon 配置，添加 subscription-userinfo 头
+      if (url.pathname.startsWith('/surge') || url.pathname.startsWith('/loon')) {
         headers['subscription-userinfo'] = 'upload=0; download=0; total=10737418240; expire=2546249531';
       }
 
@@ -133,7 +137,7 @@ async function handleRequest(request) {
         headers: { 'Content-Type': 'text/plain' }
       });
 
-    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/')) {
+    } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/') || url.pathname.startsWith('/l/')) {
       const shortCode = url.pathname.split('/')[2];
       const originalParam = await SUBLINK_KV.get(shortCode);
       let originalUrl;
@@ -146,6 +150,8 @@ async function handleRequest(request) {
         originalUrl = `${url.origin}/xray${originalParam}`;
       } else if (url.pathname.startsWith('/s/')) {
         originalUrl = `${url.origin}/surge${originalParam}`;
+      } else if (url.pathname.startsWith('/l/')) {
+        originalUrl = `${url.origin}/loon${originalParam}`;
       }
 
       if (originalUrl === null) {
@@ -251,7 +257,7 @@ async function handleRequest(request) {
       try {
         const urlObj = new URL(shortUrl);
         const pathParts = urlObj.pathname.split('/');
-        
+
         if (pathParts.length < 3) {
           return new Response(t('invalidShortUrl'), { status: 400 });
         }
@@ -259,7 +265,7 @@ async function handleRequest(request) {
         const prefix = pathParts[1]; // b, c, x, s
         const shortCode = pathParts[2];
 
-        if (!['b', 'c', 'x', 's'].includes(prefix)) {
+        if (!['b', 'c', 'x', 's', 'l'].includes(prefix)) {
           return new Response(t('invalidShortUrl'), { status: 400 });
         }
 
@@ -277,6 +283,8 @@ async function handleRequest(request) {
           originalUrl = `${url.origin}/xray${originalParam}`;
         } else if (prefix === 's') {
           originalUrl = `${url.origin}/surge${originalParam}`;
+        } else if (prefix === 'l') {
+          originalUrl = `${url.origin}/loon${originalParam}`;
         }
 
         return new Response(JSON.stringify({ originalUrl }), {

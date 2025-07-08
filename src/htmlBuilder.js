@@ -2,12 +2,12 @@ import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
 import { t } from './i18n/index.js';
 
-export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) {
+export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, loonUrl, baseUrl) {
   return `
     <!DOCTYPE html>
     <html lang="en">
       ${generateHead()}
-      ${generateBody(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
+      ${generateBody(xrayUrl, singboxUrl, clashUrl, surgeUrl, loonUrl, baseUrl)}
     </html>
   `;
 }
@@ -32,7 +32,7 @@ const generateHead = () => `
   </head>
 `;
 
-const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
+const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, loonUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
     ${generateGithubLink()}
@@ -42,7 +42,7 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
         <div class="card-body">
           ${generateForm()}
           <div id="subscribeLinksContainer">
-            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
+            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, surgeUrl, loonUrl, baseUrl)}
           </div>
         </div>
       </div>
@@ -112,12 +112,13 @@ const generateButtonContainer = () => `
   </div>
 `;
 
-const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
+const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, loonUrl, baseUrl) => `
   <div class="mt-4">
     ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
     ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
     ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
     ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
+    ${generateLinkInput('Loon Link:', 'loonLink', loonUrl)}
     ${generateCustomPathSection(baseUrl)}
     ${generateShortenButton()}
   </div>
@@ -301,11 +302,13 @@ const shortenAllUrlsFunction = () => `
       const xrayLink = document.getElementById('xrayLink');
       const clashLink = document.getElementById('clashLink');
       const surgeLink = document.getElementById('surgeLink');
+      const loonLink = document.getElementById('loonLink');
 
       xrayLink.value = window.location.origin + '/x/' + shortCode;
       singboxLink.value = window.location.origin + '/b/' + shortCode;
       clashLink.value = window.location.origin + '/c/' + shortCode;
       surgeLink.value = window.location.origin + '/s/' + shortCode;
+      loonLink.value = window.location.origin + '/l/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to shorten URLs. Please try again.');
@@ -603,10 +606,12 @@ const submitFormFunction = () => `
     const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const loonUrl = \`\${window.location.origin}/loon?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
     document.getElementById('surgeLink').value = surgeUrl;
+    document.getElementById('loonLink').value = loonUrl;
     // Show the subscribe part
     const subscribeLinksContainer = document.getElementById('subscribeLinksContainer');
     subscribeLinksContainer.classList.remove('hide');
@@ -715,7 +720,7 @@ const submitFormFunction = () => `
     try {
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split('/');
-      return pathParts.length >= 3 && ['b', 'c', 'x', 's'].includes(pathParts[1]) && pathParts[2];
+      return pathParts.length >= 3 && ['b', 'c', 'x', 's', 'l'].includes(pathParts[1]) && pathParts[2];
     } catch (error) {
       return false;
     }
@@ -764,6 +769,7 @@ const submitFormFunction = () => `
         else if (currentValue.includes('/singbox?') || 
                  currentValue.includes('/clash?') || 
                  currentValue.includes('/surge?') || 
+                 currentValue.includes('/loon?') || 
                  currentValue.includes('/xray?')) {
           parseUrlAndFillForm(currentValue);
         }
@@ -863,6 +869,8 @@ const submitFormFunction = () => `
     document.getElementById('xrayLink').value = '';
     document.getElementById('singboxLink').value = '';
     document.getElementById('clashLink').value = '';
+    document.getElementById('surgeLink').value = '';
+    document.getElementById('loonLink').value = '';
 
     // wait to reset the container
     setTimeout(() => {
