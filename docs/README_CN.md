@@ -124,14 +124,14 @@ npm run deploy
   </tr>
 </table>
   <p><b>NodeSupport赞助了本项目，感谢他们的支持！</b></p>
-  <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
+  <p>如果您想赞助本项目，请联系开发者 <a href="https://github.com/sinian-liu" style="text-decoration: none;">@sinian-liu</a></p>
 </div>
 
 ## ⭐ Star History
 
 感谢所有为本项目点亮 Star 的朋友们！🌟
 
-<a href="https://star-history.com/#7Sageer/sublink-worker&Date">
+<a href="https://star-history.com/#sinian-liu/sublink-worker&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date" />
