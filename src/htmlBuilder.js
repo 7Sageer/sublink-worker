@@ -65,7 +65,8 @@ const generateGithubLink = () => `
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Sublink Worker</h1>
+    <h1 class="display-4 mb-0">37VPS主机评测</h1>
+    <div style="font-size: 50%; margin-top: 0.5rem;">https://www.1373737.xyz/</div>
   </div>
 `;
 
