@@ -3,7 +3,7 @@
   <h5><i>Best Practice for Serverless Self-Deployed Subscription Conversion Tool</i></h5>
   
   <a href="https://trendshift.io/repositories/12291" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/12291" alt="7Sageer%2Fsublink-worker | Trendshift" width="250" height="55"/>
+    <img src="https://trendshift.io/api/badge/repositories/12291" alt="sinian-liu%2Fsublink-worker | Trendshift" width="250" height="55"/>
   </a>
   
   <!-- <p>
@@ -126,17 +126,17 @@ This project is for learning and exchange purposes only. Please do not use it fo
   </tr>
 </table>
   <p><b>NodeSupport has sponsored this project, thank you for your support!</b></p>
-  <p>If you would like to sponsor this project, please contact the developer <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
+  <p>If you would like to sponsor this project, please contact the developer <a href="https://github.com/sinian-liu" style="text-decoration: none;">@sinian-liu</a></p>
 </div>
 
 ## ⭐ Star History
 
 Thanks to everyone who has starred this project! 🌟
 
-<a href="https://star-history.com/#7Sageer/sublink-worker&Date">
+<a href="https://star-history.com/#sinian-liu/sublink-worker&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=7Sageer/sublink-worker&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=sinian-liu/sublink-worker&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=sinian-liu/sublink-worker&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=sinian-liu/sublink-worker&type=Date" />
  </picture>
 </a>
