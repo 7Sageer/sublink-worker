@@ -65,8 +65,10 @@ const generateGithubLink = () => `
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">37VPS主机评测</h1>
-    <div style="font-size: 50%; margin-top: 0.5rem;">https://www.1373737.xyz/</div>
+    <h1 class="mb-1">37VPS主机评测</h1>
+    <a href="https://www.1373737.xyz/" target="_blank" class="text-decoration-none">
+      https://www.1373737.xyz/
+    </a>
   </div>
 `;
 
