@@ -58,7 +58,7 @@ const generateDarkModeToggle = () => `
 `;
 
 const generateGithubLink = () => `
-  <a href="https://t.me/Blesh" target="_blank" rel="noopener noreferrer" class="telegram-link">
+  <a href="https://t.me/Blesh" target="_blank" rel="noopener noreferrer" class="telegram">
     <i class="fab fa-telegrsm"></i>
   </a>
 `;
