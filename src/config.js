@@ -485,6 +485,15 @@ export const SING_BOX_CONFIG = {
 		cache_file: {
 			enabled: true,
 			store_fakeip: true
+			 },
+    "experimental": {
+        "clash_api": {
+            "external_controller": "0.0.0.0:9090",
+            "external_ui": "dist",
+            "external_ui_download_url": "https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip",
+            "external_ui_download_detour": "🌐 Internet",
+            "default_mode": "rule",
+            "access_control_allow_origin": "*"
 		}
 	}
 };
