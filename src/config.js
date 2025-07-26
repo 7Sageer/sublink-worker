@@ -496,8 +496,7 @@ export const SING_BOX_CONFIG = {
             "access_control_allow_origin": "*"
 		}
 	}
-};
-
+}		
 export const CLASH_CONFIG = {
     'port': 7890,
     'socks-port': 7891,
