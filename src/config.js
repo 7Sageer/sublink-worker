@@ -486,7 +486,6 @@ export const SING_BOX_CONFIG = {
 			enabled: true,
 			store_fakeip: true
 			 },
-    "experimental": {
         "clash_api": {
             "external_controller": "0.0.0.0:9090",
             "external_ui": "dist",
