@@ -58,14 +58,14 @@ const generateDarkModeToggle = () => `
 `;
 
 const generateGithubLink = () => `
-  <a href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer" class="github-link">
+  <a href="https://t.me/Blesh" target="_blank" rel="noopener noreferrer" class="telegram-link">
     <i class="fab fa-github"></i>
   </a>
 `;
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Sublink Worker</h1>
+    <h1 class="display-4 mb-0">Generate Siblink</h1>
   </div>
 `;
 
