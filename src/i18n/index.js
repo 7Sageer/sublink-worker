@@ -81,7 +81,7 @@ const translations = {
     // 规则名称和出站名称的翻译
     outboundNames: {
             'Auto Select': '⚡ Auto Select',
-      'Node Select': '🚀 Benxx Project',
+      'Node Select': '🚀 Node Select',
       'Fall Back': '🐟 Fall Back',
       'Ad Block': '🛑 Ad Blocking',
       'AI Services': '💬 AI Services',
