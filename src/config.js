@@ -1001,9 +1001,6 @@ export const SING_BOX_CONFIG = {
             "default_mode": "rule",
             "access_control_allow_origin": "*"
         }
-    }
-}
-
 export const CLASH_CONFIG = {
     'port': 7890,
     'socks-port': 7891,
