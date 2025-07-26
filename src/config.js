@@ -1004,8 +1004,7 @@ export const SING_BOX_CONFIG = {
     }
 		    
 }
-
-};		    
+		    
 export const CLASH_CONFIG = {
     'port': 7890,
     'socks-port': 7891,
