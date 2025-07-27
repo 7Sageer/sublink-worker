@@ -1,159 +1,75 @@
-import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
-import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { DeepCopy } from './utils.js';
-import { t } from './i18n/index.js';
+// --- KONFIGURASI ---
+const https = require('https');
+const fs = require('fs');
+const readline = require('readline');
 
-export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
-        if (baseConfig === undefined) {
-            baseConfig = SING_BOX_CONFIG;
-            if (baseConfig.dns && baseConfig.dns.servers) {
-                baseConfig.dns.servers[0].detour = t('outboundNames.Node Select');
+const IP_CIDR_URL = "https://raw.githubusercontent.com/HybridNetworks/whatsapp-cidr/main/WhatsApp/whatsapp_cidr_ipv4.txt";
+const DOMAIN_LIST_URL = "https://raw.githubusercontent.com/HybridNetworks/whatsapp-cidr/main/WhatsApp/whatsapp_domainlist.txt";
+const OUTPUT_JSON_FILE = "rules/whatsapp_rules.json";
+
+function fetchDataFromUrl(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let data = '';
+
+            if (res.statusCode !== 200) {
+                reject(new Error(`Gagal mengambil data: ${res.statusCode}`));
+                return;
             }
-        }
-        super(inputString, baseConfig, lang, userAgent);
-        this.selectedRules = selectedRules;
-        this.customRules = customRules;
-    }
 
-    getProxies() {
-        return this.config.outbounds.filter(outbound => outbound?.server != undefined);
-    }
-
-    getProxyName(proxy) {
-        return proxy.tag;
-    }
-
-    convertProxy(proxy) {
-        return proxy;
-    }
-
-    addProxyToConfig(proxy) {
-        // Check if there are proxies with similar tags in existing outbounds
-        const similarProxies = this.config.outbounds.filter(p => p.tag && p.tag.includes(proxy.tag));
-
-        // Check if there is a proxy with identical data (excluding the tag)
-        const isIdentical = similarProxies.some(p => {
-            const { tag: _, ...restOfProxy } = proxy; // Exclude the tag attribute
-            const { tag: __, ...restOfP } = p;       // Exclude the tag attribute
-            return JSON.stringify(restOfProxy) === JSON.stringify(restOfP);
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve(data));
+        }).on('error', (err) => {
+            reject(err);
         });
+    });
+}
 
-        if (isIdentical) {
-            // If there is a proxy with identical data, skip adding it
-            return;
-        }
+function parseList(content, commentChar = '#') {
+    if (!content) return [];
 
-        // If there are proxies with similar tags but different data, modify the tag name
-        if (similarProxies.length > 0) {
-            proxy.tag = `${proxy.tag} ${similarProxies.length + 1}`;
-        }
+    return content
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith(commentChar));
+}
 
-        this.config.outbounds.push(proxy);
-    }
+async function main() {
+    console.log("Memulai proses pembaruan aturan WhatsApp...");
 
-    addAutoSelectGroup(proxyList) {
-        this.config.outbounds.unshift({
-            type: "urltest",
-            tag: t('outboundNames.Auto Select'),
-            outbounds: DeepCopy(proxyList),
-        });
-    }
+    try {
+        console.log("Mengambil daftar IP CIDR...");
+        const ipContent = await fetchDataFromUrl(IP_CIDR_URL);
 
-    addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
-        this.config.outbounds.unshift({
-            type: "selector",
-            tag: t('outboundNames.Node Select'),
-            outbounds: proxyList
-        });
-    }
+        console.log("Mengambil daftar Domain...");
+        const domainContent = await fetchDataFromUrl(DOMAIN_LIST_URL);
 
-    addOutboundGroups(outbounds, proxyList) {
-        outbounds.forEach(outbound => {
-            if (outbound !== t('outboundNames.Node Select')) {
-                this.config.outbounds.push({
-                    type: "selector",
-                    tag: t(`outboundNames.${outbound}`),
-                    outbounds: [t('outboundNames.Node Select'), ...proxyList]
-                });
-            }
-        });
-    }
+        const ipCidrs = parseList(ipContent);
+        console.log(`Ditemukan ${ipCidrs.length} IP CIDR yang valid.`);
 
-    addCustomRuleGroups(proxyList) {
-        if (Array.isArray(this.customRules)) {
-            this.customRules.forEach(rule => {
-                this.config.outbounds.push({
-                    type: "selector",
-                    tag: rule.name,
-                    outbounds: [t('outboundNames.Node Select'), ...proxyList]
-                });
-            });
-        }
-    }
+        const domains = parseList(domainContent);
+        console.log(`Ditemukan ${domains.length} domain yang valid.`);
 
-    addFallBackGroup(proxyList) {
-        this.config.outbounds.push({
-            type: "selector",
-            tag: t('outboundNames.Fall Back'),
-            outbounds: [t('outboundNames.Node Select'), ...proxyList]
-        });
-    }
+        const outputData = {
+            version: 2,
+            rules: [
+                {
+                    domain_suffix: domains.sort(),
+                    ip_cidr: ipCidrs.sort()
+                }
+            ]
+        };
 
-    formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules);
-        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules,this.customRules);
+        // Pastikan direktori 'rules/' ada
+        fs.mkdirSync('rules', { recursive: true });
 
-        this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
-
-        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
-            this.config.route.rules.push({
-                domain_suffix: rule.domain_suffix,
-                domain_keyword: rule.domain_keyword,
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-            });
-        });
-
-        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
-            this.config.route.rules.push({
-                rule_set: [
-                ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
-                ],
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-            });
-        });
-
-        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
-            this.config.route.rules.push({
-                rule_set: [
-                ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
-                ],
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-          });
-        });
-
-        rules.filter(rule => !!rule.ip_cidr).map(rule => {
-            this.config.route.rules.push({
-                ip_cidr: rule.ip_cidr,
-                protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
-            });
-        });
-
-        this.config.route.rules.unshift(
-            { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: t('outboundNames.Node Select') },
-            { action: 'sniff' },
-            { protocol: 'dns', action: 'hijack-dns' }
-        );
-
-        this.config.route.auto_detect_interface = true;
-        this.config.route.final = t('outboundNames.Fall Back');
-
-        return this.config;
+        fs.writeFileSync(OUTPUT_JSON_FILE, JSON.stringify(outputData, null, 4), 'utf8');
+        console.log(`Berhasil menyimpan aturan ke file: ${OUTPUT_JSON_FILE}`);
+        console.log("\nProses pembaruan selesai dengan sukses.");
+    } catch (error) {
+        console.error(`Gagal: ${error.message}`);
+        process.exit(1);
     }
 }
+
+main();
