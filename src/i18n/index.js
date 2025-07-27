@@ -78,7 +78,8 @@ const translations = {
     invalidJSON: 'Invalid JSON format',
     allJSONValid: 'All JSON rules are valid!',
     jsonValidationErrors: 'JSON validation errors',
-    outboundNames:{
+    // 规则名称和出站名称的翻译
+    outboundNames: {
       'Auto Select': '⚡ Auto Select',
       'Node Select': '🚀 Node Select',
       'Fall Back': '🐟 Fall Back',
