@@ -103,8 +103,8 @@ const translations = {
       'Non-China': '🌐 Non-China',
       'GLOBAL': 'GLOBAL'
     },
-    UASettings: 'Custom UserAgent',
-    UAtip: 'By default it will use curl/7.74.0'
+    UASettings: '自定义UserAgent',
+    UAtip: '默认值curl/7.74.0'
   },
   'fa': {
     missingInput: 'پارامتر ورودی وجود ندارد',
