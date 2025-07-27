@@ -104,7 +104,7 @@ const translations = {
     },
     UASettings: 'Custom UserAgent',
     UAtip: 'By default it will use curl/7.74.0'
-    outboundNames: {
+    outboundNames:{
             'Auto Select': '⚡ Auto Select',
       'Node Select': '🚀 Benxx Project',
       'Fall Back': '🐟 Fall Back',
