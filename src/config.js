@@ -383,109 +383,235 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 
 // Singbox configuration
 export const SING_BOX_CONFIG = {
-	dns: {
-		servers: [
-			{
-				tag: "dns_proxy",
-				address: "tcp://1.1.1.1",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
-				detour: "ðŸš€ èŠ‚ç‚¹é€‰æ‹©"
-			},
-			{
-				tag: "dns_direct", 
-				address: "https://dns.alidns.com/dns-query",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
-				detour: "DIRECT"
-			},
-			{
-				tag: "dns_resolver",
-				address: "223.5.5.5",
-				detour: "DIRECT"
-			},
-			{
-				tag: "dns_success",
-				address: "rcode://success"
-			},
-			{
-				tag: "dns_refused",
-				address: "rcode://refused"
-			},
-			{
-				tag: "dns_fakeip",
-				address: "fakeip"
-			}
-		],
-		rules: [
-			{
-				outbound: "any",
-				server: "dns_resolver"
-			},
-			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"A",
-					"AAAA"
-				],
-				server: "dns_fakeip"
-			},
-			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"CNAME"
-				],
-				server: "dns_proxy"
-			},
-			{
-				query_type: [
-					"A",
-					"AAAA",
-					"CNAME"
-				],
-				invert: true,
-				server: "dns_refused",
-				disable_cache: true
-			}
-		],
-		final: "dns_direct",
-		independent_cache: true,
-		fakeip: {
-			enabled: true,
-			inet4_range: "198.18.0.0/15",
-			inet6_range: "fc00::/18"
-		}
-	},
-	ntp: {
-		enabled: true,
-		server: 'time.apple.com',
-		server_port: 123,
-		interval: '30m'
-	},
-	inbounds: [
-		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
-	],
-	outbounds: [
-		{ type: 'block', tag: 'REJECT' },
-		{ type: "direct", tag: 'DIRECT' }
-	],
-	route : {
-		"rule_set": [
+    "dns": {
+        "servers": [
             {
-                "tag": "geosite-geolocation-!cn",
-                "type": "local",
-                "format": "binary",
-                "path": "geosite-geolocation-!cn.srs"
+                "tag": "google-dns",
+                "address": "tls://dns.google",
+                "address_resolver": "dns-local",
+                "address_strategy": "prefer_ipv4",
+                "strategy": "ipv4_only",
+                "detour": "🚀 Latency"
+            },
+            {
+                "tag": "cloudflare-dns",
+                "address": "https://cloudflare-dns.com/dns-query",
+                "address_resolver": "dns-local",
+                "address_strategy": "prefer_ipv4",
+                "strategy": "ipv4_only",
+                "detour": "🌐 Internet"
+            },
+            {
+                "tag": "dns-local",
+                "address": "local",
+                "address_resolver": "local",
+                "address_strategy": "prefer_ipv4",
+                "strategy": "ipv4_only"
+            },
+            {
+                "tag": "block-dns",
+                "address": "rcode://success",
+                "detour": "block"
             }
-		],
-		rules: []
-	},
-	experimental: {
-		cache_file: {
-			enabled: true,
-			store_fakeip: true
-			 },
+        ],
+        "rules": [
+            {
+                "domain": [
+                    "plus-store.naver.com",
+                    "ava.game.naver.com",
+                    "investor.fb.com",
+                    "investors.spotify.com",
+                    "nontontv.vidio.com",
+                    "support.vidio.com",
+                    "img.email2.vidio.com",
+                    "quiz.int.vidio.com",
+                    "quiz.vidio.com"
+                ],
+                "server": "dns-local"
+            },
+            {
+                "network": "udp",
+                "port": 443,
+                "action": "reject",
+                "method": "drop"
+            },
+            {
+                "domain": [
+                    
+                    
+                ],
+                "server": "google-dns",
+                "action": "route"
+            },
+            {
+                "outbound": "🚀 Latency",
+                "server": "google-dns",
+                "rewrite_ttl": 7200
+            },
+            {
+                "outbound": "🌐 Internet",
+                "server": "cloudflare-dns",
+                "rewrite_ttl": 7200
+            }
+        ],
+        "strategy": "ipv4_only",
+        "independent_cache": true
+    },
+    "inbounds": [
+        {
+            "type": "tun",
+            "tag": "tun-in",
+            "interface_name": "tunelm0n",
+            "mtu": 1590,
+            "address": [
+                "172.18.0.1/30",
+                "fdfe:dcba:9876::1/126"
+            ],
+            "auto_route": true,
+            "strict_route": true,
+            "stack": "gvisor",
+            "sniff": true,
+            "endpoint_independent_nat": true
+        },
+        {
+            "type": "mixed",
+            "tag": "mixed-in",
+            "listen": "0.0.0.0",
+            "listen_port": 2080,
+            "tcp_fast_open": true,
+            "sniff": true,
+            "sniff_override_destination": true
+        },
+        {
+            "type": "socks",
+            "tag": "socks-in",
+            "listen": "0.0.0.0",
+            "listen_port": 2082,
+            "tcp_fast_open": true
+        },
+        {
+            "type": "direct",
+            "tag": "direct-in",
+            "override_address": "112.215.203.246",
+            "override_port": 53
+        }
+    ],
+    "outbounds": [
+        {
+            "type": "selector",
+            "tag": "🌐 Internet",
+            "outbounds": [
+                "🚀 Latency",
+                "direct-out"
+                
+            ],
+            "default": "🚀 Latency"
+        },
+        {
+            "type": "urltest",
+            "tag": "🚀 Latency",
+            "outbounds": [
+                
+
+            ],
+            "url": "https://connectivitycheck.gstatic.com/generate_204",
+            "interval": "1m30s",
+            "tolerance": 60,
+            "idle_timeout": "5m0s"
+        },
+        {
+            "type": "selector",
+            "tag": "📞 Rule-WA",
+            "outbounds": [
+                "direct-out",
+                "🌐 Internet"
+            ],
+            "default": "🌐 Internet"
+        },
+        {
+            "type": "direct",
+            "tag": "direct-out"
+        },
+        {
+            "type": "block",
+            "tag": "block"
+        },
+        
+    ],
+    "route": {
+        "rules": [
+            {
+                "type": "logical",
+                "mode": "or",
+                "rules": [
+                    {
+                        "protocol": "dns"
+                    },
+                    {
+                        "port": 53
+                    }
+                ],
+                "action": "hijack-dns"
+            },
+            {
+                "inbound": [
+                    "direct-in"
+                ],
+                "rule_set": [
+                    "geosite-wa"
+                ],
+                "domain_suffix": [
+                    "wa.me",
+                    "whatsapp-plus.info",
+                    "whatsapp-plus.me",
+                    "whatsapp-plus.net",
+                    "whatsapp.cc",
+                    "whatsapp.biz",
+                    "whatsapp.com",
+                    "whatsapp.info",
+                    "whatsapp.net",
+                    "whatsapp.org",
+                    "whatsapp.tv",
+                    "whatsappbrand.com",
+                    "graph.whatsapp.com",
+                    "graph.whatsapp.net"
+                ],
+                "domain": [
+                    "graph.facebook.com"
+                ],
+                "domain_keyword": [
+                    "whatsapp"
+                ],
+                "ip_cidr": [
+                    "158.85.224.160/27",
+                    "158.85.46.128/27",
+                    "158.85.5.192/27",
+                    "173.192.222.160/27",
+                    "173.192.231.32/27",
+                    "18.194.0.0/15",
+                    "184.173.128.0/17",
+                    "208.43.122.128/27",
+                    "34.224.0.0/12",
+                    "50.22.198.204/30",
+                    "54.242.0.0/15"
+                ],
+                "outbound": "📞 Rule-WA",
+                "ip_is_private": true
+            }
+        ],
+        "rule_set": [
+            {
+                "type": "remote",
+                "tag": "geosite-wa",
+                "format": "binary",
+                "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/whatsapp.srs",
+                "download_detour": "🌐 Internet"
+            }
+        ],
+        "final": "🌐 Internet",
+        "auto_detect_interface": true
+    },
+    "experimental": {
         "clash_api": {
             "external_controller": "0.0.0.0:9090",
             "external_ui": "dist",
@@ -493,8 +619,8 @@ export const SING_BOX_CONFIG = {
             "external_ui_download_detour": "🌐 Internet",
             "default_mode": "rule",
             "access_control_allow_origin": "*"
-		}
-	}
+        }
+    }
 }
 		
 export const CLASH_CONFIG = {
