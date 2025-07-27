@@ -65,7 +65,7 @@ const generateGithubLink = () => `
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Generate Siblink</h1>
+    <h1 class="display-4 mb-0">Generate Sublink</h1>
   </div>
 `;
 
