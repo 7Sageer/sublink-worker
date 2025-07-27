@@ -78,33 +78,7 @@ const translations = {
     invalidJSON: 'Invalid JSON format',
     allJSONValid: 'All JSON rules are valid!',
     jsonValidationErrors: 'JSON validation errors',
-    // 规则名称和出站名称的翻译
-    outboundNames: {
-      'Auto Select': '⚡ Auto Select',
-      'Node Select': '🚀 Node Select',
-      'Fall Back': '🐟 Fall Back',
-      'Ad Block': '🛑 Ad Blocking',
-      'AI Services': '💬 AI Services',
-      'Bilibili': '📺 Bilibili',
-      'Youtube': '📹 Youtube',
-      'Google': '🔍 Google Services',
-      'Private': '🏠 Private Network',
-      'Location:CN': '🔒 China Services',
-      'Telegram': '📲 Telegram',
-      'Github': '🐱 Github',
-      'Microsoft': 'Ⓜ️ Microsoft Services',
-      'Apple': '🍏 Apple Services',
-      'Social Media': '🌐 Social Media',
-      'Streaming': '🎬 Streaming',
-      'Gaming': '🎮 Gaming Platform',
-      'Education': '📚 Education Resources',
-      'Financial': '💰 Financial Services',
-      'Cloud Services': '☁️ Cloud Services',
-      'Non-China': '🌐 Non-China',
-      'GLOBAL': 'GLOBAL'
-    },
-    UASettings: 'Custom UserAgent',
-    UAtip: 'By default it will use curl/7.74.0'
+    
     outboundNames:{
             'Auto Select': '⚡ Auto Select',
       'Node Select': '🚀 Benxx Project',
