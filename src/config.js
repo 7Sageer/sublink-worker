@@ -391,6 +391,14 @@ export const SING_BOX_CONFIG = {
 				address_resolver: "dns_resolver",
 				strategy: "ipv4_only",
 				detour: "🚀 节点选择"
+				   },
+                    {
+        "tag": "google-dns",
+        "address": "https://dns.google/dns-query",
+        "address_resolver": "dns_resolver",
+        "address_strategy": "prefer_ipv4",
+        "strategy": "ipv4_only",
+        "detour": "🌐 Non-China"
 			},
 			{
 				tag: "dns_direct", 
