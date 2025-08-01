@@ -1,102 +1,28 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
+import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, pin, baseConfig) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
         if (!baseConfig) {
-            baseConfig = CLASH_CONFIG
+            baseConfig = CLASH_CONFIG;
         }
-        super(inputString, baseConfig);
+        super(inputString, baseConfig, lang, userAgent);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
-        this.pin = pin;
     }
 
-    addCustomItems(customItems) {
-        customItems.forEach(item => {
-            if (item?.tag && !this.config.proxies.some(p => p.name === item.tag)) {
-                this.config.proxies.push(this.convertToClashProxy(item));
-            }
-        });
+    getProxies() {
+        return this.config.proxies || [];
     }
 
-    addSelectors() {
-        let outbounds;
-        if (typeof this.selectedRules === 'string' && PREDEFINED_RULE_SETS[this.selectedRules]) {
-            outbounds = getOutbounds(PREDEFINED_RULE_SETS[this.selectedRules]);
-        } else if(this.selectedRules && Object.keys(this.selectedRules).length > 0) {
-            outbounds = getOutbounds(this.selectedRules);
-        } else {
-            outbounds = getOutbounds(PREDEFINED_RULE_SETS.minimal);
-        }
-
-        const proxyList = this.config.proxies.map(proxy => proxy.name);
-        
-        this.config['proxy-groups'].push({
-            name: '⚡ 自动选择',
-            type: 'url-test',
-            proxies: DeepCopy(proxyList),
-            url: 'https://www.gstatic.com/generate_204',
-            interval: 300,
-            lazy: false
-        });
-
-        proxyList.unshift('DIRECT', 'REJECT', '⚡ 自动选择');
-        outbounds.unshift('🚀 节点选择');
-        
-        outbounds.forEach(outbound => {
-            if (outbound !== '🚀 节点选择') {
-                this.config['proxy-groups'].push({
-                    type: "select",
-                    name: outbound,
-                    proxies: ['🚀 节点选择', ...proxyList]
-                });
-            } else {
-                this.config['proxy-groups'].unshift({
-                    type: "select",
-                    name: outbound,
-                    proxies: proxyList
-                });
-            }
-        });
-
-        if (Array.isArray(this.customRules)) {
-            this.customRules.forEach(rule => {
-                this.config['proxy-groups'].push({
-                    type: "select",
-                    name: rule.name,
-                    proxies: ['🚀 节点选择', ...proxyList]
-                });
-            });
-        }
-
-        this.config['proxy-groups'].push({
-            type: "select",
-            name: "🐟 漏网之鱼",
-            proxies: ['🚀 节点选择', ...proxyList]
-        });
-    }
-    formatConfig() {
-        const rules = generateRules(this.selectedRules, this.customRules, this.pin);
-
-        this.config.rules = rules.flatMap(rule => {
-            const siteRules = rule.site_rules[0] !== '' ? rule.site_rules.map(site => `GEOSITE,${site},${rule.outbound}`) : [];
-            const ipRules = rule.ip_rules[0] !== '' ? rule.ip_rules.map(ip => `GEOIP,${ip},${rule.outbound}`) : [];
-            const domainSuffixRules = rule.domain_suffix ? rule.domain_suffix.map(suffix => `DOMAIN-SUFFIX,${suffix},${rule.outbound}`) : [];
-            const domainKeywordRules = rule.domain_keyword ? rule.domain_keyword.map(keyword => `DOMAIN-KEYWORD,${keyword},${rule.outbound}`) : [];
-            const ipCidrRules = rule.ip_cidr ? rule.ip_cidr.map(cidr => `IP-CIDR,${cidr},${rule.outbound}`) : [];
-            return [...siteRules, ...ipRules, ...domainSuffixRules, ...domainKeywordRules, ...ipCidrRules];
-        });
-
-        // Add the final catch-all rule
-        this.config.rules.push('MATCH,🐟 漏网之鱼');
-
-        return yaml.dump(this.config);
+    getProxyName(proxy) {
+        return proxy.name;
     }
 
-    convertToClashProxy(proxy) {
+    convertProxy(proxy) {
         switch(proxy.type) {
             case 'shadowsocks':
                 return {
@@ -145,7 +71,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         'short-id': proxy.tls.reality.short_id,
                     } : undefined,
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
-                        'grpc-mode': 'gun',
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
                     tfo : proxy.tcp_fast_open,
@@ -161,11 +86,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     obfs: proxy.obfs.type,
                     'obfs-password': proxy.obfs.password,
                     password: proxy.password,
-                    auth: proxy.password,
-                    'skip-cert-verify': proxy.tls.insecure,
+                    auth: proxy.auth,
+                    up: proxy.up_mbps,
+                    down: proxy.down_mbps,
+                    'recv-window-conn': proxy.recv_window_conn,
+                    sni: proxy.tls?.server_name || '',
+                    'skip-cert-verify': proxy.tls?.insecure || true,
                 };
-			case 'trojan':
-				return {
+            case 'trojan':
+                return {
                     name: proxy.tag,
                     type: proxy.type,
                     server: proxy.server,
@@ -185,13 +114,12 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         'short-id': proxy.tls.reality.short_id,
                     } : undefined,
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
-                        'grpc-mode': 'gun',
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
                     tfo : proxy.tcp_fast_open,
                     'skip-cert-verify': proxy.tls.insecure,
                     'flow': proxy.flow ?? undefined,
-				}
+                };
             case 'tuic':
                 return {
                     name: proxy.tag,
@@ -210,5 +138,141 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             default:
                 return proxy; // Return as-is if no specific conversion is defined
         }
+    }
+
+    addProxyToConfig(proxy) {
+        this.config.proxies = this.config.proxies || [];
+    
+        // Find proxies with the same or partially matching name
+        const similarProxies = this.config.proxies.filter(p => p.name.includes(proxy.name));
+    
+        // Check if there is a proxy with identical data excluding the 'name' field
+        const isIdentical = similarProxies.some(p => {
+            const { name: _, ...restOfProxy } = proxy; // Exclude the 'name' attribute
+            const { name: __, ...restOfP } = p;       // Exclude the 'name' attribute
+            return JSON.stringify(restOfProxy) === JSON.stringify(restOfP);
+        });
+    
+        if (isIdentical) {
+            // If there is a proxy with identical data, skip adding it
+            return;
+        }
+    
+        // If there are proxies with similar names but different data, modify the name
+        if (similarProxies.length > 0) {
+            proxy.name = `${proxy.name} ${similarProxies.length + 1}`;
+        }
+    
+        // Add the proxy to the configuration
+        this.config.proxies.push(proxy);
+    }
+
+    addAutoSelectGroup(proxyList) {
+        this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+        this.config['proxy-groups'].push({
+            name: t('outboundNames.Auto Select'),
+            type: 'url-test',
+            proxies: DeepCopy(proxyList),
+            url: 'https://www.gstatic.com/generate_204',
+            interval: 300,
+            lazy: false
+        });
+    }
+
+    addNodeSelectGroup(proxyList) {
+        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        this.config['proxy-groups'].unshift({
+            type: "select",
+            name: t('outboundNames.Node Select'),
+            proxies: proxyList
+        });
+    }
+
+    addOutboundGroups(outbounds, proxyList) {
+        outbounds.forEach(outbound => {
+            if (outbound !== t('outboundNames.Node Select')) {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: t(`outboundNames.${outbound}`),
+                    proxies: [t('outboundNames.Node Select'), ...proxyList]
+                });
+            }
+        });
+    }
+
+    addCustomRuleGroups(proxyList) {
+        if (Array.isArray(this.customRules)) {
+            this.customRules.forEach(rule => {
+                this.config['proxy-groups'].push({
+                    type: "select",
+                    name: t(`outboundNames.${rule.name}`),
+                    proxies: [t('outboundNames.Node Select'), ...proxyList]
+                });
+            });
+        }
+    }
+
+    addFallBackGroup(proxyList) {
+        this.config['proxy-groups'].push({
+            type: "select",
+            name: t('outboundNames.Fall Back'),
+            proxies: [t('outboundNames.Node Select'), ...proxyList]
+        });
+    }
+
+    // 生成规则
+    generateRules() {
+        return generateRules(this.selectedRules, this.customRules);
+    }
+
+    formatConfig() {
+        const rules = this.generateRules();
+        const ruleResults = [];
+        
+        // 获取.mrs规则集配置
+        const { site_rule_providers, ip_rule_providers } = generateClashRuleSets(this.selectedRules, this.customRules);
+        
+        // 添加规则集提供者
+        this.config['rule-providers'] = {
+            ...site_rule_providers,
+            ...ip_rule_providers
+        };
+
+        // 使用RULE-SET规则格式替代原有的GEOSITE/GEOIP
+        // Rule-Set & Domain-Set:  To reduce DNS leaks and unnecessary DNS queries,
+        // domain & non-IP rules must precede IP rules
+
+        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
+            rule.domain_suffix.forEach(suffix => {
+                ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
+            });
+            rule.domain_keyword.forEach(keyword => {
+                ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
+            });
+        });
+
+        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
+            rule.site_rules.forEach(site => {
+                ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
+            });
+        });
+
+        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
+            rule.ip_rules.forEach(ip => {
+                ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+            });
+        });
+
+        rules.filter(rule => !!rule.ip_cidr).map(rule => {
+            rule.ip_cidr.forEach(cidr => {
+                ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+            });
+        });
+
+        this.config.rules = [...ruleResults]
+
+        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+
+        return yaml.dump(this.config);
     }
 }

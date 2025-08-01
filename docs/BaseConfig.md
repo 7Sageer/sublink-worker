@@ -20,18 +20,17 @@
     "servers": [
       {
         "tag": "dns_proxy",
-        "address": "tls://1.1.1.1",
-        "address_resolver": "dns_resolver"
-      },
-      {
-        "tag": "dns_direct",
-        "address": "h3://dns.alidns.com/dns-query",
+        "address": "tcp://1.1.1.1",
         "address_resolver": "dns_resolver",
-        "detour": "DIRECT"
+        "strategy": "ipv4_only",
+        "detour": "🚀 节点选择"
       },
       {
-        "tag": "dns_fakeip",
-        "address": "fakeip"
+        "tag": "dns_direct", 
+        "address": "https://dns.alidns.com/dns-query",
+        "address_resolver": "dns_resolver",
+        "strategy": "ipv4_only",
+        "detour": "DIRECT"
       },
       {
         "tag": "dns_resolver",
@@ -39,85 +38,97 @@
         "detour": "DIRECT"
       },
       {
-        "tag": "dns_block",
+        "tag": "dns_success",
         "address": "rcode://success"
+      },
+      {
+        "tag": "dns_refused",
+        "address": "rcode://refused"
+      },
+      {
+        "tag": "dns_fakeip",
+        "address": "fakeip"
       }
     ],
     "rules": [
       {
-        "outbound": ["any"],
+        "outbound": "any",
         "server": "dns_resolver"
       },
       {
-        "geosite": ["category-ads-all"],
-        "server": "dns_block",
-        "disable_cache": true
-      },
-      {
-        "geosite": ["geolocation-!cn"],
-        "query_type": ["A", "AAAA"],
+        "rule_set": "geolocation-!cn",
+        "query_type": [
+          "A",
+          "AAAA"
+        ],
         "server": "dns_fakeip"
       },
       {
-        "geosite": ["geolocation-!cn"],
+        "rule_set": "geolocation-!cn",
+        "query_type": [
+          "CNAME"
+        ],
         "server": "dns_proxy"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA",
+          "CNAME"
+        ],
+        "invert": true,
+        "server": "dns_refused",
+        "disable_cache": true
       }
     ],
     "final": "dns_direct",
     "independent_cache": true,
     "fakeip": {
       "enabled": true,
-      "inet4_range": "198.18.0.0/15"
+      "inet4_range": "198.18.0.0/15",
+      "inet6_range": "fc00::/18"
     }
   },
   "ntp": {
     "enabled": true,
     "server": "time.apple.com",
     "server_port": 123,
-    "interval": "30m",
-    "detour": "DIRECT"
+    "interval": "30m"
   },
   "inbounds": [
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "0.0.0.0",
-      "listen_port": 2080
-    },
-    {
-      "type": "tun",
-      "tag": "tun-in", 
-      "inet4_address": "172.19.0.1/30",
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "sniff": true
-    }
+    { "type": "mixed", "tag": "mixed-in", "listen": "0.0.0.0", "listen_port": 2080 },
+    { "type": "tun", "tag": "tun-in", "address": "172.19.0.1/30", "auto_route": true, "strict_route": true, "stack": "mixed", "sniff": true },
+    { "type": "socks", "listen": "127.0.0.1", "listen_port": 2081, "tag": "REJECT-in" }
   ],
   "outbounds": [
-    {
-      "type": "direct",
-      "tag": "DIRECT"
-    },
-    {
-      "type": "block",
-      "tag": "REJECT"
-    },
-    {
-      "type": "dns",
-      "tag": "dns-out"
-    }
+    { "type": "socks", "server": "127.0.0.1", "server_port": 2081, "tag": "REJECT" },
+    { "type": "direct", "tag": "DIRECT" }
   ],
-  "route": {},
+  "route": {
+    "rule_set": [
+      {
+        "tag": "geosite-geolocation-!cn",
+        "type": "local",
+        "format": "binary",
+        "path": "geosite-geolocation-!cn.srs"
+      }
+    ],
+    "rules": [
+      {
+        "inbound": ["DIRECT-in"],
+        "action": "direct"
+      }
+    ]
+  },
   "experimental": {
     "cache_file": {
       "enabled": true,
       "store_fakeip": true
     },
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "external_ui": "dashboard"
-    }
+    "clash_api": { 
+      "external_controller": "127.0.0.1:9090", 
+      "external_ui": "dashboard" 
+    } 
   }
 }
 ```

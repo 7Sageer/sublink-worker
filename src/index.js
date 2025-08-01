@@ -1,9 +1,10 @@
-import { ConfigBuilder } from './SingboxConfigBuilder.js';
+import { SingboxConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
 import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
+import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
 
 addEventListener('fetch', event => {
@@ -13,55 +14,29 @@ addEventListener('fetch', event => {
 async function handleRequest(request) {
   try {
     const url = new URL(request.url);
-
+    const lang = url.searchParams.get('lang');
+    setLanguage(lang || request.headers.get('accept-language')?.split(',')[0]);
     if (request.method === 'GET' && url.pathname === '/') {
       // Return the HTML form for GET requests
       return new Response(generateHtml('', '', '', '', url.origin), {
-        headers: { 'Content-Type': 'text/html' }
-      });
-    } else if (request.method === 'POST' && url.pathname === '/') {
-      const formData = await request.formData();
-      const inputString = formData.get('input');
-      const selectedRules = formData.getAll('selectedRules');
-      const customRuleDomains = formData.getAll('customRuleSite[]');
-      const customRuleIPs = formData.getAll('customRuleIP[]');
-      const customRuleNames = formData.getAll('customRuleName[]');
-      const customRules = customRuleDomains.map((domains, index) => ({
-        sites: domains.split(',').map(site => site.trim()),
-        ips: customRuleIPs[index].split(',').map(ip => ip.trim()),
-        outbound: customRuleNames[index]
-      }));
-      const pin = formData.get('pin');
-
-      if (!inputString) {
-        return new Response('Missing input parameter', { status: 400 });
-      }
-
-      // If no rules are selected, use the default rules
-      const rulesToUse = selectedRules.length > 0 ? selectedRules : ['广告拦截', '谷歌服务', '国外媒体', '电报消息'];
-
-      const xrayUrl = `${url.origin}/xray?config=${encodeURIComponent(inputString)}`;
-      const singboxUrl = `${url.origin}/singbox?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
-      const clashUrl = `${url.origin}/clash?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
-      const surgeUrl = `${url.origin}/surge?config=${encodeURIComponent(inputString)}&selectedRules=${encodeURIComponent(JSON.stringify(rulesToUse))}&customRules=${encodeURIComponent(JSON.stringify(customRules))}pin=${pin}`;
-
-      console.log(surgeUrl);
-
-
-      return new Response(generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl), {
         headers: { 'Content-Type': 'text/html' }
       });
     } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge')) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
-      let pin = url.searchParams.get('pin');
-
-      if (!inputString) {
-        return new Response('Missing config parameter', { status: 400 });
+      // 获取语言参数，如果为空则使用默认值
+      let lang = url.searchParams.get('lang') || 'zh-CN';
+      // Get custom UserAgent
+      let userAgent = url.searchParams.get('ua');
+      if (!userAgent) {
+        userAgent = 'curl/7.74.0';
       }
 
-      // Deal with predefined rules
+      if (!inputString) {
+        return new Response(t('missingConfig'), { status: 400 });
+      }
+
       if (PREDEFINED_RULE_SETS[selectedRules]) {
         selectedRules = PREDEFINED_RULE_SETS[selectedRules];
       } else {
@@ -91,14 +66,13 @@ async function handleRequest(request) {
         }
       }
 
-      // Env pin is use to pin customRules to top
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new ConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
       } else if (url.pathname.startsWith('/clash')) {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig);
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
       } else {
-        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, pin, baseConfig)
+        configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent)
           .setSubscriptionUrl(url.href);
       }
 
@@ -126,7 +100,7 @@ async function handleRequest(request) {
     } else if (url.pathname === '/shorten') {
       const originalUrl = url.searchParams.get('url');
       if (!originalUrl) {
-        return new Response('Missing URL parameter', { status: 400 });
+        return new Response(t('missingUrl'), { status: 400 });
       }
 
       const shortCode = GenerateWebPath();
@@ -175,7 +149,7 @@ async function handleRequest(request) {
       }
 
       if (originalUrl === null) {
-        return new Response('Short URL not found', { status: 404 });
+        return new Response(t('shortUrlNotFound'), { status: 404 });
       }
 
       return Response.redirect(originalUrl, 302);
@@ -185,11 +159,22 @@ async function handleRequest(request) {
       const proxylist = inputString.split('\n');
 
       const finalProxyList = [];
+      // Use custom UserAgent (for Xray) Hmmm...
+      let userAgent = url.searchParams.get('ua');
+      if (!userAgent) {
+        userAgent = 'curl/7.74.0';
+      }
+      let headers = new Headers({
+        "User-Agent"   : userAgent
+      });
 
       for (const proxy of proxylist) {
         if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
           try {
-            const response = await fetch(proxy)
+            const response = await fetch(proxy, {
+              method : 'GET',
+              headers : headers
+            })
             const text = await response.text();
             let decodedText;
             decodedText = decodeBase64(text.trim());
@@ -252,16 +237,59 @@ async function handleRequest(request) {
         });
       } catch (error) {
         console.error('Config validation error:', error);
-        return new Response('Invalid format: ' + error.message, {
+        return new Response(t('invalidFormat') + error.message, {
           status: 400,
           headers: { 'Content-Type': 'text/plain' }
         });
       }
+    } else if (url.pathname === '/resolve') {
+      const shortUrl = url.searchParams.get('url');
+      if (!shortUrl) {
+        return new Response(t('missingUrl'), { status: 400 });
+      }
+
+      try {
+        const urlObj = new URL(shortUrl);
+        const pathParts = urlObj.pathname.split('/');
+        
+        if (pathParts.length < 3) {
+          return new Response(t('invalidShortUrl'), { status: 400 });
+        }
+
+        const prefix = pathParts[1]; // b, c, x, s
+        const shortCode = pathParts[2];
+
+        if (!['b', 'c', 'x', 's'].includes(prefix)) {
+          return new Response(t('invalidShortUrl'), { status: 400 });
+        }
+
+        const originalParam = await SUBLINK_KV.get(shortCode);
+        if (originalParam === null) {
+          return new Response(t('shortUrlNotFound'), { status: 404 });
+        }
+
+        let originalUrl;
+        if (prefix === 'b') {
+          originalUrl = `${url.origin}/singbox${originalParam}`;
+        } else if (prefix === 'c') {
+          originalUrl = `${url.origin}/clash${originalParam}`;
+        } else if (prefix === 'x') {
+          originalUrl = `${url.origin}/xray${originalParam}`;
+        } else if (prefix === 's') {
+          originalUrl = `${url.origin}/surge${originalParam}`;
+        }
+
+        return new Response(JSON.stringify({ originalUrl }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        return new Response(t('invalidShortUrl'), { status: 400 });
+      }
     }
 
-    return new Response('Not Found', { status: 404 });
+    return new Response(t('notFound'), { status: 404 });
   } catch (error) {
     console.error('Error processing request:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response(t('internalError'), { status: 500 });
   }
 }
