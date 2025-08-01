@@ -1,0 +1,24 @@
+name: Sync Upstream
+on:
+  schedule:
+    - cron: '0 0 * * *' # 每天凌晨运行一次
+  workflow_dispatch: # 允许手动触发
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/7Sageer/sublink-worker.git
+      - name: Sync with upstream
+        run: |
+          git fetch upstream
+          git merge upstream/main --allow-unrelated-histories
+          git push origin main
