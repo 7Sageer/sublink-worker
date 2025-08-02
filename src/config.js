@@ -1,6 +1,6 @@
 import { t } from './i18n';
-export const IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/SagerNet/sing-geosite/releases/latest/download/geosite.db';
-export const SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/SagerNet/sing-geoip/releases/latest/download/geoip.db';
+export const IP_RULE_SET_BASE_URL = 'https://mirror.ghproxy.com/https://raw.githubusercontent.com/CHIZI-0618/v2ray-rules-dat/release/singbox_ip_rule_set/geoip-cn.srs';
+export const SITE_RULE_SET_BASE_URL = 'https://mirror.ghproxy.com/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-!cn.srs';
 export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
 export const CLASH_IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/';
 export const SURGE_SITE_RULE_SET_BASEURL = 'https://gh-proxy.com/https://github.com/NSZA156/surge-geox-rules/raw/refs/heads/release/geo/geosite/'
