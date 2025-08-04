@@ -1,7 +1,6 @@
 import { t } from './i18n';
-
-export const SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/';
-export const IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geoip/';
+export const IP_RULE_SET_BASE_URL = 'https://mirror.ghproxy.com/https://raw.githubusercontent.com/CHIZI-0618/v2ray-rules-dat/release/singbox_ip_rule_set/geoip-cn.srs';
+export const SITE_RULE_SET_BASE_URL = 'https://mirror.ghproxy.com/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-!cn.srs';
 export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
 export const CLASH_IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/';
 export const SURGE_SITE_RULE_SET_BASEURL = 'https://gh-proxy.com/https://github.com/NSZA156/surge-geox-rules/raw/refs/heads/release/geo/geosite/'
@@ -390,7 +389,7 @@ export const SING_BOX_CONFIG = {
 				address: "tcp://1.1.1.1",
 				address_resolver: "dns_resolver",
 				strategy: "ipv4_only",
-				detour: "🚀 节点选择"
+				detour: "ðŸš€ èŠ‚ç‚¹é€‰æ‹©"
 			},
 			{
 				tag: "dns_direct", 
@@ -481,60 +480,185 @@ export const SING_BOX_CONFIG = {
 		],
 		rules: []
 	},
-	experimental: {
-		cache_file: {
-			enabled: true,
-			store_fakeip: true
-		}
-	}
-};
+	    "experimental": {
+        "clash_api": {
+            "external_controller": "0.0.0.0:9090",
+            "external_ui": "dist",
+            "external_ui_download_url": "https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip",
+            "external_ui_download_detour": "ðŸŒ Internet",
+            "default_mode": "rule",
+            "access_control_allow_origin": "*"
+        }
+    }
+}
+		
 
 export const CLASH_CONFIG = {
-    'port': 7890,
-    'socks-port': 7891,
-    'allow-lan': false,
-    'mode': 'rule',
-    'log-level': 'info',
-    'geodata-mode': true,
-    'geo-auto-update': true,
-    'geodata-loader': 'standard',
-    'geo-update-interval': 24,
-    'geox-url': {
-      'geoip': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat",
-      'geosite': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat",
-      'mmdb': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb",
-      'asn': "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
+  "mixed-port": 7890,
+  "mode": "rule",
+  "unified-delay": true,
+  "log-level": "error",
+  "ipv6": false,
+  "external-controller": "127.0.0.1:9090",
+  "external-ui": "",
+  "external-ui-url": "",
+  "external-ui-name": "",
+  "secret": "143772bab9dfbb86",
+  "find-process-mode": "always",
+  "global-client-fingerprint": "chrome",
+  "keep-alive-idle": 30,
+  "keep-alive-interval": 30,
+  "disable-keep-alive": false,
+  "dns": {
+    "enable": true,
+    "prefer-h3": true,
+    "ipv6": false,
+    "ipv6-timeout": 300,
+    "use-hosts": true,
+    "use-system-hosts": true,
+    "respect-rules": false,
+    "nameserver": [
+      "223.5.5.5",
+      "119.29.29.29",
+      "8.8.8.8",
+      "8.8.4.4",
+      "1.0.0.1",
+      "1.1.1.1",
+      "tls://223.5.5.5:853",
+      "tls://8.8.8.8",
+      "tls://8.8.4.4",
+      "tls://1.0.0.1",
+      "tls://1.1.1.1",
+      "https://dns.alidns.com/dns-query#h3=true",
+      "https://mozilla.cloudflare-dns.com/dns-query#DNS&h3=true",
+      "quic://dns.adguard.com:784",
+      "system"
+    ],
+    "fallback": [],
+    "enhanced-mode": "fake-ip",
+    "fake-ip-range": "172.19.0.1/16",
+    "fake-ip-filter": [
+      "*.lan",
+      "*.local",
+      "time.*.com",
+      "time.*.gov",
+      "time.*.edu.cn",
+      "time.*.apple.com",
+      "time-ios.apple.com",
+      "time1.*.com",
+      "time2.*.com",
+      "time3.*.com",
+      "time4.*.com",
+      "time5.*.com",
+      "time6.*.com",
+      "time7.*.com",
+      "ntp.*.com",
+      "ntp1.*.com",
+      "ntp2.*.com",
+      "ntp3.*.com",
+      "ntp4.*.com",
+      "ntp5.*.com",
+      "ntp6.*.com",
+      "ntp7.*.com",
+      "*.time.edu.cn",
+      "*.ntp.org.cn",
+      "*.pool.ntp.org",
+      "+.services.googleapis.cn",
+      "+.push.apple.com",
+      "time1.cloud.tencent.com",
+      "localhost.ptlogin2.qq.com",
+      "+.stun.*.*",
+      "+.stun.*.*.*",
+      "+.stun.*.*.*.*",
+      "+.stun.*.*.*.*.*",
+      "lens.l.google.com",
+      "*.n.n.srv.nintendo.net",
+      "+.stun.playstation.net",
+      "xbox.*.*.microsoft.com",
+      "*.*.xboxlive.com",
+      "*.msftncsi.com",
+      "*.msftconnecttest.com",
+      "*.mcdn.bilivideo.cn",
+      "+.bilibili.com",
+      "+.bilicdn.com",
+      "+.bilivideo.com",
+      "+.market.xiaomi.com",
+      "WORKGROUP"
+    ],
+    "fake-ip-filter-mode": "blacklist",
+    "default-nameserver": [
+      "223.5.5.5",
+      "119.29.29.29",
+      "8.8.8.8",
+      "8.8.4.4",
+      "1.0.0.1",
+      "1.1.1.1",
+      "system"
+    ],
+    "cache-algorithm": "arc",
+    "proxy-server-nameserver": [],
+    "direct-nameserver": [],
+    "direct-nameserver-follow-policy": false
+  },
+  "tun": {
+    "enable": true,
+    "device": "Clash Mi",
+    "stack": "gvisor",
+    "dns-hijack": [
+      "0.0.0.0:53"
+    ],
+    "auto-route": false,
+    "auto-detect-interface": false,
+    "mtu": 9000,
+    "inet4-address": [
+      "172.19.0.1/30"
+    ],
+    "auto-redirect": false
+  },
+  "profile": {
+    "store-selected": true,
+    "store-fake-ip": true
+  },
+  "extension": {
+    "geo-rule-set": {
+      "geosite_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite",
+      "geoip_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip",
+      "asn_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/asn",
+      "update-interval": 172800,
+      "enable-proxy": true
     },
-    'rule-providers': {
-      // 将由代码自动生成
+    "tun": {
+      "http_proxy": {
+        "enable": false,
+        "bypass_domain": [
+          "<-loopback>",
+          "<local>",
+          "localhost",
+          "*.local",
+          "127.*",
+          "10.*",
+          "172.16.*",
+          "172.17.*",
+          "172.18.*",
+          "172.19.*",
+          "172.2*",
+          "172.30.*",
+          "172.31.*",
+          "192.168.*",
+          "*zhihu.com",
+          "*zhimg.com",
+          "*jd.com",
+          "100ime-iat-api.xfyun.cn",
+          "*360buyimg.com"
+        ]
+      },
+      "per_app": {
+        "enable": false
+      }
     },
-    'dns': {
-        'enable': true,
-        'ipv6': true,
-        'respect-rules': true,
-        'enhanced-mode': 'fake-ip',
-        'nameserver': [
-            'https://120.53.53.53/dns-query',
-            'https://223.5.5.5/dns-query'
-        ],
-        'proxy-server-nameserver': [
-            'https://120.53.53.53/dns-query',
-            'https://223.5.5.5/dns-query'
-        ],
-        'nameserver-policy': {
-            'geosite:cn,private': [
-                'https://120.53.53.53/dns-query',
-                'https://223.5.5.5/dns-query'
-            ],
-            'geosite:geolocation-!cn': [
-                'https://dns.cloudflare.com/dns-query',
-                'https://dns.google/dns-query'
-            ]
-        }
-    },
-    'proxies': [],
-    'proxy-groups': []
-};
+    "runtime-profile-save-path": "/data/user/0/com.nebula.clashmi/files/service_core_runtime_profile.yaml"
+  }
+}
 
 export const SURGE_CONFIG = {
 	'general': {
