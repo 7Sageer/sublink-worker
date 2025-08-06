@@ -380,7 +380,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 
 // Singbox configuration
 export const SING_BOX_CONFIG = {
-	{
+	
   "log": {
     "disabled": false,
     "level": "warn",
