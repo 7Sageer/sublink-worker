@@ -1,6 +1,4 @@
 import { t } from './i18n';
-export const SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geosite/geosite-cn.srs';
-export const IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geoip/geoip-cn.srs';
 export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
 export const CLASH_IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/';
 export const SURGE_SITE_RULE_SET_BASEURL = 'https://gh-proxy.com/https://github.com/NSZA156/surge-geox-rules/raw/refs/heads/release/geo/geosite/'
@@ -382,116 +380,176 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 
 // Singbox configuration
 export const SING_BOX_CONFIG = {
-	dns: {
-		servers: [
-			{
-				tag: "dns_proxy",
-				address: "tcp://1.1.1.1",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
-				detour: "🚀 节点选择"
-			},
-			{
-				tag: "dns_direct", 
-				address: "https://dns.alidns.com/dns-query",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
-				detour: "DIRECT"
-			},
-			{
-				tag: "dns_resolver",
-				address: "223.5.5.5",
-				detour: "DIRECT"
-			},
-			{
-				tag: "dns_success",
-				address: "rcode://success"
-			},
-			{
-				tag: "dns_refused",
-				address: "rcode://refused"
-			},
-			{
-				tag: "dns_fakeip",
-				address: "fakeip"
-			}
-		],
-		rules: [
-			{
-				outbound: "any",
-				server: "dns_resolver"
-			},
-			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"A",
-					"AAAA"
-				],
-				server: "dns_fakeip"
-			},
-			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"CNAME"
-				],
-				server: "dns_proxy"
-			},
-			{
-				query_type: [
-					"A",
-					"AAAA",
-					"CNAME"
-				],
-				invert: true,
-				server: "dns_refused",
-				disable_cache: true
-			}
-		],
-		final: "dns_direct",
-		independent_cache: true,
-		fakeip: {
-			enabled: true,
-			inet4_range: "198.18.0.0/15",
-			inet6_range: "fc00::/18"
-		}
-	},
-	ntp: {
-		enabled: true,
-		server: 'time.apple.com',
-		server_port: 123,
-		interval: '30m'
-	},
-	inbounds: [
-		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
-	],
-	outbounds: [
-		{ type: 'block', tag: 'REJECT' },
-		{ type: "direct", tag: 'DIRECT' }
-	],
-	route : {
-		"rule_set": [
-            {
-                "tag": "geosite-geolocation-!cn",
-                "type": "local",
-                "format": "binary",
-                "path": "geosite-geolocation-!cn.srs"
-            }
-		],
-		rules: []
-	},
-	    "experimental": {
-        "clash_api": {
-            "external_controller": "0.0.0.0:9090",
-            "external_ui": "dist",
-            "external_ui_download_url": "https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip",
-            "external_ui_download_detour": "Ã°Å¸Å’Â Internet",
-            "default_mode": "rule",
-            "access_control_allow_origin": "*"
-        }
+	{
+  "log": {
+    "disabled": false,
+    "level": "warn",
+    "timestamp": true
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true
+    },
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "yacd",
+      "external_ui_download_url": "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
+      "external_ui_download_detour": "Internet"
     }
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "https",
+        "tag": "Internet-dns",
+        "detour": "Internet",
+        "server": "8.8.8.8",
+        "server_port": 443
+      },
+      {
+        "type": "https",
+        "tag": "Best Latency-dns",
+        "detour": "Best Latency",
+        "server": "8.8.8.8",
+        "server_port": 443
+      },
+      {
+        "type": "udp",
+        "tag": "direct-dns",
+        "detour": "direct",
+        "server": "8.8.8.8",
+        "server_port": 53
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "Internet",
+        "server": "Internet-dns",
+        "rewrite_ttl": 20
+      },
+      {
+        "outbound": "Best Latency",
+        "server": "Best Latency-dns",
+        "rewrite_ttl": 20
+      },
+      {
+        "outbound": "direct",
+        "server": "direct-dns",
+        "rewrite_ttl": 20
+      }
+    ],
+    "reverse_mapping": true,
+    "strategy": "ipv4_only",
+    "independent_cache": true
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "mtu": 1358,
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "gvisor",
+      "endpoint_independent_nat": true,
+      "sniff": true,
+      "address": ["172.18.0.1/30", "fdfe:dcba:9876::1/126"]
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "Internet",
+      "outbounds": ["Best Latency"]
+    },
+    {
+      "type": "urltest",
+      "tag": "Best Latency",
+      "outbounds": [],
+      "url": "https://detectportal.firefox.com/success.txt",
+      "interval": "1m0s"
+    },
+    {
+      "type": "selector",
+      "tag": "Option ADs",
+      "outbounds": ["block", "Internet"]
+    },
+    {
+      "type": "selector",
+      "tag": "Option P0rn",
+      "outbounds": ["block", "Internet"]
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "direct",
+      "tag": "block"
+    }
+  ],
+  "route": {
+    "auto_detect_interface": true,
+    "override_android_vpn": true,
+    "final": "Internet",
+    "rules": [
+      {
+        "inbound": "tun-in",
+        "action": "sniff"
+      },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "protocol": "dns"
+          },
+          {
+            "port": [53]
+          }
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "rule_set": ["geosite-rule-ads", "geosite-oisd-full"],
+        "outbound": "Option ADs"
+      },
+      {
+        "rule_set": ["geosite-oisd-nsfw", "geosite-category-porn"],
+        "outbound": "Option P0rn"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "geosite-category-porn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/dickymuliafiqri/sing-box-examples/releases/download/latest/geosite-category-porn.srs",
+        "download_detour": "Internet"
+      },
+      {
+        "tag": "geosite-oisd-full",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/dickymuliafiqri/sing-box-examples/releases/download/latest/geosite-oisd-full.srs",
+        "download_detour": "Internet"
+      },
+      {
+        "tag": "geosite-oisd-nsfw",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/dickymuliafiqri/sing-box-examples/releases/download/latest/geosite-oisd-nsfw.srs",
+        "download_detour": "Internet"
+      },
+      {
+        "tag": "geosite-rule-ads",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/dickymuliafiqri/sing-box-examples/releases/download/latest/geosite-rule-ads.srs",
+        "download_detour": "Internet"
+      }
+    ]
+  }
 }
-		
 
 export const CLASH_CONFIG = {
   "mixed-port": 7890,
