@@ -1,7 +1,7 @@
 import {checkStartsWith} from "../utils";
 // 定义语言包
 const translations = {
-'en-US': {
+'zh-CN': {
     missingInput: 'Missing input parameter',
 missingConfig: 'Missing config parameter',
 missingUrl: 'Missing URL parameter',
@@ -38,10 +38,10 @@ comprehensive: 'Comprehensive',
 addCustomRule: 'Add Custom Rule',
 customRuleOutboundName: 'Outbound Name*',
 customRuleGeoSite: 'Geo-Site Rule Set',
-customRuleGeoSiteTooltip: 'Site rules in SingBox come from https://github.com/lyc8503/sing-box-rules，这意味着您的自定义规则必须在该仓库中',
+customRuleGeoSiteTooltip: 'Site rules in SingBox come from https://github.com/SagerNet/sing-geosite/，这意味着您的自定义规则必须在该仓库中',
 customRuleGeoSitePlaceholder: 'e.g.: google,anthropic',
 customRuleGeoIP: 'Geo-IP Rule Set',
-customRuleGeoIPTooltip: 'IP rules in SingBox come from https://github.com/lyc8503/sing-box-rules，这意味着您的自定义规则必须在该仓库中',
+customRuleGeoIPTooltip: 'IP rules in SingBox come from https://github.com/SagerNet/sing-geoip/，这意味着您的自定义规则必须在该仓库中',
 customRuleGeoIPPlaceholder: 'e.g.: private,cn',
 customRuleDomainSuffix: 'Domain Suffix',
 customRuleDomainSuffixPlaceholder: 'Domain suffix (separated by commas)',
@@ -105,7 +105,7 @@ jsonValidationErrors: 'JSON validation errors',
     UASettings: '自定义UserAgent',
     UAtip: '默认值curl/7.74.0'
   },
-  'zh-CN': {
+  'en-US': {
     missingInput: 'Missing input parameter',
     missingConfig: 'Missing config parameter',
     missingUrl: 'Missing URL parameter',
