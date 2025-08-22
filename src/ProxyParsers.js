@@ -229,7 +229,7 @@ export class ProxyParser {
           const tls = {
             enabled: true,
             server_name: params.sni,
-            alpn: [params.alpn],
+            alpn: params.alpn ? decodeURIComponent(params.alpn).split(',') : [],
             insecure: true,
           };
       
