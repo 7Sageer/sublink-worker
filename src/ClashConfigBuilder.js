@@ -115,8 +115,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     port: proxy.server_port,
                     uuid: proxy.uuid,
                     //alterId: proxy.alter_id,  
-		    //2025.2.12修改：alterId 默认为 0
-		    alterId: 0,
+                    //2025.2.12修改：alterId 默认为 0
+                    alterId: 0,
                     cipher: proxy.security,
                     tls: proxy.tls?.enabled || false,
                     servername: proxy.tls?.server_name || '',
