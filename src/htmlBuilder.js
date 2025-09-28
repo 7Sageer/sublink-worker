@@ -143,7 +143,12 @@ const generateCustomPathSection = (baseUrl) => `
   <div class="mb-4 mt-3">
     <label for="customShortCode" class="form-label">${t('customPath')}</label>
     <div class="input-group flex-nowrap">
-      <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
+      <span
+        class="input-group-text text-truncate"
+        id="customPathPrefix"
+        style="max-width: 400px;"
+        title="${baseUrl}/s/"
+      >
         ${baseUrl}/s/
       </span>
       <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
@@ -230,6 +235,13 @@ const customPathFunctions = () => `
   document.addEventListener('DOMContentLoaded', function() {
     updateSavedPathsDropdown();
     document.getElementById('savedCustomPaths').addEventListener('change', loadSavedCustomPath);
+
+    const prefixSpan = document.getElementById('customPathPrefix');
+    if (prefixSpan) {
+      const originPrefix = \`\${window.location.origin}/s/\`;
+      prefixSpan.textContent = originPrefix;
+      prefixSpan.title = originPrefix;
+    }
   });
 `;
 
