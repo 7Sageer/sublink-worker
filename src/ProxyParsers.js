@@ -99,7 +99,7 @@ export class ProxyParser {
                     tls = {
                         "enabled": true,
                         "server_name": vmessConfig.sni,
-                        "insecure": false
+                        "insecure": vmessConfig['skip-cert-verify'] || false
                     }
                 }
             }
