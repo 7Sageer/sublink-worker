@@ -386,42 +386,31 @@ export const SING_BOX_CONFIG = {
 	dns: {
 		servers: [
 			{
+				type: "tcp",
 				tag: "dns_proxy",
-				address: "tcp://1.1.1.1",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
-				detour: "🚀 节点选择"
+				server: "1.1.1.1",
+				detour: "🚀 节点选择",
+				domain_resolver: "dns_resolver"
 			},
 			{
-				tag: "dns_direct", 
-				address: "https://dns.alidns.com/dns-query",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
-				detour: "DIRECT"
+				type: "https",
+				tag: "dns_direct",
+				server: "dns.alidns.com",
+				domain_resolver: "dns_resolver"
 			},
 			{
+				type: "udp",
 				tag: "dns_resolver",
-				address: "223.5.5.5",
-				detour: "DIRECT"
+				server: "223.5.5.5"
 			},
 			{
-				tag: "dns_success",
-				address: "rcode://success"
-			},
-			{
-				tag: "dns_refused",
-				address: "rcode://refused"
-			},
-			{
+				type: "fakeip",
 				tag: "dns_fakeip",
-				address: "fakeip"
+				inet4_range: "198.18.0.0/15",
+				inet6_range: "fc00::/18"
 			}
 		],
 		rules: [
-			{
-				outbound: "any",
-				server: "dns_resolver"
-			},
 			{
 				rule_set: "geolocation-!cn",
 				query_type: [
@@ -432,9 +421,7 @@ export const SING_BOX_CONFIG = {
 			},
 			{
 				rule_set: "geolocation-!cn",
-				query_type: [
-					"CNAME"
-				],
+				query_type: "CNAME",
 				server: "dns_proxy"
 			},
 			{
@@ -444,17 +431,12 @@ export const SING_BOX_CONFIG = {
 					"CNAME"
 				],
 				invert: true,
-				server: "dns_refused",
-				disable_cache: true
+				action: "predefined",
+				rcode: "REFUSED"
 			}
 		],
 		final: "dns_direct",
-		independent_cache: true,
-		fakeip: {
-			enabled: true,
-			inet4_range: "198.18.0.0/15",
-			inet6_range: "fc00::/18"
-		}
+		independent_cache: true
 	},
 	ntp: {
 		enabled: true,
@@ -471,6 +453,7 @@ export const SING_BOX_CONFIG = {
 		{ type: "direct", tag: 'DIRECT' }
 	],
 	route : {
+		default_domain_resolver: "dns_resolver",
 		"rule_set": [
             {
                 "tag": "geosite-geolocation-!cn",

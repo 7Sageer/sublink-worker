@@ -70,10 +70,10 @@ For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
 
 ## 📝 Recent Updates
 
-### 2025-05-02
+### 2025-09-28
 
-- Automatic renaming is now applied when proxies with the same name exist ([#175](https://github.com/7Sageer/sublink-worker/pull/175))
-- Fixed DNS configuration for Singbox ([#174](https://github.com/7Sageer/sublink-worker/pull/174))
+- Fixed warnings caused by some configurations in Singbox 1.12.0
+- Various other small issues
 
 ## 🔧 Project Structure
 
