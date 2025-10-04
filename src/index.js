@@ -11,7 +11,7 @@ addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
 
-async function handleRequest(request) {
+export async function handleRequest(request) {
   try {
     const url = new URL(request.url);
     const lang = url.searchParams.get('lang');
@@ -23,7 +23,8 @@ async function handleRequest(request) {
       });
     } else if (url.pathname.startsWith('/singbox') || url.pathname.startsWith('/clash') || url.pathname.startsWith('/surge')) {
       const inputString = url.searchParams.get('config');
-      let selectedRules = url.searchParams.get('selectedRules');
+      const rawSelectedRules = url.searchParams.get('selectedRules');
+      let selectedRules;
       let customRules = url.searchParams.get('customRules');
       // 获取语言参数，如果为空则使用默认值
       let lang = url.searchParams.get('lang') || 'zh-CN';
@@ -37,22 +38,45 @@ async function handleRequest(request) {
         return new Response(t('missingConfig'), { status: 400 });
       }
 
-      if (PREDEFINED_RULE_SETS[selectedRules]) {
-        selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+      if (rawSelectedRules == null || rawSelectedRules === '' || rawSelectedRules === 'null') {
+        selectedRules = PREDEFINED_RULE_SETS.minimal;
+      } else if (PREDEFINED_RULE_SETS[rawSelectedRules]) {
+        selectedRules = PREDEFINED_RULE_SETS[rawSelectedRules];
       } else {
-        try {
-          selectedRules = JSON.parse(decodeURIComponent(selectedRules));
-        } catch (error) {
-          console.error('Error parsing selectedRules:', error);
+        const parseAttempts = [rawSelectedRules];
+        if (rawSelectedRules === encodeURIComponent(rawSelectedRules)) {
+          parseAttempts.push(decodeURIComponent(rawSelectedRules));
+        }
+
+        for (const candidate of parseAttempts) {
+          try {
+            selectedRules = JSON.parse(candidate);
+            break;
+          } catch (error) {
+            console.error('Error parsing selectedRules candidate:', error);
+          }
+        }
+
+        if (!selectedRules) {
           selectedRules = PREDEFINED_RULE_SETS.minimal;
         }
       }
 
+      if (!Array.isArray(selectedRules)) {
+        selectedRules = PREDEFINED_RULE_SETS.minimal;
+      }
+
       // Deal with custom rules
-      try {
-        customRules = JSON.parse(decodeURIComponent(customRules));
-      } catch (error) {
-        console.error('Error parsing customRules:', error);
+      if (customRules != null) {
+        try {
+          customRules = JSON.parse(decodeURIComponent(customRules));
+        } catch (error) {
+          console.error('Error parsing customRules:', error);
+          customRules = [];
+        }
+      }
+
+      if (!Array.isArray(customRules)) {
         customRules = [];
       }
 
@@ -203,44 +227,83 @@ async function handleRequest(request) {
     } else if (url.pathname === '/favicon.ico') {
       return Response.redirect('https://cravatar.cn/avatar/9240d78bbea4cf05fb04f2b86f22b18d?s=160&d=retro&r=g', 301)
     } else if (url.pathname === '/config') {
-      const { type, content } = await request.json();
-      const configId = `${type}_${GenerateWebPath(8)}`;
+      if (request.method === 'GET') {
+        const configId = url.searchParams.get('id');
+        let type = url.searchParams.get('type');
 
-      try {
-        let configString;
-        if (type === 'clash') {
-          // 如果是 YAML 格式，先转换为 JSON
-          if (typeof content === 'string' && (content.trim().startsWith('-') || content.includes(':'))) {
-            const yamlConfig = yaml.load(content);
-            configString = JSON.stringify(yamlConfig);
+        if (!configId) {
+          return new Response('Missing configId parameter', { status: 400 });
+        }
+
+        const storedConfig = await SUBLINK_KV.get(configId);
+        if (!storedConfig) {
+          return new Response(t('notFound'), { status: 404 });
+        }
+
+        if (!type) {
+          const [derivedType] = configId.split('_');
+          type = derivedType || 'singbox';
+        }
+
+        let parsedConfig;
+        try {
+          parsedConfig = JSON.parse(storedConfig);
+        } catch (error) {
+          parsedConfig = storedConfig;
+        }
+
+        const normalizedContent = typeof parsedConfig === 'string'
+          ? parsedConfig
+          : JSON.stringify(parsedConfig, null, 2);
+
+        return new Response(JSON.stringify({
+          type,
+          content: normalizedContent
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } else if (request.method === 'POST') {
+        const { type, content } = await request.json();
+        const configId = `${type}_${GenerateWebPath(8)}`;
+
+        try {
+          let configString;
+          if (type === 'clash') {
+            // 如果是 YAML 格式，先转换为 JSON
+            if (typeof content === 'string' && (content.trim().startsWith('-') || content.includes(':'))) {
+              const yamlConfig = yaml.load(content);
+              configString = JSON.stringify(yamlConfig);
+            } else {
+              configString = typeof content === 'object'
+                ? JSON.stringify(content)
+                : content;
+            }
           } else {
+            // singbox 配置处理
             configString = typeof content === 'object'
               ? JSON.stringify(content)
               : content;
           }
-        } else {
-          // singbox 配置处理
-          configString = typeof content === 'object'
-            ? JSON.stringify(content)
-            : content;
+
+          // 验证 JSON 格式
+          JSON.parse(configString);
+
+          await SUBLINK_KV.put(configId, configString, {
+            expirationTtl: 60 * 60 * 24 * 30  // 30 days
+          });
+
+          return new Response(configId, {
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        } catch (error) {
+          console.error('Config validation error:', error);
+          return new Response(t('invalidFormat') + error.message, {
+            status: 400,
+            headers: { 'Content-Type': 'text/plain' }
+          });
         }
-
-        // 验证 JSON 格式
-        JSON.parse(configString);
-
-        await SUBLINK_KV.put(configId, configString, {
-          expirationTtl: 60 * 60 * 24 * 30  // 30 days
-        });
-
-        return new Response(configId, {
-          headers: { 'Content-Type': 'text/plain' }
-        });
-      } catch (error) {
-        console.error('Config validation error:', error);
-        return new Response(t('invalidFormat') + error.message, {
-          status: 400,
-          headers: { 'Content-Type': 'text/plain' }
-        });
+      } else {
+        return new Response('Method Not Allowed', { status: 405 });
       }
     } else if (url.pathname === '/resolve') {
       const shortUrl = url.searchParams.get('url');
