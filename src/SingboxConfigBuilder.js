@@ -6,10 +6,11 @@ import { t } from './i18n/index.js';
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
         if (baseConfig === undefined) {
-            baseConfig = SING_BOX_CONFIG;
-            if (baseConfig.dns && baseConfig.dns.servers) {
-                baseConfig.dns.servers[0].detour = t('outboundNames.Node Select');
+            const templateConfig = DeepCopy(SING_BOX_CONFIG);
+            if (templateConfig.dns && templateConfig.dns.servers) {
+                templateConfig.dns.servers[0].detour = t('outboundNames.Node Select');
             }
+            baseConfig = templateConfig;
         }
         super(inputString, baseConfig, lang, userAgent);
         this.selectedRules = selectedRules;

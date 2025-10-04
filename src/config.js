@@ -170,42 +170,48 @@ export function getOutbounds(selectedRuleNames) {
 
 // Helper function to generate rules based on selected rule names
 export function generateRules(selectedRules = [], customRules = []) {
-	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
-	  selectedRules = PREDEFINED_RULE_SETS[selectedRules];
-	}
-  
-	if (!selectedRules || selectedRules.length === 0) {
-	  selectedRules = PREDEFINED_RULE_SETS.minimal;
-	}
-  
-	const rules = [];
-  
-	UNIFIED_RULES.forEach(rule => {
-	  if (selectedRules.includes(rule.name)) {
-		rules.push({
-		  site_rules: rule.site_rules,
+        if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
+          selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+        }
+
+        if (!selectedRules || selectedRules.length === 0) {
+          selectedRules = PREDEFINED_RULE_SETS.minimal;
+        }
+
+        const rules = [];
+
+        const normalizedCustomRules = Array.isArray(customRules)
+          ? customRules.filter(rule => rule && typeof rule === 'object')
+          : [];
+
+        UNIFIED_RULES.forEach(rule => {
+          if (selectedRules.includes(rule.name)) {
+                rules.push({
+                  site_rules: rule.site_rules,
 		  ip_rules: rule.ip_rules,
 		  domain_suffix: rule?.domain_suffix,
 		  ip_cidr: rule?.ip_cidr,
 		  outbound: rule.name
 		});
-	  }
-	});
-  
-	customRules.reverse();
-	customRules.forEach((rule) => {
-		rules.unshift({
-			site_rules: rule.site.split(','),
-			ip_rules: rule.ip.split(','),
-			domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
-			domain_keyword: rule.domain_keyword ? rule.domain_keyword.split(',') : [],
-			ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
-			protocol: rule.protocol ? rule.protocol.split(',') : [],
-			outbound: rule.name
-		});
-		});
-  
-	return rules;
+          }
+        });
+
+        const reversedCustomRules = [...normalizedCustomRules].reverse();
+        reversedCustomRules.forEach((rule) => {
+                const site = typeof rule.site === 'string' ? rule.site : '';
+                const ip = typeof rule.ip === 'string' ? rule.ip : '';
+                rules.unshift({
+                        site_rules: site ? site.split(',') : [],
+                        ip_rules: ip ? ip.split(',') : [],
+                        domain_suffix: typeof rule.domain_suffix === 'string' && rule.domain_suffix !== '' ? rule.domain_suffix.split(',') : [],
+                        domain_keyword: typeof rule.domain_keyword === 'string' && rule.domain_keyword !== '' ? rule.domain_keyword.split(',') : [],
+                        ip_cidr: typeof rule.ip_cidr === 'string' && rule.ip_cidr !== '' ? rule.ip_cidr.split(',') : [],
+                        protocol: typeof rule.protocol === 'string' && rule.protocol !== '' ? rule.protocol.split(',') : [],
+                        outbound: rule.name
+                });
+                });
+
+        return rules;
   }
 
 
@@ -257,25 +263,29 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 	});
   }
 
-  if(customRules){
-	customRules.forEach(rule => {
-		if(rule.site!=''){
-			rule.site.split(',').forEach(site => {
-				site_rule_sets.push({
-					tag: site.trim(),
-					type: 'remote',
-					format: 'binary',
-					url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
-				});
-			});
-		}
-		if(rule.ip!=''){
-			rule.ip.split(',').forEach(ip => {
-				ip_rule_sets.push({
-					tag: `${ip.trim()}-ip`,
-					type: 'remote',
-					format: 'binary',
-					url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
+  const normalizedCustomRules = Array.isArray(customRules)
+    ? customRules.filter(rule => rule && typeof rule === 'object')
+    : [];
+
+  if(normalizedCustomRules.length){
+        normalizedCustomRules.forEach(rule => {
+                if(typeof rule.site === 'string' && rule.site.trim() !== ''){
+                        rule.site.split(',').forEach(site => {
+                                site_rule_sets.push({
+                                        tag: site.trim(),
+                                        type: 'remote',
+                                        format: 'binary',
+                                        url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
+                                });
+                        });
+                }
+                if(typeof rule.ip === 'string' && rule.ip.trim() !== ''){
+                        rule.ip.split(',').forEach(ip => {
+                                ip_rule_sets.push({
+                                        tag: `${ip.trim()}-ip`,
+                                        type: 'remote',
+                                        format: 'binary',
+                                        url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
 				});
 			});
 		}
@@ -347,9 +357,13 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
   }
 
   // Add custom rules
-  if(customRules){
-    customRules.forEach(rule => {
-      if(rule.site!=''){
+  const normalizedCustomRules = Array.isArray(customRules)
+    ? customRules.filter(rule => rule && typeof rule === 'object')
+    : [];
+
+  if(normalizedCustomRules.length){
+    normalizedCustomRules.forEach(rule => {
+      if(typeof rule.site === 'string' && rule.site.trim() !== ''){
         rule.site.split(',').forEach(site => {
           const site_trimmed = site.trim();
           site_rule_providers[site_trimmed] = {
@@ -362,7 +376,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
           };
         });
       }
-      if(rule.ip!=''){
+      if(typeof rule.ip === 'string' && rule.ip.trim() !== ''){
         rule.ip.split(',').forEach(ip => {
           const ip_trimmed = ip.trim();
           ip_rule_providers[ip_trimmed] = {
