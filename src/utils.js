@@ -33,6 +33,66 @@ export function decodeBase64(input) {
 	return decoder.decode(bytes);
 }
 
+// 智能 Base64 解码 - 用于处理用户输入（可能是 URL 或 base64）
+// 如果输入已经包含协议前缀（://），则直接返回
+// 如果输入是 base64 编码，尝试解码并检查是否为有效的代理链接
+// 支持多行输入（换行符分隔的多个链接）
+export function tryDecodeBase64(str) {
+	// If the string already has a protocol prefix, return as is
+	if (str.includes('://')) {
+		return str;
+	}
+
+	try {
+		// Try to decode as base64
+		const decoded = decodeBase64(str);
+
+		// Check if decoded content contains multiple links
+		if (decoded.includes('\n')) {
+			// Split by newline and filter out empty lines
+			const multipleUrls = decoded.split('\n').filter(url => url.trim() !== '');
+
+			// Check if at least one URL is valid
+			if (multipleUrls.some(url => url.includes('://'))) {
+				return multipleUrls;
+			}
+		}
+
+		// Check if the decoded string looks like a valid URL
+		if (decoded.includes('://')) {
+			return decoded;
+		}
+	} catch (e) {
+		// If decoding fails, return original string
+	}
+	return str;
+}
+
+// 订阅解码 - 用于处理 HTTP 响应（假设是 base64，带容错）
+// 自动处理 base64 解码和 URL 解码
+// 如果解码失败，则返回原始文本
+export function decodeSubscription(text) {
+	try {
+		let decoded = decodeBase64(text.trim());
+		// Check if the decoded text needs URL decoding
+		if (decoded.includes('%')) {
+			decoded = decodeURIComponent(decoded);
+		}
+		return decoded;
+	} catch (e) {
+		// If base64 decoding fails, try URL decoding on original text
+		let result = text;
+		if (result.includes('%')) {
+			try {
+				result = decodeURIComponent(result);
+			} catch (urlError) {
+				// If URL decoding also fails, return original
+			}
+		}
+		return result;
+	}
+}
+
 // 将二进制字符串转换为 Base64（编码）
 export function base64FromBinary(binaryString) {
 	const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

@@ -2,7 +2,7 @@ import { SingboxConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
-import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
+import { decodeBase64, encodeBase64, GenerateWebPath, tryDecodeBase64, decodeSubscription } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
 import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
@@ -176,18 +176,19 @@ async function handleRequest(request) {
               headers : headers
             })
             const text = await response.text();
-            let decodedText;
-            decodedText = decodeBase64(text.trim());
-            // Check if the decoded text needs URL decoding
-            if (decodedText.includes('%')) {
-              decodedText = decodeURIComponent(decodedText);
-            }
+            const decodedText = decodeSubscription(text);
             finalProxyList.push(...decodedText.split('\n'));
           } catch (e) {
             console.warn('Failed to fetch the proxy:', e);
           }
         } else {
-          finalProxyList.push(proxy);
+          // Try to decode if it might be base64
+          const decoded = tryDecodeBase64(proxy);
+          if (Array.isArray(decoded)) {
+            finalProxyList.push(...decoded);
+          } else {
+            finalProxyList.push(decoded);
+          }
         }
       }
 

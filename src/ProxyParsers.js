@@ -1,4 +1,4 @@
-import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64, base64ToBinary } from './utils.js';
+import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64, base64ToBinary, decodeSubscription } from './utils.js';
 
 
 export class ProxyParser {
@@ -262,24 +262,7 @@ export class ProxyParser {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const text = await response.text();
-                let decodedText;
-                try {
-                    decodedText = decodeBase64(text.trim());
-                    // Check if the decoded text needs URL decoding
-                    if (decodedText.includes('%')) {
-                        decodedText = decodeURIComponent(decodedText);
-                    }
-                } catch (e) {
-                    decodedText = text;
-                    // Check if the original text needs URL decoding
-                    if (decodedText.includes('%')) {
-                        try {
-                            decodedText = decodeURIComponent(decodedText);
-                        } catch (urlError) {
-                            console.warn('Failed to URL decode the text:', urlError);
-                        }
-                    }
-                }
+                const decodedText = decodeSubscription(text);
                 return decodedText.split('\n').filter(line => line.trim() !== '');
             } catch (error) {
                 console.error('Error fetching or parsing HTTP(S) content:', error);
