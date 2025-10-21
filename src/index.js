@@ -2,7 +2,7 @@ import { SingboxConfigBuilder } from './SingboxConfigBuilder.js';
 import { generateHtml } from './htmlBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
-import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
+import { encodeBase64, GenerateWebPath, tryDecodeSubscriptionLines } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
 import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
@@ -156,38 +156,48 @@ async function handleRequest(request) {
     } else if (url.pathname.startsWith('/xray')) {
       // Handle Xray config requests
       const inputString = url.searchParams.get('config');
-      const proxylist = inputString.split('\n');
+      if (!inputString) {
+        return new Response('Missing config parameter', { status: 400 });
+      }
 
+      const proxylist = inputString.split('\n');
       const finalProxyList = [];
       // Use custom UserAgent (for Xray) Hmmm...
       let userAgent = url.searchParams.get('ua');
       if (!userAgent) {
         userAgent = 'curl/7.74.0';
       }
-      let headers = new Headers({
-        "User-Agent"   : userAgent
+      const headers = new Headers({
+        'User-Agent': userAgent
       });
 
       for (const proxy of proxylist) {
-        if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
+        const trimmedProxy = proxy.trim();
+        if (!trimmedProxy) {
+          continue;
+        }
+
+        if (trimmedProxy.startsWith('http://') || trimmedProxy.startsWith('https://')) {
           try {
-            const response = await fetch(proxy, {
-              method : 'GET',
-              headers : headers
-            })
+            const response = await fetch(trimmedProxy, {
+              method: 'GET',
+              headers
+            });
             const text = await response.text();
-            let decodedText;
-            decodedText = decodeBase64(text.trim());
-            // Check if the decoded text needs URL decoding
-            if (decodedText.includes('%')) {
-              decodedText = decodeURIComponent(decodedText);
+            let processed = tryDecodeSubscriptionLines(text, { decodeUriComponent: true });
+            if (!Array.isArray(processed)) {
+              processed = [processed];
             }
-            finalProxyList.push(...decodedText.split('\n'));
+            finalProxyList.push(...processed.filter(item => typeof item === 'string' && item.trim() !== ''));
           } catch (e) {
             console.warn('Failed to fetch the proxy:', e);
           }
         } else {
-          finalProxyList.push(proxy);
+          let processed = tryDecodeSubscriptionLines(trimmedProxy);
+          if (!Array.isArray(processed)) {
+            processed = [processed];
+          }
+          finalProxyList.push(...processed.filter(item => typeof item === 'string' && item.trim() !== ''));
         }
       }
 
