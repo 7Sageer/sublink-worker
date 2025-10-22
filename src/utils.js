@@ -129,10 +129,13 @@ export function tryDecodeSubscriptionLines(input, { decodeUriComponent = false }
 	try {
 		let decoded = decodeBase64(trimmed);
 		if (decodeUriComponent && decoded.includes('%')) {
-			try {
-				decoded = decodeURIComponent(decoded);
-			} catch (_) {
-				// ignore URI decode errors and fall back to the decoded string
+			const hasProtocolScheme = decoded.includes('://');
+			if (!hasProtocolScheme) {
+				try {
+					decoded = decodeURIComponent(decoded);
+				} catch (_) {
+					// ignore URI decode errors and fall back to the decoded string
+				}
 			}
 		}
 
