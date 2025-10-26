@@ -45,11 +45,36 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     tls: proxy.tls?.enabled || false,
                     servername: proxy.tls?.server_name || '',
                     'skip-cert-verify': proxy.tls?.insecure || false,
-                    network: proxy.transport?.type || 'tcp',
-                    'ws-opts': proxy.transport?.type === 'ws' ? {
-                        path: proxy.transport.path,
-                        headers: proxy.transport.headers
-                    } : undefined
+                    network: proxy.transport?.type || proxy.network || 'tcp',
+                    'ws-opts': proxy.transport?.type === 'ws'
+                        ? {
+                            path: proxy.transport.path,
+                            headers: proxy.transport.headers
+                        }
+                        : undefined,
+                    'http-opts': proxy.transport?.type === 'http'
+                        ? (() => {
+                            const opts = {
+                                method: proxy.transport.method || 'GET',
+                                path: Array.isArray(proxy.transport.path) ? proxy.transport.path : [proxy.transport.path || '/'],
+                            };
+                            if (proxy.transport.headers && Object.keys(proxy.transport.headers).length > 0) {
+                                opts.headers = proxy.transport.headers;
+                            }
+                            return opts;
+                        })()
+                        : undefined,
+                    'grpc-opts': proxy.transport?.type === 'grpc'
+                        ? {
+                            'grpc-service-name': proxy.transport.service_name
+                        }
+                        : undefined,
+                    'h2-opts': proxy.transport?.type === 'h2'
+                        ? {
+                            path: proxy.transport.path,
+                            host: proxy.transport.host
+                        }
+                        : undefined
                 };
             case 'vless':
                 return {
