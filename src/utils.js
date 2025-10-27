@@ -89,6 +89,69 @@ export function base64ToBinary(base64String) {
 
 	return binaryString;
 }
+
+export function tryDecodeSubscriptionLines(input, { decodeUriComponent = false } = {}) {
+	if (typeof input !== 'string') {
+		return input;
+	}
+
+	const trimmed = input.trim();
+	if (trimmed === '') {
+		return trimmed;
+	}
+
+	const splitIfMultiple = (value) => {
+		if (typeof value !== 'string') {
+			return value;
+		}
+
+		const normalized = value.replace(/\r\n/g, '\n');
+		const segments = normalized
+			.split('\n')
+			.map(segment => segment.trim())
+			.filter(segment => segment !== '');
+
+		if (segments.length > 1 && segments.some(segment => segment.includes('://'))) {
+			return segments;
+		}
+
+		return normalized.trim();
+	};
+
+	const directResult = splitIfMultiple(trimmed);
+	if (Array.isArray(directResult)) {
+		return directResult;
+	}
+	if (typeof directResult === 'string' && directResult.includes('://')) {
+		return directResult;
+	}
+
+	try {
+		let decoded = decodeBase64(trimmed);
+		if (decodeUriComponent && decoded.includes('%')) {
+			const hasProtocolScheme = decoded.includes('://');
+			if (!hasProtocolScheme) {
+				try {
+					decoded = decodeURIComponent(decoded);
+				} catch (_) {
+					// ignore URI decode errors and fall back to the decoded string
+				}
+			}
+		}
+
+		const decodedResult = splitIfMultiple(decoded);
+		if (Array.isArray(decodedResult)) {
+			return decodedResult;
+		}
+		if (typeof decodedResult === 'string' && decodedResult.includes('://')) {
+			return decodedResult;
+		}
+	} catch (_) {
+		// ignore decoding errors and return the original trimmed input
+	}
+
+	return trimmed;
+}
 export function DeepCopy(obj) {
 	if (obj === null || typeof obj !== 'object') {
 		return obj;

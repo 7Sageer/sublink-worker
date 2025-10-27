@@ -1,5 +1,5 @@
 import { ProxyParser } from './ProxyParsers.js';
-import { DeepCopy, decodeBase64 } from './utils.js';
+import { DeepCopy, tryDecodeSubscriptionLines } from './utils.js';
 import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
@@ -26,7 +26,7 @@ export class BaseConfigBuilder {
         
         for (const url of urls) {
             // Try to decode if it might be base64
-            let processedUrls = this.tryDecodeBase64(url);
+            let processedUrls = tryDecodeSubscriptionLines(url);
             
             // Handle single URL or array of URLs
             if(!Array.isArray(processedUrls)){
@@ -50,37 +50,6 @@ export class BaseConfigBuilder {
         }
         
         return parsedItems;
-    }
-
-    tryDecodeBase64(str) {
-        // If the string already has a protocol prefix, return as is
-        if (str.includes('://')) {
-            return str;
-        }
-
-        try {
-            // Try to decode as base64
-            const decoded = decodeBase64(str);
-            
-            // Check if decoded content contains multiple links
-            if (decoded.includes('\n')) {
-                // Split by newline and filter out empty lines
-                const multipleUrls = decoded.split('\n').filter(url => url.trim() !== '');
-                
-                // Check if at least one URL is valid
-                if (multipleUrls.some(url => url.includes('://'))) {
-                    return multipleUrls;
-                }
-            }
-            
-            // Check if the decoded string looks like a valid URL
-            if (decoded.includes('://')) {
-                return decoded;
-            }
-        } catch (e) {
-            // If decoding fails, return original string
-        }
-        return str;
     }
 
     getOutboundsList() {
