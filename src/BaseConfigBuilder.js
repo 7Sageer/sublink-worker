@@ -1,5 +1,5 @@
 import { ProxyParser, convertYamlProxyToObject } from './ProxyParsers.js';
-import { DeepCopy, tryDecodeSubscriptionLines } from './utils.js';
+import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64 } from './utils.js';
 import yaml from 'js-yaml';
 import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
@@ -52,7 +52,8 @@ export class BaseConfigBuilder {
         const isBase64Like = /^[A-Za-z0-9+/=\r\n]+$/.test(input) && input.replace(/[\r\n]/g, '').length % 4 === 0;
         if (!looksLikeYaml && isBase64Like) {
             try {
-                const decodedWhole = tryDecodeSubscriptionLines(input, { decodeUriComponent: true });
+                const sanitized = input.replace(/\s+/g, '');
+                const decodedWhole = decodeBase64(sanitized);
                 if (typeof decodedWhole === 'string') {
                     const maybeYaml = decodedWhole.trim();
                     try {
