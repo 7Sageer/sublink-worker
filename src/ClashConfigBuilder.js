@@ -44,7 +44,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     cipher: proxy.security,
                     tls: proxy.tls?.enabled || false,
                     servername: proxy.tls?.server_name || '',
-                    'skip-cert-verify': proxy.tls?.insecure || false,
+                    'skip-cert-verify': !!proxy.tls?.insecure,
                     network: proxy.transport?.type || proxy.network || 'tcp',
                     'ws-opts': proxy.transport?.type === 'ws'
                         ? {
@@ -100,7 +100,10 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
                     tfo : proxy.tcp_fast_open,
-                    'skip-cert-verify': proxy.tls.insecure,
+                    'skip-cert-verify': !!proxy.tls?.insecure,
+                    ...(typeof proxy.udp !== 'undefined' ? { udp: proxy.udp } : {}),
+                    ...(proxy.alpn ? { alpn: proxy.alpn } : {}),
+                    ...(proxy.packet_encoding ? { 'packet-encoding': proxy.packet_encoding } : {}),
                     'flow': proxy.flow ?? undefined,
                 };
             case 'hysteria2':
@@ -109,15 +112,19 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     type: proxy.type,
                     server: proxy.server,
                     port: proxy.server_port,
-                    obfs: proxy.obfs.type,
-                    'obfs-password': proxy.obfs.password,
+                    ...(proxy.ports ? { ports: proxy.ports } : {}),
+                    obfs: proxy.obfs?.type,
+                    'obfs-password': proxy.obfs?.password,
                     password: proxy.password,
                     auth: proxy.auth,
-                    up: proxy.up_mbps,
-                    down: proxy.down_mbps,
+                    up: proxy.up,
+                    down: proxy.down,
                     'recv-window-conn': proxy.recv_window_conn,
                     sni: proxy.tls?.server_name || '',
-                    'skip-cert-verify': proxy.tls?.insecure || true,
+                    'skip-cert-verify': !!proxy.tls?.insecure,
+                    ...(proxy.hop_interval !== undefined ? { 'hop-interval': proxy.hop_interval } : {}),
+                    ...(proxy.alpn ? { alpn: proxy.alpn } : {}),
+                    ...(proxy.fast_open !== undefined ? { 'fast-open': proxy.fast_open } : {}),
                 };
             case 'trojan':
                 return {
@@ -143,7 +150,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
                     tfo : proxy.tcp_fast_open,
-                    'skip-cert-verify': proxy.tls.insecure,
+                    'skip-cert-verify': !!proxy.tls?.insecure,
+                    ...(proxy.alpn ? { alpn: proxy.alpn } : {}),
                     'flow': proxy.flow ?? undefined,
                 };
             case 'tuic':
@@ -154,12 +162,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     port: proxy.server_port,
                     uuid: proxy.uuid,
                     password: proxy.password,
-                    'congestion-controller': proxy.congestion,
-                    'skip-cert-verify': proxy.tls.insecure,
-                    'disable-sni': true,
-                    'alpn': proxy.tls.alpn,
-                    'sni': proxy.tls.server_name,
-                    'udp-relay-mode': 'native',
+                    'congestion-controller': proxy.congestion_control,
+                    'skip-cert-verify': !!proxy.tls?.insecure,
+                    ...(proxy.disable_sni !== undefined ? { 'disable-sni': proxy.disable_sni } : {}),
+                    ...(proxy.tls?.alpn ? { alpn: proxy.tls.alpn } : {}),
+                    'sni': proxy.tls?.server_name,
+                    'udp-relay-mode': proxy.udp_relay_mode || 'native',
+                    ...(proxy.zero_rtt !== undefined ? { 'zero-rtt': proxy.zero_rtt } : {}),
+                    ...(proxy.reduce_rtt !== undefined ? { 'reduce-rtt': proxy.reduce_rtt } : {}),
+                    ...(proxy.fast_open !== undefined ? { 'fast-open': proxy.fast_open } : {}),
                 };
             default:
                 return proxy; // Return as-is if no specific conversion is defined
@@ -168,7 +179,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addProxyToConfig(proxy) {
         this.config.proxies = this.config.proxies || [];
-    
+
         // Find proxies with the same or partially matching name
         const similarProxies = this.config.proxies.filter(p => p.name.includes(proxy.name));
     
@@ -194,6 +205,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addAutoSelectGroup(proxyList) {
+        if (this.hasConfigOverride('proxy-groups')) {
+            return;
+        }
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
             name: t('outboundNames.Auto Select'),
@@ -206,6 +220,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addNodeSelectGroup(proxyList) {
+        if (this.hasConfigOverride('proxy-groups')) {
+            return;
+        }
         proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
         this.config['proxy-groups'].unshift({
             type: "select",
@@ -215,6 +232,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addOutboundGroups(outbounds, proxyList) {
+        if (this.hasConfigOverride('proxy-groups')) {
+            return;
+        }
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
                 this.config['proxy-groups'].push({
@@ -227,6 +247,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addCustomRuleGroups(proxyList) {
+        if (this.hasConfigOverride('proxy-groups')) {
+            return;
+        }
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config['proxy-groups'].push({
@@ -239,6 +262,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addFallBackGroup(proxyList) {
+        if (this.hasConfigOverride('proxy-groups')) {
+            return;
+        }
         this.config['proxy-groups'].push({
             type: "select",
             name: t('outboundNames.Fall Back'),
@@ -252,52 +278,48 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     formatConfig() {
-        const rules = this.generateRules();
-        const ruleResults = [];
-        
-        // 获取.mrs规则集配置
-        const { site_rule_providers, ip_rule_providers } = generateClashRuleSets(this.selectedRules, this.customRules);
-        
-        // 添加规则集提供者
-        this.config['rule-providers'] = {
-            ...site_rule_providers,
-            ...ip_rule_providers
-        };
+        if (!this.hasConfigOverride('rules')) {
+            const rules = this.generateRules();
+            const ruleResults = [];
 
-        // 使用RULE-SET规则格式替代原有的GEOSITE/GEOIP
-        // Rule-Set & Domain-Set:  To reduce DNS leaks and unnecessary DNS queries,
-        // domain & non-IP rules must precede IP rules
+            if (!this.hasConfigOverride('rule-providers')) {
+                const { site_rule_providers, ip_rule_providers } = generateClashRuleSets(this.selectedRules, this.customRules);
+                this.config['rule-providers'] = {
+                    ...site_rule_providers,
+                    ...ip_rule_providers
+                };
+            }
 
-        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
-            rule.domain_suffix.forEach(suffix => {
-                ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
+            rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
+                rule.domain_suffix.forEach(suffix => {
+                    ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
+                });
+                rule.domain_keyword.forEach(keyword => {
+                    ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
+                });
             });
-            rule.domain_keyword.forEach(keyword => {
-                ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
+
+            rules.filter(rule => !!rule.site_rules[0]).map(rule => {
+                rule.site_rules.forEach(site => {
+                    ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
+                });
             });
-        });
 
-        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
-            rule.site_rules.forEach(site => {
-                ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
+            rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
+                rule.ip_rules.forEach(ip => {
+                    ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                });
             });
-        });
 
-        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
-            rule.ip_rules.forEach(ip => {
-                ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+            rules.filter(rule => !!rule.ip_cidr).map(rule => {
+                rule.ip_cidr.forEach(cidr => {
+                    ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                });
             });
-        });
 
-        rules.filter(rule => !!rule.ip_cidr).map(rule => {
-            rule.ip_cidr.forEach(cidr => {
-                ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
-            });
-        });
-
-        this.config.rules = [...ruleResults]
-
-        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+            this.config.rules = [...ruleResults];
+            this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+        }
 
         return yaml.dump(this.config);
     }
