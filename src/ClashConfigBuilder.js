@@ -205,9 +205,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addAutoSelectGroup(proxyList) {
-        if (this.hasConfigOverride('proxy-groups')) {
-            return;
-        }
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push({
             name: t('outboundNames.Auto Select'),
@@ -220,9 +217,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addNodeSelectGroup(proxyList) {
-        if (this.hasConfigOverride('proxy-groups')) {
-            return;
-        }
         proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
         this.config['proxy-groups'].unshift({
             type: "select",
@@ -232,9 +226,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addOutboundGroups(outbounds, proxyList) {
-        if (this.hasConfigOverride('proxy-groups')) {
-            return;
-        }
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
                 this.config['proxy-groups'].push({
@@ -247,9 +238,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addCustomRuleGroups(proxyList) {
-        if (this.hasConfigOverride('proxy-groups')) {
-            return;
-        }
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config['proxy-groups'].push({
@@ -262,9 +250,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addFallBackGroup(proxyList) {
-        if (this.hasConfigOverride('proxy-groups')) {
-            return;
-        }
         this.config['proxy-groups'].push({
             type: "select",
             name: t('outboundNames.Fall Back'),
@@ -278,48 +263,46 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     formatConfig() {
-        if (!this.hasConfigOverride('rules')) {
-            const rules = this.generateRules();
-            const ruleResults = [];
+        // If remote YAML provided proxy-groups, sanitize their proxy lists to
+        // remove entries that don't exist as proxies or groups (e.g., unsupported types like anytls).
+        const rules = this.generateRules();
+        const ruleResults = [];
 
-            if (!this.hasConfigOverride('rule-providers')) {
-                const { site_rule_providers, ip_rule_providers } = generateClashRuleSets(this.selectedRules, this.customRules);
-                this.config['rule-providers'] = {
-                    ...site_rule_providers,
-                    ...ip_rule_providers
-                };
-            }
+        const { site_rule_providers, ip_rule_providers } = generateClashRuleSets(this.selectedRules, this.customRules);
+        this.config['rule-providers'] = {
+            ...site_rule_providers,
+            ...ip_rule_providers
+        };
 
-            rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
-                rule.domain_suffix.forEach(suffix => {
-                    ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
-                });
-                rule.domain_keyword.forEach(keyword => {
-                    ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
-                });
+        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
+            rule.domain_suffix.forEach(suffix => {
+                ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
             });
-
-            rules.filter(rule => !!rule.site_rules[0]).map(rule => {
-                rule.site_rules.forEach(site => {
-                    ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
-                });
+            rule.domain_keyword.forEach(keyword => {
+                ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
             });
+        });
 
-            rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
-                rule.ip_rules.forEach(ip => {
-                    ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
-                });
+        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
+            rule.site_rules.forEach(site => {
+                ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
             });
+        });
 
-            rules.filter(rule => !!rule.ip_cidr).map(rule => {
-                rule.ip_cidr.forEach(cidr => {
-                    ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
-                });
+        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
+            rule.ip_rules.forEach(ip => {
+                ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
             });
+        });
 
-            this.config.rules = [...ruleResults];
-            this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
-        }
+        rules.filter(rule => !!rule.ip_cidr).map(rule => {
+            rule.ip_cidr.forEach(cidr => {
+                ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+            });
+        });
+
+        this.config.rules = [...ruleResults];
+        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
 
         return yaml.dump(this.config);
     }

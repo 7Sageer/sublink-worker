@@ -124,8 +124,11 @@ export class BaseConfigBuilder {
         if (!overrides || typeof overrides !== 'object') {
             return;
         }
+
+        const blacklistedKeys = new Set(['proxies', 'proxy-groups', 'rules', 'rule-providers']);
+
         Object.entries(overrides).forEach(([key, value]) => {
-            if (key === 'proxies') {
+            if (blacklistedKeys.has(key)) {
                 return;
             }
             if (value === undefined) {
