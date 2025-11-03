@@ -172,6 +172,22 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     ...(proxy.reduce_rtt !== undefined ? { 'reduce-rtt': proxy.reduce_rtt } : {}),
                     ...(proxy.fast_open !== undefined ? { 'fast-open': proxy.fast_open } : {}),
                 };
+            case 'anytls':
+                return {
+                    name: proxy.tag,
+                    type: 'anytls',
+                    server: proxy.server,
+                    port: proxy.server_port,
+                    password: proxy.password,
+                    ...(proxy.udp !== undefined ? { udp: proxy.udp } : {}),
+                    ...(proxy.tls?.utls?.fingerprint ? { 'client-fingerprint': proxy.tls.utls.fingerprint } : {}),
+                    ...(proxy.tls?.server_name ? { sni: proxy.tls.server_name } : {}),
+                    ...(proxy.tls?.insecure !== undefined ? { 'skip-cert-verify': !!proxy.tls.insecure } : {}),
+                    ...(proxy.tls?.alpn ? { alpn: proxy.tls.alpn } : {}),
+                    ...(proxy['idle-session-check-interval'] !== undefined ? { 'idle-session-check-interval': proxy['idle-session-check-interval'] } : {}),
+                    ...(proxy['idle-session-timeout'] !== undefined ? { 'idle-session-timeout': proxy['idle-session-timeout'] } : {}),
+                    ...(proxy['min-idle-session'] !== undefined ? { 'min-idle-session': proxy['min-idle-session'] } : {}),
+                };
             default:
                 return proxy; // Return as-is if no specific conversion is defined
         }

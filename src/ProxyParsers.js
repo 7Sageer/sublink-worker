@@ -233,6 +233,32 @@ export function convertYamlProxyToObject(p) {
         disable_sni: typeof p['disable-sni'] !== 'undefined' ? !!p['disable-sni'] : undefined
       };
     }
+    case 'anytls': {
+      const tls = {
+        enabled: true,
+        server_name: p.sni,
+        insecure: !!p['skip-cert-verify'],
+        alpn: toArray(p.alpn)
+      };
+      if (p['client-fingerprint']) {
+        tls.utls = {
+          enabled: true,
+          fingerprint: p['client-fingerprint']
+        };
+      }
+      return {
+        tag: name,
+        type: 'anytls',
+        server: p.server,
+        server_port: parseInt(p.port),
+        password: p.password,
+        udp: !!p.udp,
+        'idle-session-check-interval': p['idle-session-check-interval'],
+        'idle-session-timeout': p['idle-session-timeout'],
+        'min-idle-session': p['min-idle-session'],
+        tls
+      };
+    }
     default:
       return null;
   }
