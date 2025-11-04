@@ -1,4 +1,242 @@
-import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64, base64ToBinary } from './utils.js';
+import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, decodeBase64, base64ToBinary, DeepCopy } from './utils.js';
+import yaml from 'js-yaml';
+
+// Shared: convert a Clash YAML proxy entry to internal proxy object
+export function convertYamlProxyToObject(p) {
+  if (!p || typeof p !== 'object' || !p.type) return null;
+  const type = String(p.type).toLowerCase();
+  const name = p.name || p.tag || 'proxy';
+  const toArray = (value) => {
+    if (value === undefined || value === null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  };
+  switch (type) {
+    case 'ss':
+    case 'shadowsocks':
+      return {
+        tag: name,
+        type: 'shadowsocks',
+        server: p.server,
+        server_port: parseInt(p.port),
+        method: p.cipher || p.method,
+        password: p.password,
+        network: 'tcp',
+        tcp_fast_open: !!p['fast-open']
+      };
+    case 'vmess': {
+      const tlsEnabled = !!p.tls;
+      const tls = tlsEnabled
+        ? {
+            enabled: true,
+            server_name: p.servername || p.sni,
+            insecure: !!p['skip-cert-verify']
+          }
+        : { enabled: false };
+      const transport = (() => {
+        const net = p.network || p['network-type'];
+        if (net === 'ws') {
+          const w = p['ws-opts'] || {};
+          return { type: 'ws', path: w.path, headers: w.headers };
+        }
+        if (net === 'grpc') {
+          const g = p['grpc-opts'] || {};
+          return { type: 'grpc', service_name: g['grpc-service-name'] };
+        }
+        if (net === 'http') {
+          const h = p['http-opts'] || {};
+          return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
+        }
+        if (net === 'h2') {
+          const h2 = p['h2-opts'] || {};
+          return { type: 'h2', path: h2.path, host: h2.host };
+        }
+        return undefined;
+      })();
+      return {
+        tag: name,
+        type: 'vmess',
+        server: p.server,
+        server_port: parseInt(p.port),
+        uuid: p.uuid,
+        alter_id: typeof p.alterId !== 'undefined' ? parseInt(p.alterId) : undefined,
+        security: p.cipher || p.security || 'auto',
+        network: transport?.type || p.network || 'tcp',
+        tcp_fast_open: typeof p['fast-open'] !== 'undefined' ? !!p['fast-open'] : false,
+        transport,
+        tls,
+        udp: typeof p.udp !== 'undefined' ? !!p.udp : undefined,
+        packet_encoding: p['packet-encoding'],
+        alpn: toArray(p.alpn)
+      };
+    }
+    case 'vless': {
+      const tlsEnabled = !!p.tls;
+      const reality = p['reality-opts'];
+      const tls = tlsEnabled
+        ? {
+            enabled: true,
+            server_name: p.servername || p.sni,
+            insecure: !!p['skip-cert-verify'],
+            ...(reality
+              ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'] } }
+              : {})
+          }
+        : { enabled: false };
+      if (p['client-fingerprint']) {
+        tls.utls = {
+          enabled: true,
+          fingerprint: p['client-fingerprint']
+        };
+      }
+      const transport = (() => {
+        const net = p.network;
+        if (net === 'ws') {
+          const w = p['ws-opts'] || {};
+          return { type: 'ws', path: w.path, headers: w.headers };
+        }
+        if (net === 'grpc') {
+          const g = p['grpc-opts'] || {};
+          return { type: 'grpc', service_name: g['grpc-service-name'] };
+        }
+        if (net === 'http') {
+          const h = p['http-opts'] || {};
+          return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
+        }
+        if (net === 'h2') {
+          const h2 = p['h2-opts'] || {};
+          return { type: 'h2', path: h2.path, host: h2.host };
+        }
+        return undefined;
+      })();
+      return {
+        tag: name,
+        type: 'vless',
+        server: p.server,
+        server_port: parseInt(p.port),
+        uuid: p.uuid,
+        tcp_fast_open: typeof p['fast-open'] !== 'undefined' ? !!p['fast-open'] : false,
+        tls,
+        transport,
+        network: transport?.type || 'tcp',
+        flow: p.flow ?? undefined,
+        udp: typeof p.udp !== 'undefined' ? !!p.udp : undefined,
+        packet_encoding: p['packet-encoding'],
+        alpn: toArray(p.alpn)
+      };
+    }
+    case 'trojan': {
+      const tlsEnabled = !!p.tls;
+      const reality = p['reality-opts'];
+      const tls = tlsEnabled
+        ? {
+            enabled: true,
+            server_name: p.servername || p.sni,
+            insecure: !!p['skip-cert-verify'],
+            ...(reality
+              ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'] } }
+              : {})
+          }
+        : { enabled: false };
+      if (p['client-fingerprint']) {
+        tls.utls = {
+          enabled: true,
+          fingerprint: p['client-fingerprint']
+        };
+      }
+      const transport = (() => {
+        const net = p.network;
+        if (net === 'ws') {
+          const w = p['ws-opts'] || {};
+          return { type: 'ws', path: w.path, headers: w.headers };
+        }
+        if (net === 'grpc') {
+          const g = p['grpc-opts'] || {};
+          return { type: 'grpc', service_name: g['grpc-service-name'] };
+        }
+        if (net === 'http') {
+          const h = p['http-opts'] || {};
+          return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
+        }
+        if (net === 'h2') {
+          const h2 = p['h2-opts'] || {};
+          return { type: 'h2', path: h2.path, host: h2.host };
+        }
+        return undefined;
+      })();
+      return {
+        type: 'trojan',
+        tag: name,
+        server: p.server,
+        server_port: parseInt(p.port),
+        password: p.password,
+        network: transport?.type || p.network || 'tcp',
+        tcp_fast_open: typeof p['fast-open'] !== 'undefined' ? !!p['fast-open'] : false,
+        tls,
+        transport,
+        flow: p.flow ?? undefined,
+        alpn: toArray(p.alpn)
+      };
+    }
+    case 'hysteria2':
+    case 'hysteria':
+    case 'hy2': {
+      const tls = {
+        enabled: true,
+        server_name: p.sni,
+        insecure: !!p['skip-cert-verify']
+      };
+      const obfs = {};
+      if (p.obfs) {
+        obfs.type = p.obfs;
+        obfs.password = p['obfs-password'];
+      }
+      const hopIntervalRaw = p['hop-interval'];
+      const hopInterval = Number(hopIntervalRaw);
+      return {
+        tag: name,
+        type: 'hysteria2',
+        server: p.server,
+        server_port: parseInt(p.port),
+        password: p.password,
+        tls,
+        obfs: Object.keys(obfs).length > 0 ? obfs : undefined,
+        auth: p.auth,
+        recv_window_conn: p['recv-window-conn'],
+        up: p.up,
+        down: p.down,
+        ports: p.ports,
+        hop_interval: Number.isNaN(hopInterval) ? hopIntervalRaw : hopInterval,
+        alpn: toArray(p.alpn),
+        fast_open: typeof p['fast-open'] !== 'undefined' ? !!p['fast-open'] : undefined
+      };
+    }
+    case 'tuic': {
+      return {
+        tag: name,
+        type: 'tuic',
+        server: p.server,
+        server_port: parseInt(p.port),
+        uuid: p.uuid,
+        password: p.password,
+        congestion_control: p['congestion-controller'] || p.congestion_control,
+        tls: {
+          enabled: true,
+          server_name: p.sni,
+          alpn: toArray(p.alpn),
+          insecure: !!p['skip-cert-verify']
+        },
+        flow: p.flow ?? undefined,
+        udp_relay_mode: p['udp-relay-mode'],
+        zero_rtt: typeof p['zero-rtt'] !== 'undefined' ? !!p['zero-rtt'] : undefined,
+        reduce_rtt: typeof p['reduce-rtt'] !== 'undefined' ? !!p['reduce-rtt'] : undefined,
+        fast_open: typeof p['fast-open'] !== 'undefined' ? !!p['fast-open'] : undefined,
+        disable_sni: typeof p['disable-sni'] !== 'undefined' ? !!p['disable-sni'] : undefined
+      };
+    }
+    default:
+      return null;
+  }
+}
 
 
 export class ProxyParser {
@@ -209,6 +447,30 @@ export class ProxyParser {
           // 处理不包含 @ 的 URL 格式
           let host, port;
           let password = null;
+
+          const parseBool = (value) => {
+            if (value === undefined || value === null) return undefined;
+            if (typeof value === 'boolean') return value;
+            const lowered = String(value).toLowerCase();
+            if (lowered === 'true' || lowered === '1') return true;
+            if (lowered === 'false' || lowered === '0') return false;
+            return undefined;
+          };
+
+          const parseMaybeNumber = (value) => {
+            if (value === undefined || value === null) return undefined;
+            const num = Number(value);
+            return Number.isNaN(num) ? undefined : num;
+          };
+
+          const parseArray = (value) => {
+            if (!value) return undefined;
+            if (Array.isArray(value)) return value;
+            return String(value)
+              .split(',')
+              .map(entry => entry.trim())
+              .filter(entry => entry.length > 0);
+          };
           
           if (addressPart.includes('@')) {
             const [uuid, serverInfo] = addressPart.split('@');
@@ -231,8 +493,10 @@ export class ProxyParser {
           if (params['obfs-password']) {
             obfs.type = params.obfs;
             obfs.password = params['obfs-password'];
-          };
-      
+          }
+
+          const hopInterval = parseMaybeNumber(params['hop-interval']);
+
           return {
             tag: name,
             type: "hysteria2",
@@ -240,11 +504,15 @@ export class ProxyParser {
             server_port: port,
             password: password,
             tls: tls,
-            obfs: obfs,
+            obfs: Object.keys(obfs).length > 0 ? obfs : undefined,
             auth: params.auth,
             recv_window_conn: params.recv_window_conn,
-            up_mbps: params?.upmbps ? parseInt(params.upmbps) : undefined,
-            down_mbps: params?.downmbps ? parseInt(params.downmbps) : undefined
+            up: params.up ?? (params.upmbps ? parseMaybeNumber(params.upmbps) : undefined),
+            down: params.down ?? (params.downmbps ? parseMaybeNumber(params.downmbps) : undefined),
+            ports: params.ports,
+            hop_interval: hopInterval,
+            alpn: parseArray(params.alpn),
+            fast_open: parseBool(params['fast-open'])
           };
         }
       }
@@ -279,11 +547,27 @@ export class ProxyParser {
           const { addressPart, params, name } = parseUrlParams(url);
           const [userinfo, serverInfo] = addressPart.split('@');
           const { host, port } = parseServerInfo(serverInfo);
+          const parseBool = (value, fallback) => {
+            if (value === undefined || value === null) return fallback;
+            if (typeof value === 'boolean') return value;
+            const lowered = String(value).toLowerCase();
+            if (lowered === 'true' || lowered === '1') return true;
+            if (lowered === 'false' || lowered === '0') return false;
+            return fallback;
+          };
+          const parseArray = (value) => {
+            if (!value) return undefined;
+            if (Array.isArray(value)) return value;
+            return String(value)
+              .split(',')
+              .map(entry => entry.trim())
+              .filter(entry => entry.length > 0);
+          };
           const tls = {
             enabled: true,
             server_name: params.sni,
-            alpn: params.alpn ? decodeURIComponent(params.alpn).split(',') : [],
-            insecure: true,
+            alpn: parseArray(params.alpn),
+            insecure: parseBool(params['skip-cert-verify'] ?? params.insecure ?? params.allowInsecure, true),
           };
       
           return {
@@ -295,7 +579,12 @@ export class ProxyParser {
             password: decodeURIComponent(userinfo).split(':')[1],
             congestion_control: params.congestion_control,
             tls: tls,
-            flow: params.flow ?? undefined
+            flow: params.flow ?? undefined,
+            udp_relay_mode: params['udp-relay-mode'] || params.udp_relay_mode,
+            zero_rtt: parseBool(params['zero-rtt'], undefined),
+            reduce_rtt: parseBool(params['reduce-rtt'], undefined),
+            fast_open: parseBool(params['fast-open'], undefined),
+            disable_sni: parseBool(params['disable-sni'], undefined)
           };
         }
       }
@@ -333,10 +622,34 @@ export class ProxyParser {
                         }
                     }
                 }
+                // Try YAML first: if content parses and has proxies, convert to internal objects
+                try {
+                    const parsed = yaml.load(decodedText);
+                    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.proxies)) {
+                        const proxies = parsed.proxies
+                          .map(p => convertYamlProxyToObject(p))
+                          .filter(p => p != null);
+                        if (proxies.length > 0) {
+                            const configOverrides = DeepCopy(parsed);
+                            delete configOverrides.proxies;
+                            return {
+                                type: 'yamlConfig',
+                                proxies,
+                                config: Object.keys(configOverrides).length > 0 ? configOverrides : null
+                            };
+                        }
+                    }
+                } catch (yamlError) {
+                    console.warn('YAML parsing failed; fallback to line mode:', yamlError?.message || yamlError);
+                }
+
+                // Fallback: treat as subscription lines
                 return decodedText.split('\n').filter(line => line.trim() !== '');
             } catch (error) {
                 console.error('Error fetching or parsing HTTP(S) content:', error);
                 return null;
             }
         }
+
+        // moved to shared helper convertYamlProxyToObject
     }

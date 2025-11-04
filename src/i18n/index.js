@@ -1,4 +1,4 @@
-import {checkStartsWith} from "../utils";
+import {checkStartsWith} from "../utils.js";
 // 定义语言包
 const translations = {
   'zh-CN': {
