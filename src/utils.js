@@ -241,3 +241,30 @@ export function createTransportConfig(params) {
 		})
 	};
 }
+
+// Parse boolean value from various formats
+export function parseBool(value, fallback = undefined) {
+	if (value === undefined || value === null) return fallback;
+	if (typeof value === 'boolean') return value;
+	const lowered = String(value).toLowerCase();
+	if (lowered === 'true' || lowered === '1') return true;
+	if (lowered === 'false' || lowered === '0') return false;
+	return fallback;
+}
+
+// Parse number value safely
+export function parseMaybeNumber(value) {
+	if (value === undefined || value === null) return undefined;
+	const num = Number(value);
+	return Number.isNaN(num) ? undefined : num;
+}
+
+// Parse comma-separated string to array
+export function parseArray(value) {
+	if (!value) return undefined;
+	if (Array.isArray(value)) return value;
+	return String(value)
+		.split(',')
+		.map(entry => entry.trim())
+		.filter(entry => entry.length > 0);
+}
