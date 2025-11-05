@@ -222,8 +222,11 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addAutoSelectGroup(proxyList) {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+        const autoName = t('outboundNames.Auto Select');
+        const exists = this.config['proxy-groups'].some(g => g && g.name === autoName);
+        if (exists) return;
         this.config['proxy-groups'].push({
-            name: t('outboundNames.Auto Select'),
+            name: autoName,
             type: 'url-test',
             proxies: DeepCopy(proxyList),
             url: 'https://www.gstatic.com/generate_204',
@@ -233,22 +236,35 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+        const nodeName = t('outboundNames.Node Select');
+        const exists = this.config['proxy-groups'].some(g => g && g.name === nodeName);
+        if (exists) return;
+        const list = [
+            'DIRECT',
+            'REJECT',
+            t('outboundNames.Auto Select'),
+            ...proxyList
+        ];
         this.config['proxy-groups'].unshift({
             type: "select",
-            name: t('outboundNames.Node Select'),
-            proxies: proxyList
+            name: nodeName,
+            proxies: list
         });
     }
 
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
-                this.config['proxy-groups'].push({
-                    type: "select",
-                    name: t(`outboundNames.${outbound}`),
-                    proxies: [t('outboundNames.Node Select'), ...proxyList]
-                });
+                const name = t(`outboundNames.${outbound}`);
+                const exists = this.config['proxy-groups'].some(g => g && g.name === name);
+                if (!exists) {
+                    this.config['proxy-groups'].push({
+                        type: "select",
+                        name,
+                        proxies: [t('outboundNames.Node Select'), ...proxyList]
+                    });
+                }
             }
         });
     }
@@ -256,19 +272,26 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                this.config['proxy-groups'].push({
-                    type: "select",
-                    name: t(`outboundNames.${rule.name}`),
-                    proxies: [t('outboundNames.Node Select'), ...proxyList]
-                });
+                const name = t(`outboundNames.${rule.name}`);
+                const exists = this.config['proxy-groups'].some(g => g && g.name === name);
+                if (!exists) {
+                    this.config['proxy-groups'].push({
+                        type: "select",
+                        name,
+                        proxies: [t('outboundNames.Node Select'), ...proxyList]
+                    });
+                }
             });
         }
     }
 
     addFallBackGroup(proxyList) {
+        const name = t('outboundNames.Fall Back');
+        const exists = this.config['proxy-groups'].some(g => g && g.name === name);
+        if (exists) return;
         this.config['proxy-groups'].push({
             type: "select",
-            name: t('outboundNames.Fall Back'),
+            name,
             proxies: [t('outboundNames.Node Select'), ...proxyList]
         });
     }
@@ -280,7 +303,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     formatConfig() {
         // If remote YAML provided proxy-groups, sanitize their proxy lists to
-        // remove entries that don't exist as proxies or groups (e.g., unsupported types like anytls).
+        // remove entries that don't exist as proxies or groups.
         const rules = this.generateRules();
         const ruleResults = [];
 
@@ -316,6 +339,25 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
             });
         });
+
+        // Sanitize proxy-groups: ensure their proxy references exist
+        const groups = this.config['proxy-groups'] || [];
+        if (Array.isArray(groups) && groups.length > 0) {
+            const proxyNames = new Set((this.config.proxies || []).map(p => p?.name).filter(Boolean));
+            const groupNames = new Set(groups.map(g => g?.name).filter(Boolean));
+            const validNames = new Set(['DIRECT', 'REJECT']);
+            proxyNames.forEach(n => validNames.add(n));
+            groupNames.forEach(n => validNames.add(n));
+
+            this.config['proxy-groups'] = groups.map(g => {
+                if (!g || !Array.isArray(g.proxies)) return g;
+                const filtered = g.proxies.filter(x => typeof x === 'string' && validNames.has(x));
+                // de-duplicate while preserving order
+                const seen = new Set();
+                const deduped = filtered.filter(x => (seen.has(x) ? false : (seen.add(x), true)));
+                return { ...g, proxies: deduped };
+            });
+        }
 
         this.config.rules = [...ruleResults];
         this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);

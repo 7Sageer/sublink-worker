@@ -144,3 +144,35 @@ tests:
             idle-session-check-interval: 30
             idle-session-timeout: 120
             min-idle-session: 5
+
+  - name: 解析 proxy-groups 段
+    description: 验证 Clash YAML 中的 proxy-groups 能被保留在配置中
+    input: |
+      proxies:
+        - name: Valid-SS
+          type: ss
+          server: example.com
+          port: 443
+          cipher: aes-128-gcm
+          password: test
+      proxy-groups:
+        - name: 自定义选择
+          type: select
+          proxies:
+            - DIRECT
+            - REJECT
+            - Valid-SS
+            - NotExist
+    expected:
+      proxyCount: 1
+      typeCount:
+        shadowsocks: 1
+      config:
+        proxy-groups:
+          - name: 自定义选择
+            type: select
+            proxies:
+              - DIRECT
+              - REJECT
+              - Valid-SS
+              - NotExist
