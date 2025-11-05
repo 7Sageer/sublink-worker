@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { DeepCopy } from './utils.js';
+import { DeepCopy, parseCountryFromNodeName } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
@@ -308,28 +308,38 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         proxies.forEach(proxy => {
             const country = parseCountryFromNodeName(proxy.name);
             if (country) {
-                if (!countryGroups[country]) {
-                    countryGroups[country] = [];
-                }
+                if (!countryGroups[country]) countryGroups[country] = [];
                 countryGroups[country].push(proxy.name);
             }
         });
 
-        const nodeSelectGroup = this.config['proxy-groups'].find(g => g.name === t('outboundNames.Node Select'));
-        const countryGroupNames = [];
+        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
+        const existingNames = new Set((this.config['proxy-groups'] || []).map(g => normalize(g?.name)).filter(Boolean));
 
-        for (const country in countryGroups) {
+        // stable order for UX
+        const countries = Object.keys(countryGroups).sort((a, b) => a.localeCompare(b));
+        const createdNames = [];
+
+        countries.forEach(country => {
             const groupName = `🌍 ${country}`;
-            countryGroupNames.push(groupName);
-            this.config['proxy-groups'].push({
-                name: groupName,
-                type: 'select',
-                proxies: countryGroups[country]
-            });
-        }
+            const norm = normalize(groupName);
+            if (!existingNames.has(norm)) {
+                this.config['proxy-groups'].push({
+                    name: groupName,
+                    type: 'select',
+                    proxies: countryGroups[country]
+                });
+                existingNames.add(norm);
+            }
+            createdNames.push(groupName);
+        });
 
-        if (nodeSelectGroup) {
-            nodeSelectGroup.proxies.unshift(...countryGroupNames);
+        const nodeSelectGroup = this.config['proxy-groups'].find(g => g && g.name === t('outboundNames.Node Select'));
+        if (nodeSelectGroup && Array.isArray(nodeSelectGroup.proxies)) {
+            const seen = new Set();
+            nodeSelectGroup.proxies = [...createdNames, ...nodeSelectGroup.proxies]
+                .map(x => typeof x === 'string' ? x.trim() : x)
+                .filter(x => typeof x === 'string' && (seen.has(x) ? false : (seen.add(x), true)));
         }
     }
 

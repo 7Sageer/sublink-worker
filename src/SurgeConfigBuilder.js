@@ -1,4 +1,5 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
+import { parseCountryFromNodeName } from './utils.js';
 import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { t } from './i18n/index.js';
 
@@ -213,13 +214,20 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         const countryGroupNames = [];
 
-        for (const country in countryGroups) {
+        // stable order for UX
+        const countries = Object.keys(countryGroups).sort((a, b) => a.localeCompare(b));
+        const existing = new Set((this.config['proxy-groups'] || []).map(g => this.getProxyName(g)?.trim()).filter(Boolean));
+
+        countries.forEach(country => {
             const groupName = `🌍 ${country}`;
             countryGroupNames.push(groupName);
-            this.config['proxy-groups'].push(
-                this.createProxyGroup(groupName, 'select', countryGroups[country])
-            );
-        }
+            if (!existing.has(groupName.trim())) {
+                this.config['proxy-groups'].push(
+                    this.createProxyGroup(groupName, 'select', countryGroups[country])
+                );
+                existing.add(groupName.trim());
+            }
+        });
 
         const nodeSelectGroupIndex = this.config['proxy-groups'].findIndex(g => this.getProxyName(g) === t('outboundNames.Node Select'));
         if (nodeSelectGroupIndex > -1) {
@@ -230,7 +238,13 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             const groupType = groupNameAndType.shift();
             const options = groupNameAndType;
             
-            const newOptions = [...countryGroupNames, ...options];
+            // prepend countries and de-duplicate options
+            const newOptions = [];
+            const seen = new Set();
+            [...countryGroupNames, ...options].forEach(opt => {
+                const key = String(opt).trim();
+                if (!seen.has(key)) { seen.add(key); newOptions.push(opt); }
+            });
             
             const newGroup = this.createProxyGroup(groupName, groupType, newOptions);
             this.config['proxy-groups'][nodeSelectGroupIndex] = newGroup;

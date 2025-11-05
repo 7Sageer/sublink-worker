@@ -103,6 +103,8 @@ const translations = {
       'Non-China': '🌐 非中国',
       'GLOBAL': 'GLOBAL'
     },
+    groupByCountry: '按国家分组',
+    groupByCountryTip: '仅 Clash/Surge 生效',
     UASettings: '自定义UserAgent',
     UAtip: '默认值curl/7.74.0'
   },
@@ -207,6 +209,8 @@ const translations = {
       'Non-China': '🌐 Non-China',
       'GLOBAL': 'GLOBAL'
     },
+    groupByCountry: 'Group by Country',
+    groupByCountryTip: 'Clash/Surge only',
     UASettings: 'Custom UserAgent',
     UAtip: 'By default it will use curl/7.74.0'
   },
@@ -311,6 +315,8 @@ const translations = {
       'Non-China': '🌐 خارج از چین',
       'GLOBAL': 'GLOBAL'
     },
+    groupByCountry: 'گروه‌بندی بر اساس کشور',
+    groupByCountryTip: 'فقط Clash/Surge',
     UASettings: 'UserAgent سفارشی',
     UAtip: 'به طور پیش‌فرض از curl/7.74.0 استفاده می‌کند'
   },
@@ -415,6 +421,8 @@ const translations = {
       'Non-China': '🌐 За пределами Китая',
       'GLOBAL': 'GLOBAL'
     },
+    groupByCountry: 'Группировать по странам',
+    groupByCountryTip: 'Только для Clash/Surge',
     UASettings: 'Пользовательский UserAgent',
     UAtip: 'По умолчанию используется curl/7.74.0'
   }
