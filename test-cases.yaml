@@ -104,3 +104,43 @@ tests:
         - Base64-YAML-Test
       typeCount:
         tuic: 1
+
+  - name: ANYTLS 基本解析
+    description: 验证 anytls 节点解析与关键字段（tag、idle-session、alpn 等）
+    input: |
+      proxies:
+        - name: ANYTLS-main
+          type: anytls
+          server: example.com
+          port: 443
+          password: REPLACE_ANYTLS_PASS
+          udp: true
+          sni: example.com
+          alpn:
+            - h2
+            - http/1.1
+          client-fingerprint: chrome
+          skip-cert-verify: false
+          idle-session-check-interval: 30
+          idle-session-timeout: 120
+          min-idle-session: 5
+    expected:
+      proxyCount: 1
+      proxyTags:
+        - ANYTLS-main
+      typeCount:
+        anytls: 1
+      proxyDetails:
+        - tag: ANYTLS-main
+          fields:
+            type: anytls
+            udp: true
+            tls.server_name: example.com
+            tls.insecure: false
+            tls.alpn:
+              - h2
+              - http/1.1
+            tls.utls.fingerprint: chrome
+            idle-session-check-interval: 30
+            idle-session-timeout: 120
+            min-idle-session: 5

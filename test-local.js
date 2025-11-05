@@ -75,6 +75,31 @@ function evaluateResult(items, builder, expected) {
         });
     }
 
+    // 校验指定节点的字段（支持点号路径，如 tls.alpn）
+    if (Array.isArray(expected.proxyDetails)) {
+        const getByPath = (obj, path) => {
+            return String(path)
+                .split('.')
+                .reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+        };
+
+        expected.proxyDetails.forEach(({ tag, fields }) => {
+            const item = items.find(it => it && it.tag === tag);
+            if (!item) {
+                report.passed = false;
+                report.messages.push(`未找到名为 ${tag} 的节点用于字段校验`);
+                return;
+            }
+            Object.entries(fields || {}).forEach(([path, expectedValue]) => {
+                const actual = getByPath(item, path);
+                if (JSON.stringify(actual) !== JSON.stringify(expectedValue)) {
+                    report.passed = false;
+                    report.messages.push(`节点 ${tag} 字段 ${path} 预期 ${JSON.stringify(expectedValue)}，实际 ${JSON.stringify(actual)}`);
+                }
+            });
+        });
+    }
+
     return report;
 }
 
