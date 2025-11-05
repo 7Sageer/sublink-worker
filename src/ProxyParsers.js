@@ -349,8 +349,15 @@ export class ProxyParser {
 
 	class VmessParser {
 		parse(url) {
-            let base64 = url.replace('vmess://', '')
-            let vmessConfig = JSON.parse(decodeBase64(base64))
+            // Support fragment name after base64: vmess://BASE64#Name
+            let base64WithFragment = url.replace('vmess://', '')
+            let tagOverride;
+            const hashPos = base64WithFragment.indexOf('#');
+            if (hashPos >= 0) {
+                tagOverride = decodeURIComponent(base64WithFragment.slice(hashPos + 1));
+                base64WithFragment = base64WithFragment.slice(0, hashPos);
+            }
+            let vmessConfig = JSON.parse(decodeBase64(base64WithFragment))
             let tls = { "enabled": false }
             let transport;
             const networkType = vmessConfig.net || 'tcp';
@@ -421,7 +428,7 @@ export class ProxyParser {
                 }
             }
             return {
-                "tag": vmessConfig.ps,
+                "tag": tagOverride || vmessConfig.ps,
                 "type": "vmess",
                 "server": vmessConfig.add,
                 "server_port": parseInt(vmessConfig.port),
