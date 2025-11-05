@@ -1,11 +1,11 @@
 import { ProxyParser, convertYamlProxyToObject } from './ProxyParsers.js';
-import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64 } from './utils.js';
+import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64, parseCountryFromNodeName } from './utils.js';
 import yaml from 'js-yaml';
 import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
@@ -13,6 +13,7 @@ export class BaseConfigBuilder {
         setLanguage(lang);
         this.userAgent = userAgent;
         this.appliedOverrideKeys = new Set();
+        this.groupByCountry = groupByCountry;
     }
 
     async build() {
@@ -200,6 +201,10 @@ export class BaseConfigBuilder {
         throw new Error('addFallBackGroup must be implemented in child class');
     }
 
+    addCountryGroups() {
+        throw new Error('addCountryGroups must be implemented in child class');
+    }
+
     addCustomItems(customItems) {
         const validItems = customItems.filter(item => item != null);
         validItems.forEach(item => {
@@ -218,6 +223,9 @@ export class BaseConfigBuilder {
 
         this.addAutoSelectGroup(proxyList);
         this.addNodeSelectGroup(proxyList);
+        if (this.groupByCountry) {
+            this.addCountryGroups();
+        }
         this.addOutboundGroups(outbounds, proxyList);
         this.addCustomRuleGroups(proxyList);
         this.addFallBackGroup(proxyList);

@@ -6,17 +6,26 @@ const yaml = require('js-yaml');
 
 const projectRoot = path.resolve(__dirname);
 const baseConfigPath = path.join(projectRoot, 'src', 'BaseConfigBuilder.js');
+const clashBuilderPath = path.join(projectRoot, 'src', 'ClashConfigBuilder.js');
 const testCasesPath = path.join(projectRoot, 'test-cases.yaml');
 
 console.log('🔧 修复模块导入路径:', baseConfigPath);
 
 let BaseConfigBuilder;
+let ClashConfigBuilder;
 async function ensureModuleLoaded() {
     if (!BaseConfigBuilder) {
         const module = await import(pathToFileURL(baseConfigPath).href);
         BaseConfigBuilder = module.BaseConfigBuilder;
         if (!BaseConfigBuilder) {
             throw new Error('BaseConfigBuilder 模块未导出');
+        }
+    }
+    if (!ClashConfigBuilder) {
+        const module = await import(pathToFileURL(clashBuilderPath).href);
+        ClashConfigBuilder = module.ClashConfigBuilder;
+        if (!ClashConfigBuilder) {
+            throw new Error('ClashConfigBuilder 模块未导出');
         }
     }
 }
@@ -158,6 +167,9 @@ async function runAllTests() {
     } else {
         console.log('⚠️  有测试失败，请检查实现');
     }
+
+    // 附加：构建级 Clash 配置输出测试（验证 proxy-groups 清理与去重）
+    await runClashOutputTest();
 }
 
 // 执行测试
@@ -166,3 +178,45 @@ runAllTests().then(() => {
 }).catch(error => {
         console.error('测试执行失败:', error);
 });
+
+async function runClashOutputTest() {
+    console.log('\n🧪 追加测试: Clash 构建输出中的 proxy-groups 清理');
+    const input = `
+proxies:
+  - name: Valid-SS
+    type: ss
+    server: example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+proxy-groups:
+  - name: 自定义选择
+    type: select
+    proxies:
+      - DIRECT
+      - REJECT
+      - Valid-SS
+      - " NotExist "
+`;
+
+    try {
+        await ensureModuleLoaded();
+        const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');
+        const yamlText = await builder.build();
+        const built = yaml.load(yamlText);
+        const grp = (built['proxy-groups'] || []).find(g => g && g.name === '自定义选择');
+        if (!grp) {
+            throw new Error('未找到自定义选择分组');
+        }
+        const expected = ['DIRECT','REJECT','Valid-SS'];
+        const actual = grp.proxies || [];
+        const ok = JSON.stringify(actual) === JSON.stringify(expected);
+        console.log(`✅ 结果: ${ok ? '通过' : '失败'}`);
+        if (!ok) {
+            console.log('   期望:', expected);
+            console.log('   实际:', actual);
+        }
+    } catch (e) {
+        console.error('❌ Clash 构建输出测试失败:', e.message);
+    }
+}
