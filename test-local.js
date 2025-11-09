@@ -269,7 +269,7 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
             messages.push('美国分组验证失败 (预期 2 个节点, url-test 类型)');
         }
 
-        const twGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇨🇳 Taiwan');
+        const twGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇹🇼 Taiwan');
         if (!twGroup || twGroup.proxies.length !== 1 || twGroup.type !== 'url-test') {
             passed = false;
             messages.push('台湾分组验证失败 (预期 1 个节点, url-test 类型)');
@@ -297,7 +297,7 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
             passed = false;
             messages.push(`未找到 "${nodeSelectLabel}" 分组`);
         } else {
-            const expectedProxies = [autoName, manualName, '🇭🇰 Hong Kong', '🇨🇳 Taiwan', '🇺🇸 United States'];
+            const expectedProxies = [autoName, manualName, '🇭🇰 Hong Kong', '🇹🇼 Taiwan', '🇺🇸 United States'];
             const actualProxies = nodeSelectGroup.proxies || [];
             if (JSON.stringify(actualProxies.sort()) !== JSON.stringify(expectedProxies.sort())) {
                 passed = false;
@@ -307,7 +307,7 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
 
         const youtubeGroup = (built['proxy-groups'] || []).find(g => g && g.name === youtubeLabel);
         if (youtubeGroup) {
-            const expectedMembers = [nodeSelectLabel, autoName, manualName, '🇭🇰 Hong Kong', '🇨🇳 Taiwan', '🇺🇸 United States'];
+            const expectedMembers = [nodeSelectLabel, autoName, manualName, '🇭🇰 Hong Kong', '🇹🇼 Taiwan', '🇺🇸 United States'];
             const actualMembers = youtubeGroup.proxies || [];
             const missing = expectedMembers.filter(name => !actualMembers.includes(name));
             if (missing.length > 0) {

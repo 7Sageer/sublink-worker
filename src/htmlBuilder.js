@@ -476,12 +476,19 @@ const generateJSONView = () => `
 
 const generateGroupByCountrySection = () => `
   <div class="form-section">
-    <div class="form-check form-switch my-3">
-      <input class="form-check-input" type="checkbox" id="groupByCountry">
-      <label class="form-check-label" for="groupByCountry">
+    <div class="d-flex justify-content-between align-items-center py-2">
+      <div class="form-section-title d-flex align-items-center mb-0">
         ${t('groupByCountry')}
-        <span class="text-muted ms-2" style="font-weight: normal; font-size: .9em;">${t('groupByCountryTip')}</span>
-      </label>
+        <span class="tooltip-icon ms-2">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            ${t('groupByCountryTip')}
+          </span>
+        </span>
+      </div>
+      <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" id="groupByCountry">
+      </div>
     </div>
   </div>
 `;

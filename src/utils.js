@@ -272,7 +272,7 @@ export function parseArray(value) {
 export function parseCountryFromNodeName(nodeName) {
         const countryData = {
             'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
-            'TW': { name: 'Taiwan', emoji: '🇨🇳', aliases: ['台湾', 'Taiwan', 'TW'] },
+            'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
             'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
             'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
             'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
