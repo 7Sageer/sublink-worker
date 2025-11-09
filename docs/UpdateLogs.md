@@ -1,5 +1,9 @@
 # 更新日志
 
+## 2025-11-08
+
+- feat(config): Added support for proxy configuration grouped by country, updated related translations
+
 ## 2025-09-28
 
 - 修复singbox 1.12.0中部分配置造成警告的问题
