@@ -257,6 +257,30 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         });
     }
 
+    buildSelectGroupMembers(proxyList = []) {
+        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
+        const directReject = ['DIRECT', 'REJECT'];
+        const base = this.groupByCountry
+            ? [
+                t('outboundNames.Node Select'),
+                t('outboundNames.Auto Select'),
+                ...(this.manualGroupName ? [this.manualGroupName] : []),
+                ...((this.countryGroupNames || []))
+              ]
+            : [
+                t('outboundNames.Node Select'),
+                ...proxyList
+              ];
+        const combined = [...directReject, ...base].filter(Boolean);
+        const seen = new Set();
+        return combined.filter(name => {
+            const key = normalize(name);
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
@@ -264,14 +288,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 const name = t(`outboundNames.${outbound}`);
                 const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(name));
                 if (!exists) {
-                    const proxies = this.groupByCountry
-                        ? [
-                            t('outboundNames.Node Select'),
-                            t('outboundNames.Auto Select'),
-                            ...(this.manualGroupName ? [this.manualGroupName] : []),
-                            ...((this.countryGroupNames || []))
-                          ]
-                        : [t('outboundNames.Node Select'), ...proxyList];
+                    const proxies = this.buildSelectGroupMembers(proxyList);
                     this.config['proxy-groups'].push({
                         type: "select",
                         name,
@@ -289,14 +306,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 const name = t(`outboundNames.${rule.name}`);
                 const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(name));
                 if (!exists) {
-                    const proxies = this.groupByCountry
-                        ? [
-                            t('outboundNames.Node Select'),
-                            t('outboundNames.Auto Select'),
-                            ...(this.manualGroupName ? [this.manualGroupName] : []),
-                            ...((this.countryGroupNames || []))
-                          ]
-                        : [t('outboundNames.Node Select'), ...proxyList];
+                    const proxies = this.buildSelectGroupMembers(proxyList);
                     this.config['proxy-groups'].push({
                         type: "select",
                         name,
@@ -312,14 +322,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         const name = t('outboundNames.Fall Back');
         const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(name));
         if (exists) return;
-        const proxies = this.groupByCountry
-            ? [
-                t('outboundNames.Node Select'),
-                t('outboundNames.Auto Select'),
-                ...(this.manualGroupName ? [this.manualGroupName] : []),
-                ...((this.countryGroupNames || []))
-              ]
-            : [t('outboundNames.Node Select'), ...proxyList];
+        const proxies = this.buildSelectGroupMembers(proxyList);
         this.config['proxy-groups'].push({
             type: "select",
             name,
@@ -384,6 +387,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.proxies)) {
             const seen = new Set();
             const rebuilt = [
+                'DIRECT',
+                'REJECT',
                 t('outboundNames.Auto Select'),
                 ...(manualGroupName ? [manualGroupName] : []),
                 ...countryGroupNames

@@ -71,17 +71,33 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         });
     }
 
+    buildSelectorMembers(proxyList = []) {
+        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
+        const base = this.groupByCountry
+            ? [
+                t('outboundNames.Node Select'),
+                t('outboundNames.Auto Select'),
+                ...(this.manualGroupName ? [this.manualGroupName] : []),
+                ...(this.countryGroupNames || [])
+              ]
+            : [
+                t('outboundNames.Node Select'),
+                ...proxyList
+              ];
+        const combined = ['DIRECT', 'REJECT', ...base].filter(Boolean);
+        const seen = new Set();
+        return combined.filter(name => {
+            const key = normalize(name);
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
-                const selectorMembers = this.groupByCountry
-                    ? [
-                        t('outboundNames.Node Select'),
-                        t('outboundNames.Auto Select'),
-                        ...(this.manualGroupName ? [this.manualGroupName] : []),
-                        ...this.countryGroupNames
-                    ]
-                    : [t('outboundNames.Node Select'), ...proxyList];
+                const selectorMembers = this.buildSelectorMembers(proxyList);
                 this.config.outbounds.push({
                     type: "selector",
                     tag: t(`outboundNames.${outbound}`),
@@ -94,14 +110,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const selectorMembers = this.groupByCountry
-                    ? [
-                        t('outboundNames.Node Select'),
-                        t('outboundNames.Auto Select'),
-                        ...(this.manualGroupName ? [this.manualGroupName] : []),
-                        ...this.countryGroupNames
-                    ]
-                    : [t('outboundNames.Node Select'), ...proxyList];
+                const selectorMembers = this.buildSelectorMembers(proxyList);
                 this.config.outbounds.push({
                     type: "selector",
                     tag: rule.name,
@@ -112,14 +121,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     addFallBackGroup(proxyList) {
-        const selectorMembers = this.groupByCountry
-            ? [
-                t('outboundNames.Node Select'),
-                t('outboundNames.Auto Select'),
-                ...(this.manualGroupName ? [this.manualGroupName] : []),
-                ...this.countryGroupNames
-            ]
-            : [t('outboundNames.Node Select'), ...proxyList];
+        const selectorMembers = this.buildSelectorMembers(proxyList);
         this.config.outbounds.push({
             type: "selector",
             tag: t('outboundNames.Fall Back'),
@@ -185,6 +187,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.outbounds)) {
             const seen = new Set();
             const rebuilt = [
+                'DIRECT',
+                'REJECT',
                 t('outboundNames.Auto Select'),
                 ...(manualGroupName ? [manualGroupName] : []),
                 ...countryGroupNames

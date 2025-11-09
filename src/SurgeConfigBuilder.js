@@ -155,35 +155,77 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     createProxyGroup(name, type, options = [], extraConfig = '') {
-        const baseOptions = type === 'url-test' ? [] : ['DIRECT', 'REJECT-DROP'];
-        const allOptions = [...baseOptions, ...options];
-        return `${name} = ${type}, ${allOptions.join(', ')}${extraConfig}`;
+        const sanitized = this.sanitizeOptions(options);
+        const optionsPart = sanitized.length > 0 ? `, ${sanitized.join(', ')}` : '';
+        return `${name} = ${type}${optionsPart}${extraConfig}`;
+    }
+
+    sanitizeOptions(options = []) {
+        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
+        const seen = new Set();
+        return options
+            .map(normalize)
+            .filter(option => typeof option === 'string' && option.length > 0)
+            .filter(option => {
+                if (seen.has(option)) return false;
+                seen.add(option);
+                return true;
+            });
+    }
+
+    buildNodeSelectOptions(proxyList = []) {
+        return this.withDirectReject([
+            t('outboundNames.Auto Select'),
+            ...proxyList
+        ]);
+    }
+
+    buildAggregatedOptions(proxyList = []) {
+        const base = this.groupByCountry
+            ? [
+                t('outboundNames.Node Select'),
+                t('outboundNames.Auto Select'),
+                ...(this.manualGroupName ? [this.manualGroupName] : []),
+                ...((this.countryGroupNames || []))
+              ]
+            : [
+                t('outboundNames.Node Select'),
+                ...proxyList
+              ];
+        return this.withDirectReject(base);
+    }
+
+    withDirectReject(options = []) {
+        return this.sanitizeOptions([
+            'DIRECT',
+            'REJECT',
+            ...options
+        ]);
     }
 
     addAutoSelectGroup(proxyList) {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push(
-            this.createProxyGroup(t('outboundNames.Auto Select'), 'url-test', [], ', url=http://www.gstatic.com/generate_204, interval=300')
+            this.createProxyGroup(
+                t('outboundNames.Auto Select'),
+                'url-test',
+                this.sanitizeOptions(proxyList),
+                ', url=http://www.gstatic.com/generate_204, interval=300'
+            )
         );
     }
 
     addNodeSelectGroup(proxyList) {
+        const options = this.buildNodeSelectOptions(proxyList);
         this.config['proxy-groups'].push(
-            this.createProxyGroup(t('outboundNames.Node Select'), 'select', [t('outboundNames.Auto Select'), ...proxyList])
+            this.createProxyGroup(t('outboundNames.Node Select'), 'select', options)
         );
     }
 
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
-                const options = this.groupByCountry
-                    ? [
-                        t('outboundNames.Node Select'),
-                        t('outboundNames.Auto Select'),
-                        ...(this.manualGroupName ? [this.manualGroupName] : []),
-                        ...((this.countryGroupNames || []))
-                      ]
-                    : [t('outboundNames.Node Select')];
+                const options = this.buildAggregatedOptions(proxyList);
                 this.config['proxy-groups'].push(
                     this.createProxyGroup(t(`outboundNames.${outbound}`), 'select', options)
                 );
@@ -194,14 +236,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const options = this.groupByCountry
-                    ? [
-                        t('outboundNames.Node Select'),
-                        t('outboundNames.Auto Select'),
-                        ...(this.manualGroupName ? [this.manualGroupName] : []),
-                        ...((this.countryGroupNames || []))
-                      ]
-                    : [t('outboundNames.Node Select')];
+                const options = this.buildAggregatedOptions(proxyList);
                 this.config['proxy-groups'].push(
                     this.createProxyGroup(rule.name, 'select', options)
                 );
@@ -210,14 +245,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     addFallBackGroup(proxyList) {
-        const options = this.groupByCountry
-            ? [
-                t('outboundNames.Node Select'),
-                t('outboundNames.Auto Select'),
-                ...(this.manualGroupName ? [this.manualGroupName] : []),
-                ...((this.countryGroupNames || []))
-              ]
-            : [t('outboundNames.Node Select')];
+        const options = this.buildAggregatedOptions(proxyList);
         this.config['proxy-groups'].push(
             this.createProxyGroup(t('outboundNames.Fall Back'), 'select', options)
         );
@@ -239,13 +267,17 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             }
         });
 
+        const existing = new Set((this.config['proxy-groups'] || [])
+            .map(g => this.getProxyName(g)?.trim())
+            .filter(Boolean));
+
         const manualProxyNames = proxies.map(p => this.getProxyName(p)).filter(Boolean);
         const manualGroupName = manualProxyNames.length > 0 ? t('outboundNames.Manual Switch') : null;
         if (manualGroupName) {
             const manualNorm = manualGroupName.trim();
             if (!existing.has(manualNorm)) {
                 this.config['proxy-groups'].push(
-                    this.createProxyGroup(manualGroupName, 'select', manualProxyNames)
+                    this.createProxyGroup(manualGroupName, 'select', this.sanitizeOptions(manualProxyNames))
                 );
                 existing.add(manualNorm);
             }
@@ -253,7 +285,6 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         const countryGroupNames = [];
         const countries = Object.keys(countryGroups).sort((a, b) => a.localeCompare(b));
-        const existing = new Set((this.config['proxy-groups'] || []).map(g => this.getProxyName(g)?.trim()).filter(Boolean));
 
         countries.forEach(country => {
             const { emoji, name, proxies } = countryGroups[country];
@@ -269,11 +300,11 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         const nodeSelectGroupIndex = this.config['proxy-groups'].findIndex(g => this.getProxyName(g) === t('outboundNames.Node Select'));
         if (nodeSelectGroupIndex > -1) {
-            const newOptions = [
+            const newOptions = this.withDirectReject([
                 t('outboundNames.Auto Select'),
                 ...(manualGroupName ? [manualGroupName] : []),
                 ...countryGroupNames
-            ];
+            ]);
             const newGroup = this.createProxyGroup(t('outboundNames.Node Select'), 'select', newOptions);
             this.config['proxy-groups'][nodeSelectGroupIndex] = newGroup;
         }
