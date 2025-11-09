@@ -1,18 +1,21 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
+import { parseCountryFromNodeName } from './utils.js';
 import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { t } from './i18n/index.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry) {
         // Not yet implemented, set aside for later use ;)
         // if (!baseConfig) {
         //     baseConfig = SURGE_CONFIG;
         // }
         baseConfig = SURGE_CONFIG;
-        super(inputString, baseConfig, lang, userAgent);
+        super(inputString, baseConfig, lang, userAgent, groupByCountry);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;
+        this.countryGroupNames = [];
+        this.manualGroupName = null;
     }
 
     setSubscriptionUrl(url) {
@@ -152,30 +155,79 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     createProxyGroup(name, type, options = [], extraConfig = '') {
-        const baseOptions = type === 'url-test' ? [] : ['DIRECT', 'REJECT-DROP'];
-        const proxyNames = this.getProxies().map(proxy => this.getProxyName(proxy));
-        const allOptions = [...baseOptions, ...options, ...proxyNames];
-        return `${name} = ${type}, ${allOptions.join(', ')}${extraConfig}`;
+        const sanitized = this.sanitizeOptions(options);
+        const optionsPart = sanitized.length > 0 ? `, ${sanitized.join(', ')}` : '';
+        return `${name} = ${type}${optionsPart}${extraConfig}`;
+    }
+
+    sanitizeOptions(options = []) {
+        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
+        const seen = new Set();
+        return options
+            .map(normalize)
+            .filter(option => typeof option === 'string' && option.length > 0)
+            .filter(option => {
+                if (seen.has(option)) return false;
+                seen.add(option);
+                return true;
+            });
+    }
+
+    buildNodeSelectOptions(proxyList = []) {
+        return this.withDirectReject([
+            t('outboundNames.Auto Select'),
+            ...proxyList
+        ]);
+    }
+
+    buildAggregatedOptions(proxyList = []) {
+        const base = this.groupByCountry
+            ? [
+                t('outboundNames.Node Select'),
+                t('outboundNames.Auto Select'),
+                ...(this.manualGroupName ? [this.manualGroupName] : []),
+                ...((this.countryGroupNames || []))
+              ]
+            : [
+                t('outboundNames.Node Select'),
+                ...proxyList
+              ];
+        return this.withDirectReject(base);
+    }
+
+    withDirectReject(options = []) {
+        return this.sanitizeOptions([
+            'DIRECT',
+            'REJECT',
+            ...options
+        ]);
     }
 
     addAutoSelectGroup(proxyList) {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         this.config['proxy-groups'].push(
-            this.createProxyGroup(t('outboundNames.Auto Select'), 'url-test', [], ', url=http://www.gstatic.com/generate_204, interval=300')
+            this.createProxyGroup(
+                t('outboundNames.Auto Select'),
+                'url-test',
+                this.sanitizeOptions(proxyList),
+                ', url=http://www.gstatic.com/generate_204, interval=300'
+            )
         );
     }
 
     addNodeSelectGroup(proxyList) {
+        const options = this.buildNodeSelectOptions(proxyList);
         this.config['proxy-groups'].push(
-            this.createProxyGroup(t('outboundNames.Node Select'), 'select', [t('outboundNames.Auto Select')])
+            this.createProxyGroup(t('outboundNames.Node Select'), 'select', options)
         );
     }
 
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
+                const options = this.buildAggregatedOptions(proxyList);
                 this.config['proxy-groups'].push(
-                    this.createProxyGroup(t(`outboundNames.${outbound}`), 'select', [t('outboundNames.Node Select')])
+                    this.createProxyGroup(t(`outboundNames.${outbound}`), 'select', options)
                 );
             }
         });
@@ -184,17 +236,80 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
+                const options = this.buildAggregatedOptions(proxyList);
                 this.config['proxy-groups'].push(
-                    this.createProxyGroup(rule.name, 'select', [t('outboundNames.Node Select')])
+                    this.createProxyGroup(rule.name, 'select', options)
                 );
             });
         }
     }
 
     addFallBackGroup(proxyList) {
+        const options = this.buildAggregatedOptions(proxyList);
         this.config['proxy-groups'].push(
-            this.createProxyGroup(t('outboundNames.Fall Back'), 'select', [t('outboundNames.Node Select')])
+            this.createProxyGroup(t('outboundNames.Fall Back'), 'select', options)
         );
+    }
+
+    addCountryGroups() {
+        const proxies = this.getProxies();
+        const countryGroups = {};
+
+        proxies.forEach(proxy => {
+            const proxyName = this.getProxyName(proxy);
+            const countryInfo = parseCountryFromNodeName(proxyName);
+            if (countryInfo) {
+                const { name } = countryInfo;
+                if (!countryGroups[name]) {
+                    countryGroups[name] = { ...countryInfo, proxies: [] };
+                }
+                countryGroups[name].proxies.push(proxyName);
+            }
+        });
+
+        const existing = new Set((this.config['proxy-groups'] || [])
+            .map(g => this.getProxyName(g)?.trim())
+            .filter(Boolean));
+
+        const manualProxyNames = proxies.map(p => this.getProxyName(p)).filter(Boolean);
+        const manualGroupName = manualProxyNames.length > 0 ? t('outboundNames.Manual Switch') : null;
+        if (manualGroupName) {
+            const manualNorm = manualGroupName.trim();
+            if (!existing.has(manualNorm)) {
+                this.config['proxy-groups'].push(
+                    this.createProxyGroup(manualGroupName, 'select', this.sanitizeOptions(manualProxyNames))
+                );
+                existing.add(manualNorm);
+            }
+        }
+
+        const countryGroupNames = [];
+        const countries = Object.keys(countryGroups).sort((a, b) => a.localeCompare(b));
+
+        countries.forEach(country => {
+            const { emoji, name, proxies } = countryGroups[country];
+            const groupName = `${emoji} ${name}`;
+            countryGroupNames.push(groupName);
+            if (!existing.has(groupName.trim())) {
+                this.config['proxy-groups'].push(
+                    this.createProxyGroup(groupName, 'url-test', proxies, ', url=https://www.gstatic.com/generate_204, interval=300')
+                );
+                existing.add(groupName.trim());
+            }
+        });
+
+        const nodeSelectGroupIndex = this.config['proxy-groups'].findIndex(g => this.getProxyName(g) === t('outboundNames.Node Select'));
+        if (nodeSelectGroupIndex > -1) {
+            const newOptions = this.withDirectReject([
+                t('outboundNames.Auto Select'),
+                ...(manualGroupName ? [manualGroupName] : []),
+                ...countryGroupNames
+            ]);
+            const newGroup = this.createProxyGroup(t('outboundNames.Node Select'), 'select', newOptions);
+            this.config['proxy-groups'][nodeSelectGroupIndex] = newGroup;
+        }
+        this.countryGroupNames = countryGroupNames;
+        this.manualGroupName = manualGroupName;
     }
 
     formatConfig() {
