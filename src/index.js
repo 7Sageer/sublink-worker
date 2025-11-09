@@ -69,7 +69,7 @@ async function handleRequest(request) {
 
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent);
+        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry);
       } else if (url.pathname.startsWith('/clash')) {
         configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry);
       } else {
