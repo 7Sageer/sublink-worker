@@ -1,0 +1,16 @@
+{
+  "name": "Subscription converter",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^8.0.1",
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "js-yaml": "^4.1.0",
+    "sublink-plus": "file:"
+  }
+}
