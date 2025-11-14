@@ -3,8 +3,8 @@ export const generateStyles = () => `
     --bg-color: #f0f2f5;
     --text-color: #495057;
     --card-bg: #ffffff;
-    --card-header-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    --btn-primary-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    --card-header-bg: linear-gradient(135deg, #1b94cc 0%, #08a363 100%);
+    --btn-primary-bg: linear-gradient(135deg, #1b94cc 0%, #08a363 100%);
     --input-bg: #ffffff;
     --input-border: #ced4da;
     --input-text: #495057;
@@ -22,15 +22,14 @@ export const generateStyles = () => `
     --switch-checked-bg: #6a11cb;
     --transition-speed: 0.3s;
     --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
-    --muted-color: #6c757d;
   }
 
   [data-theme="dark"] {
     --bg-color: #1a1a1a;
     --text-color: #e0e0e0;
     --card-bg: #2c2c2c;
-    --card-header-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
-    --btn-primary-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
+    --card-header-bg: linear-gradient(135deg, #1b94cc 0%, #08a363 100%);
+    --btn-primary-bg: linear-gradient(135deg, #1b94cc 0%, #08a363 100%);
     --input-bg: #3c3c3c;
     --input-border: #555555;
     --input-text: #e0e0e0;
@@ -46,10 +45,12 @@ export const generateStyles = () => `
     --dropdown-hover-text: #e0e0e0;
     --switch-bg: #555555;
     --switch-checked-bg: #4a0e8f;
-    --muted-color: #c7cbd6;
   }
 
-  .container { max-width: 800px; }
+  .container {
+    max-width: 800px;
+    margin-top: 4rem !important;
+  }
 
   body {
     background-color: var(--bg-color);
@@ -142,8 +143,7 @@ export const generateStyles = () => `
   }
 
   .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+    transform: none !important;
   }
 
   .input-group-text, .form-control {
@@ -175,10 +175,6 @@ export const generateStyles = () => `
     color: var(--text-color);
   }
 
-  /* Make muted helper text readable, especially in dark mode */
-  .text-muted { color: var(--muted-color) !important; }
-  [data-theme="dark"] .text-muted { color: var(--muted-color) !important; opacity: 0.95; }
-
   .btn-outline-secondary {
     color: var(--text-color);
     border-color: var(--input-border);
@@ -206,15 +202,29 @@ export const generateStyles = () => `
     right: 20px;
     z-index: 1000;
     color: var(--text-color);
-    border-color: var(--input-border);
-    background-color: var(--card-bg);
-    transition: all 0.3s var(--transition-timing);
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    transition: color 0.3s var(--transition-timing);
   }
 
   #darkModeToggle:hover {
-    background-color: var(--dropdown-hover-bg);
-    border-color: var(--text-color);
-    color: var(--text-color);
+    transform: none !important;
+  }
+
+  #darkModeToggle i {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  #darkModeToggle {
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .github-link {
@@ -227,7 +237,7 @@ export const generateStyles = () => `
     transition: color 0.3s ease;
   }
 
-  .github-link:hover { color: #6a11cb; }
+  .github-link:hover { color: #136cef; }
   
   .tooltip-icon {
     cursor: pointer;
@@ -512,8 +522,7 @@ export const generateStyles = () => `
   }
 
   .conversion-controls .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: none !important;
   }
 
   .conversion-controls .btn-outline-primary {

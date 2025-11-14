@@ -22,12 +22,48 @@ const generateHead = () => `
     <meta property="og:title" content="${t('ogTitle')}">
     <meta property="og:description" content="${t('ogDescription')}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sublink-worker.sageer.me/">
+    <meta property="og:url" content="https://sublink.eooce.com/">
+    <link rel="icon" href="/src/img/favicon.ico" type="image/x-icon">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
       ${generateStyles()}
+      .api-doc-btn {
+        color: #0aa26d;
+        background: none;
+        border: none;
+        box-shadow: none;
+        font-weight: 600;
+        border-radius: 0;
+        padding: 0.5rem 1.2rem;
+        transition: none;
+      }
+      .api-doc-btn:hover, .api-doc-btn:focus {
+        color: #1f579b !important;
+        background: none;
+        border: none;
+        box-shadow: none;
+      }
+      /* 深色模式适配：支持 prefers-color-scheme 和 data-theme=dark */
+      @media (prefers-color-scheme: dark) {
+        .api-doc-btn {
+          color: #fff !important;
+        }
+        .api-doc-btn:hover, .api-doc-btn:focus {
+          color: #1f579b !important;
+        }
+      }
+      body[data-theme="dark"] .api-doc-btn,
+      html[data-theme="dark"] .api-doc-btn {
+        color: #fff !important;
+      }
+      body[data-theme="dark"] .api-doc-btn:hover,
+      html[data-theme="dark"] .api-doc-btn:hover,
+      body[data-theme="dark"] .api-doc-btn:focus,
+      html[data-theme="dark"] .api-doc-btn:focus {
+        color: #1f579b !important;
+      }
     </style>
   </head>
 `;
@@ -35,6 +71,8 @@ const generateHead = () => `
 const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
     ${generateDarkModeToggle()}
+    ${generateApiDocLink()}
+    ${generateLanguageSelector()}
     ${generateGithubLink()}
     <div class="container mt-5">
       <div class="card mb-5">
@@ -48,7 +86,34 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
       </div>
     </div>
     ${generateScripts()}
+    <script>
+      // 设置下拉框选中当前语言
+      (function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var lang = urlParams.get('lang') || navigator.language || 'zh-CN';
+        document.getElementById('langSelect').value = lang;
+        document.getElementById('langSelect').addEventListener('change', function() {
+          urlParams.set('lang', this.value);
+          window.location.search = urlParams.toString();
+        });
+      })();
+    </script>
   </body>
+`;
+
+const generateApiDocLink = () => `
+  <a href="#" id="apiDocLink" class="api-doc-btn" style="position: fixed; top: 13px; right: 200px; z-index: 1001; font-size: 1rem; text-decoration: none; color: #0aa26d;">API文档</a>
+`;
+
+const generateLanguageSelector = () => `
+  <div style="position: fixed; top: 10px; right: 70px; z-index: 1001;">
+    <select id="langSelect" class="form-select form-select-sm" style="width: 110px; height: 45px;">
+      <option value="zh-CN">简体中文</option>
+      <option value="en">English</option>
+      <option value="fa">فارسی</option>
+      <option value="ru">Русский</option>
+    </select>
+  </div>
 `;
 
 const generateDarkModeToggle = () => `
@@ -58,14 +123,14 @@ const generateDarkModeToggle = () => `
 `;
 
 const generateGithubLink = () => `
-  <a href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer" class="github-link">
+  <a href="https://github.com/eooce/sub-converter" target="_blank" rel="noopener noreferrer" class="github-link">
     <i class="fab fa-github"></i>
   </a>
 `;
 
 const generateCardHeader = () => `
   <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Sublink Worker</h1>
+    <h1 class="display-4 mb-0">${t('pageTitle')}</h1>
   </div>
 `;
 
@@ -96,7 +161,6 @@ const generateAdvancedOptionsToggle = () => `
 const generateAdvancedOptions = () => `
   <div id="advancedOptions">
     ${generateRuleSetSelection()}
-    ${generateGroupByCountrySection()}
     ${generateBaseConfigSection()}
     ${generateUASection()}
   </div>
@@ -144,12 +208,7 @@ const generateCustomPathSection = (baseUrl) => `
   <div class="mb-4 mt-3">
     <label for="customShortCode" class="form-label">${t('customPath')}</label>
     <div class="input-group flex-nowrap">
-      <span
-        class="input-group-text text-truncate"
-        id="customPathPrefix"
-        style="max-width: 400px;"
-        title="${baseUrl}/s/"
-      >
+      <span class="input-group-text text-truncate" style="max-width: 400px;" title="${baseUrl}/s/">
         ${baseUrl}/s/
       </span>
       <input type="text" class="form-control" id="customShortCode" placeholder="e.g. my-custom-link">
@@ -185,6 +244,24 @@ const generateScripts = () => `
     ${customPathFunctions()}
     ${saveConfig()}
     ${clearConfig()}
+    // 动态多语言API文档按钮
+    document.addEventListener('DOMContentLoaded', function() {
+      function updateApiDocLink() {
+        var lang = document.getElementById('langSelect').value;
+        var apiDocLink = document.getElementById('apiDocLink');
+        var apiDocText = {
+          'zh-CN': 'API文档',
+          'en': 'API Doc',
+          'en-US': 'API Doc',
+          'fa': 'مستندات API',
+          'ru': 'Документация API'
+        };
+        apiDocLink.textContent = apiDocText[lang] || 'API Doc';
+        apiDocLink.href = '/api-doc?lang=' + lang;
+      }
+      updateApiDocLink();
+      document.getElementById('langSelect').addEventListener('change', updateApiDocLink);
+    });
   </script>
 `;
 
@@ -236,13 +313,6 @@ const customPathFunctions = () => `
   document.addEventListener('DOMContentLoaded', function() {
     updateSavedPathsDropdown();
     document.getElementById('savedCustomPaths').addEventListener('change', loadSavedCustomPath);
-
-    const prefixSpan = document.getElementById('customPathPrefix');
-    if (prefixSpan) {
-      const originPrefix = \`\${window.location.origin}/s/\`;
-      prefixSpan.textContent = originPrefix;
-      prefixSpan.title = originPrefix;
-    }
   });
 `;
 
@@ -474,25 +544,6 @@ const generateJSONView = () => `
   </div>
 `;
 
-const generateGroupByCountrySection = () => `
-  <div class="form-section">
-    <div class="d-flex justify-content-between align-items-center py-2">
-      <div class="form-section-title d-flex align-items-center mb-0">
-        ${t('groupByCountry')}
-        <span class="tooltip-icon ms-2">
-          <i class="fas fa-question-circle"></i>
-          <span class="tooltip-content">
-            ${t('groupByCountryTip')}
-          </span>
-        </span>
-      </div>
-      <div class="form-check form-switch m-0">
-        <input class="form-check-input" type="checkbox" id="groupByCountry">
-      </div>
-    </div>
-  </div>
-`;
-
 const generateBaseConfigSection = () => `
   <div class="form-section">
     <div class="form-section-title d-flex align-items-center">
@@ -604,12 +655,10 @@ const submitFormFunction = () => `
     const inputString = formData.get('input');
 
     const userAgent = document.getElementById('customUA').value;
-    const groupByCountry = document.getElementById('groupByCountry').checked;
     
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
-    localStorage.setItem('groupByCountry', groupByCountry);
 
     // Save UserAgent data to localStorage
     localStorage.setItem('userAgent', document.getElementById('customUA').value);
@@ -633,11 +682,10 @@ const submitFormFunction = () => `
     const customRules = parseCustomRules();
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
-    const groupByCountryParam = groupByCountry ? '&group_by_country=true' : '';
-    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\${groupByCountryParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
-    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
@@ -720,12 +768,6 @@ const submitFormFunction = () => `
         } catch (e) {
           console.error('Error parsing custom rules:', e);
         }
-      }
-
-      // Parse group_by_country
-      const groupByCountry = params.get('group_by_country');
-      if (groupByCountry) {
-        document.getElementById('groupByCountry').checked = groupByCountry === 'true';
       }
 
       // Parse configuration ID
@@ -827,11 +869,6 @@ const submitFormFunction = () => `
         document.getElementById('advancedOptions').classList.add('show');
       }
     }
-
-    const groupByCountry = localStorage.getItem('groupByCountry');
-    if (groupByCountry) {
-      document.getElementById('groupByCountry').checked = groupByCountry === 'true';
-    }
     
     // Load userAgent
     const savedUA = localStorage.getItem('userAgent');
@@ -891,12 +928,10 @@ const submitFormFunction = () => `
     localStorage.removeItem('configEditor'); 
     localStorage.removeItem('configType');
     localStorage.removeItem('userAgent');
-    localStorage.removeItem('groupByCountry');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
-    document.getElementById('groupByCountry').checked = false;
     document.getElementById('configEditor').value = '';
     document.getElementById('configType').value = 'singbox'; 
     document.getElementById('customUA').value = '';

@@ -1,4 +1,4 @@
-import { t } from './i18n/index.js';
+import { t, setLanguage } from './i18n/index.js';
 
 export const SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/';
 export const IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geoip/';
@@ -386,31 +386,42 @@ export const SING_BOX_CONFIG = {
 	dns: {
 		servers: [
 			{
-				type: "tcp",
 				tag: "dns_proxy",
-				server: "1.1.1.1",
-				detour: "🚀 节点选择",
-				domain_resolver: "dns_resolver"
+				address: "tcp://1.1.1.1",
+				address_resolver: "dns_resolver",
+				strategy: "ipv4_only",
+				detour: "🚀 节点选择"
 			},
 			{
-				type: "https",
-				tag: "dns_direct",
-				server: "dns.alidns.com",
-				domain_resolver: "dns_resolver"
+				tag: "dns_direct", 
+				address: "https://dns.alidns.com/dns-query",
+				address_resolver: "dns_resolver",
+				strategy: "ipv4_only",
+				detour: "DIRECT"
 			},
 			{
-				type: "udp",
 				tag: "dns_resolver",
-				server: "223.5.5.5"
+				address: "223.5.5.5",
+				detour: "DIRECT"
 			},
 			{
-				type: "fakeip",
+				tag: "dns_success",
+				address: "rcode://success"
+			},
+			{
+				tag: "dns_refused",
+				address: "rcode://refused"
+			},
+			{
 				tag: "dns_fakeip",
-				inet4_range: "198.18.0.0/15",
-				inet6_range: "fc00::/18"
+				address: "fakeip"
 			}
 		],
 		rules: [
+			{
+				outbound: "any",
+				server: "dns_resolver"
+			},
 			{
 				rule_set: "geolocation-!cn",
 				query_type: [
@@ -421,7 +432,9 @@ export const SING_BOX_CONFIG = {
 			},
 			{
 				rule_set: "geolocation-!cn",
-				query_type: "CNAME",
+				query_type: [
+					"CNAME"
+				],
 				server: "dns_proxy"
 			},
 			{
@@ -431,12 +444,17 @@ export const SING_BOX_CONFIG = {
 					"CNAME"
 				],
 				invert: true,
-				action: "predefined",
-				rcode: "REFUSED"
+				server: "dns_refused",
+				disable_cache: true
 			}
 		],
 		final: "dns_direct",
-		independent_cache: true
+		independent_cache: true,
+		fakeip: {
+			enabled: true,
+			inet4_range: "198.18.0.0/15",
+			inet6_range: "fc00::/18"
+		}
 	},
 	ntp: {
 		enabled: true,
@@ -453,7 +471,6 @@ export const SING_BOX_CONFIG = {
 		{ type: "direct", tag: 'DIRECT' }
 	],
 	route : {
-		default_domain_resolver: "dns_resolver",
 		"rule_set": [
             {
                 "tag": "geosite-geolocation-!cn",

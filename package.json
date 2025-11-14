@@ -1,23 +1,16 @@
 {
-  "name": "sublink-plus",
+  "name": "Subscription converter",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
-    "deploy": "npm run setup-kv && wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest",
-    "setup-kv": "node scripts/setup-kv.js"
-  },
-  "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.0",
-    "vitest": "^3.0.0 <3.1.0",
-    "wrangler": "^3.60.3"
+    "start": "node server.js"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
-  },
-  "engines": {
-    "node": ">=18"
+    "better-sqlite3": "^8.0.1",
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "js-yaml": "^4.1.0",
+    "sublink-plus": "file:"
   }
 }

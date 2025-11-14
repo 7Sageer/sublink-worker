@@ -1,19 +1,16 @@
-import { ProxyParser, convertYamlProxyToObject } from './ProxyParsers.js';
-import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64, parseCountryFromNodeName } from './utils.js';
-import yaml from 'js-yaml';
+import { ProxyParser } from './ProxyParsers.js';
+import { DeepCopy, decodeBase64 } from './utils.js';
 import { t, setLanguage } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
+    constructor(inputString, baseConfig, lang, userAgent) {
         this.inputString = inputString;
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
         setLanguage(lang);
         this.userAgent = userAgent;
-        this.appliedOverrideKeys = new Set();
-        this.groupByCountry = groupByCountry;
     }
 
     async build() {
@@ -24,92 +21,26 @@ export class BaseConfigBuilder {
     }
 
     async parseCustomItems() {
-        const input = this.inputString || '';
+        const urls = this.inputString.split('\n').filter(url => url.trim() !== '');
         const parsedItems = [];
-
-        // Quick heuristic: if looks like plain YAML text (and not URLs), try YAML first without decoding
-        const looksLikeYaml = /\bproxies\s*:/i.test(input) && /\btype\s*:/i.test(input);
-        if (looksLikeYaml) {
-            try {
-                const obj = yaml.load(input.trim());
-                if (obj && typeof obj === 'object' && Array.isArray(obj.proxies)) {
-                    const overrides = DeepCopy(obj);
-                    delete overrides.proxies;
-                    if (Object.keys(overrides).length > 0) {
-                        this.applyConfigOverrides(overrides);
-                    }
-                    for (const p of obj.proxies) {
-                        const proxy = convertYamlProxyToObject(p);
-                        if (proxy) parsedItems.push(proxy);
-                    }
-                    if (parsedItems.length > 0) return parsedItems;
-                }
-            } catch (e) {
-                console.warn('YAML parse failed in builder (heuristic path):', e?.message || e);
-            }
-        }
-
-        // If not clear YAML, only try whole-document decode if input looks base64-like
-        const isBase64Like = /^[A-Za-z0-9+/=\r\n]+$/.test(input) && input.replace(/[\r\n]/g, '').length % 4 === 0;
-        if (!looksLikeYaml && isBase64Like) {
-            try {
-                const sanitized = input.replace(/\s+/g, '');
-                const decodedWhole = decodeBase64(sanitized);
-                if (typeof decodedWhole === 'string') {
-                    const maybeYaml = decodedWhole.trim();
-                    try {
-                        const obj = yaml.load(maybeYaml);
-                        if (obj && typeof obj === 'object' && Array.isArray(obj.proxies)) {
-                            const overrides = DeepCopy(obj);
-                            delete overrides.proxies;
-                            if (Object.keys(overrides).length > 0) {
-                                this.applyConfigOverrides(overrides);
-                            }
-                            for (const p of obj.proxies) {
-                                const proxy = convertYamlProxyToObject(p);
-                                if (proxy) parsedItems.push(proxy);
-                            }
-                            if (parsedItems.length > 0) return parsedItems;
-                        }
-                    } catch (e) {
-                        // not YAML; fall through
-                    }
-                }
-            } catch (_) {}
-        }
-
-        // Otherwise, line-by-line processing (URLs, subscription content, remote lists, etc.)
-        const urls = input.split('\n').filter(url => url.trim() !== '');
+        
         for (const url of urls) {
-            let processedUrls = tryDecodeSubscriptionLines(url);
-            if (!Array.isArray(processedUrls)) {
+            // Try to decode if it might be base64
+            let processedUrls = this.tryDecodeBase64(url);
+            
+            // Handle single URL or array of URLs
+            if(!Array.isArray(processedUrls)){
                 processedUrls = [processedUrls];
             }
 
+            // Handle multiple URLs from a single base64 string
             for (const processedUrl of processedUrls) {
                 const result = await ProxyParser.parse(processedUrl, this.userAgent);
-                if (result && typeof result === 'object' && result.type === 'yamlConfig') {
-                    if (result.config) {
-                        this.applyConfigOverrides(result.config);
-                    }
-                    if (Array.isArray(result.proxies)) {
-                        result.proxies.forEach(proxy => {
-                            if (proxy && typeof proxy === 'object' && proxy.tag) {
-                                parsedItems.push(proxy);
-                            }
-                        });
-                    }
-                    continue;
-                }
                 if (Array.isArray(result)) {
-                    for (const item of result) {
-                        if (item && typeof item === 'object' && item.tag) {
-                            parsedItems.push(item);
-                        } else if (typeof item === 'string') {
-                            const subResult = await ProxyParser.parse(item, this.userAgent);
-                            if (subResult) {
-                                parsedItems.push(subResult);
-                            }
+                    for (const subUrl of result) {
+                        const subResult = await ProxyParser.parse(subUrl, this.userAgent);
+                        if (subResult) {
+                            parsedItems.push(subResult);
                         }
                     }
                 } else if (result) {
@@ -117,36 +48,39 @@ export class BaseConfigBuilder {
                 }
             }
         }
-
+        
         return parsedItems;
     }
 
-    applyConfigOverrides(overrides) {
-        if (!overrides || typeof overrides !== 'object') {
-            return;
+    tryDecodeBase64(str) {
+        // If the string already has a protocol prefix, return as is
+        if (str.includes('://')) {
+            return str;
         }
 
-        // Allow incoming Clash YAML to override most fields, including 'proxy-groups'.
-        // Still block 'proxies' (handled by dedicated parser), and keep ignoring
-        // 'rules' and 'rule-providers' which are generated by our own logic.
-        const blacklistedKeys = new Set(['proxies', 'rules', 'rule-providers']);
-
-        Object.entries(overrides).forEach(([key, value]) => {
-            if (blacklistedKeys.has(key)) {
-                return;
+        try {
+            // Try to decode as base64
+            const decoded = decodeBase64(str);
+            
+            // Check if decoded content contains multiple links
+            if (decoded.includes('\n')) {
+                // Split by newline and filter out empty lines
+                const multipleUrls = decoded.split('\n').filter(url => url.trim() !== '');
+                
+                // Check if at least one URL is valid
+                if (multipleUrls.some(url => url.includes('://'))) {
+                    return multipleUrls;
+                }
             }
-            if (value === undefined) {
-                delete this.config[key];
-                this.appliedOverrideKeys.add(key);
-            } else {
-                this.config[key] = DeepCopy(value);
-                this.appliedOverrideKeys.add(key);
+            
+            // Check if the decoded string looks like a valid URL
+            if (decoded.includes('://')) {
+                return decoded;
             }
-        });
-    }
-
-    hasConfigOverride(key) {
-        return this.appliedOverrideKeys?.has(key);
+        } catch (e) {
+            // If decoding fails, return original string
+        }
+        return str;
     }
 
     getOutboundsList() {
@@ -201,10 +135,6 @@ export class BaseConfigBuilder {
         throw new Error('addFallBackGroup must be implemented in child class');
     }
 
-    addCountryGroups() {
-        throw new Error('addCountryGroups must be implemented in child class');
-    }
-
     addCustomItems(customItems) {
         const validItems = customItems.filter(item => item != null);
         validItems.forEach(item => {
@@ -223,9 +153,6 @@ export class BaseConfigBuilder {
 
         this.addAutoSelectGroup(proxyList);
         this.addNodeSelectGroup(proxyList);
-        if (this.groupByCountry) {
-            this.addCountryGroups();
-        }
         this.addOutboundGroups(outbounds, proxyList);
         this.addCustomRuleGroups(proxyList);
         this.addFallBackGroup(proxyList);
