@@ -1,10 +1,10 @@
-import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
+import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy, parseCountryFromNodeName } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false) {
         if (baseConfig === undefined) {
             baseConfig = SING_BOX_CONFIG;
             if (baseConfig.dns && baseConfig.dns.servers) {
@@ -16,6 +16,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.customRules = customRules;
         this.countryGroupNames = [];
         this.manualGroupName = null;
+        this.enableClashUI = enableClashUI;
     }
 
     getProxies() {
@@ -79,11 +80,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 t('outboundNames.Auto Select'),
                 ...(this.manualGroupName ? [this.manualGroupName] : []),
                 ...(this.countryGroupNames || [])
-              ]
+            ]
             : [
                 t('outboundNames.Node Select'),
                 ...proxyList
-              ];
+            ];
         const combined = ['DIRECT', 'REJECT', ...base].filter(Boolean);
         const seen = new Set();
         return combined.filter(name => {
@@ -206,7 +207,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
-        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules,this.customRules);
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 
@@ -222,7 +223,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         rules.filter(rule => !!rule.site_rules[0]).map(rule => {
             this.config.route.rules.push({
                 rule_set: [
-                ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
+                    ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
                 ],
                 protocol: rule.protocol,
                 outbound: t(`outboundNames.${rule.outbound}`)
@@ -232,11 +233,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
             this.config.route.rules.push({
                 rule_set: [
-                ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
+                    ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
                 ],
                 protocol: rule.protocol,
                 outbound: t(`outboundNames.${rule.outbound}`)
-          });
+            });
         });
 
         rules.filter(rule => !!rule.ip_cidr).map(rule => {
@@ -256,7 +257,18 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.config.route.auto_detect_interface = true;
         this.config.route.final = t('outboundNames.Fall Back');
-
+        // 如果启用了 Clash UI，添加配置
+        if (this.enableClashUI) {
+            this.config.experimental = this.config.experimental || {};
+            this.config.experimental.clash_api = {
+                "external_controller": "0.0.0.0:9090",
+                "external_ui": "./ui",
+                "external_ui_download_url": "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
+                "external_ui_download_detour": "DIRECT",
+                "secret": "",
+                "default_mode": "rule"
+            }
+        }
         return this.config;
     }
 }

@@ -96,7 +96,7 @@ const generateAdvancedOptionsToggle = () => `
 const generateAdvancedOptions = () => `
   <div id="advancedOptions">
     ${generateRuleSetSelection()}
-    ${generateGroupByCountrySection()}
+    ${generateGeneralOptions()}
     ${generateBaseConfigSection()}
     ${generateUASection()}
   </div>
@@ -474,10 +474,10 @@ const generateJSONView = () => `
   </div>
 `;
 
-const generateGroupByCountrySection = () => `
+const generateGeneralOptions = () => `
   <div class="form-section">
-    <div class="d-flex justify-content-between align-items-center py-2">
-      <div class="form-section-title d-flex align-items-center mb-0">
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+      <div class="form-section-title d-flex align-items-center mb-0" style="font-size: 1rem;">
         ${t('groupByCountry')}
         <span class="tooltip-icon ms-2">
           <i class="fas fa-question-circle"></i>
@@ -488,6 +488,21 @@ const generateGroupByCountrySection = () => `
       </div>
       <div class="form-check form-switch m-0">
         <input class="form-check-input" type="checkbox" id="groupByCountry">
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center py-2">
+      <div class="form-section-title d-flex align-items-center mb-0" style="font-size: 1rem;">
+        ${t('enableClashUI')}
+        <span class="tooltip-icon ms-2">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            ${t('enableClashUITip')}
+          </span>
+        </span>
+      </div>
+      <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" id="enableClashUI">
       </div>
     </div>
   </div>
@@ -634,8 +649,9 @@ const submitFormFunction = () => `
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
     const groupByCountryParam = groupByCountry ? '&group_by_country=true' : '';
+    const enableClashUIParam = enableClashUI ? '&enable_clash_ui=true' : '';
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\${groupByCountryParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\${enableClashUIParam}\`;
     const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
     const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
@@ -727,6 +743,12 @@ const submitFormFunction = () => `
       if (groupByCountry) {
         document.getElementById('groupByCountry').checked = groupByCountry === 'true';
       }
+
+      // Parse enable_clash_ui 
+      const enableClashUI = params.get('enable_clash_ui');
+      if (enableClashUI) {
+        document.getElementById('enableClashUI').checked = enableClashUI === 'true';
+      }  
 
       // Parse configuration ID
       const configId = params.get('configId');
@@ -833,6 +855,11 @@ const submitFormFunction = () => `
       document.getElementById('groupByCountry').checked = groupByCountry === 'true';
     }
     
+    const enableClashUI = localStorage.getItem('enableClashUI');
+    if (enableClashUI) {
+      document.getElementById('enableClashUI').checked = enableClashUI === 'true';
+    }
+    
     // Load userAgent
     const savedUA = localStorage.getItem('userAgent');
     if (savedUA) {
@@ -892,11 +919,13 @@ const submitFormFunction = () => `
     localStorage.removeItem('configType');
     localStorage.removeItem('userAgent');
     localStorage.removeItem('groupByCountry');
+    localStorage.removeItem('enableClashUI');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
     document.getElementById('groupByCountry').checked = false;
+    document.getElementById('enableClashUI').checked = false;
     document.getElementById('configEditor').value = '';
     document.getElementById('configType').value = 'singbox'; 
     document.getElementById('customUA').value = '';
