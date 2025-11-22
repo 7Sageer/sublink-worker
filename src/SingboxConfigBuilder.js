@@ -4,7 +4,7 @@ import { DeepCopy, parseCountryFromNodeName } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
         if (baseConfig === undefined) {
             baseConfig = SING_BOX_CONFIG;
             if (baseConfig.dns && baseConfig.dns.servers) {
@@ -17,6 +17,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.countryGroupNames = [];
         this.manualGroupName = null;
         this.enableClashUI = enableClashUI;
+        this.externalController = externalController;
+        this.externalUiDownloadUrl = externalUiDownloadUrl;
     }
 
     getProxies() {
@@ -258,16 +260,37 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.config.route.auto_detect_interface = true;
         this.config.route.final = t('outboundNames.Fall Back');
         // 如果启用了 Clash UI，添加配置
-        if (this.enableClashUI) {
+        // 如果启用 Clash UI 或传入了自定义参数，添加/覆盖 Clash API 配置
+        if (this.enableClashUI || this.externalController || this.externalUiDownloadUrl) {
+            const defaultExternalController = "0.0.0.0:9090";
+            const defaultExternalUiDownloadUrl = "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip";
+            const defaultExternalUi = "./ui";
+            const defaultExternalUiName = "zashboard";
+            const defaultSecret = "";
+            const defaultDownloadDetour = "DIRECT";
+            const defaultClashMode = "rule";
+
             this.config.experimental = this.config.experimental || {};
+            const existingClashApi = this.config.experimental.clash_api || {};
+
+            const externalController = this.externalController || existingClashApi.external_controller || defaultExternalController;
+            const externalUiDownloadUrl = this.externalUiDownloadUrl || existingClashApi.external_ui_download_url || defaultExternalUiDownloadUrl;
+            const externalUi = existingClashApi.external_ui || defaultExternalUi;
+            const externalUiName = existingClashApi.external_ui_name || defaultExternalUiName;
+            const secret = existingClashApi.secret ?? defaultSecret;
+            const externalUiDownloadDetour = existingClashApi.external_ui_download_detour || defaultDownloadDetour;
+            const clashMode = existingClashApi.default_mode || defaultClashMode;
+
             this.config.experimental.clash_api = {
-                "external_controller": "0.0.0.0:9090",
-                "external_ui": "./ui",
-                "external_ui_download_url": "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
-                "external_ui_download_detour": "DIRECT",
-                "secret": "",
-                "default_mode": "rule"
-            }
+                ...existingClashApi,
+                external_controller: externalController,
+                external_ui: externalUi,
+                external_ui_name: externalUiName,
+                external_ui_download_url: externalUiDownloadUrl,
+                external_ui_download_detour: externalUiDownloadDetour,
+                secret,
+                default_mode: clashMode
+            };
         }
         return this.config;
     }
