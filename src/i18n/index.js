@@ -2,6 +2,8 @@ import {checkStartsWith} from "../utils.js";
 // 定义语言包
 const translations = {
   'zh-CN': {
+    enableClashUI: '启用 Clash API',
+    enableClashUITip: '在 SingBox 配置中启用 Clash API (支持 Dashboard 面板)，默认端口 9090',
     missingInput: '缺少输入参数',
     missingConfig: '缺少配置参数',
     missingUrl: '缺少URL参数',
@@ -110,6 +112,8 @@ const translations = {
     UAtip: '默认值curl/7.74.0'
   },
   'en-US': {
+    enableClashUI: 'Enable Clash API',
+    enableClashUITip: 'Enable Clash API in SingBox config (Support Dashboard), default port 9090',
     missingInput: 'Missing input parameter',
     missingConfig: 'Missing config parameter',
     missingUrl: 'Missing URL parameter',
