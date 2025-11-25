@@ -1,10 +1,10 @@
-import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
+import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy, parseCountryFromNodeName } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
         if (baseConfig === undefined) {
             baseConfig = SING_BOX_CONFIG;
             if (baseConfig.dns && baseConfig.dns.servers) {
@@ -16,6 +16,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.customRules = customRules;
         this.countryGroupNames = [];
         this.manualGroupName = null;
+        this.enableClashUI = enableClashUI;
+        this.externalController = externalController;
+        this.externalUiDownloadUrl = externalUiDownloadUrl;
     }
 
     getProxies() {
@@ -79,11 +82,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 t('outboundNames.Auto Select'),
                 ...(this.manualGroupName ? [this.manualGroupName] : []),
                 ...(this.countryGroupNames || [])
-              ]
+            ]
             : [
                 t('outboundNames.Node Select'),
                 ...proxyList
-              ];
+            ];
         const combined = ['DIRECT', 'REJECT', ...base].filter(Boolean);
         const seen = new Set();
         return combined.filter(name => {
@@ -206,7 +209,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
-        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules,this.customRules);
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 
@@ -222,7 +225,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         rules.filter(rule => !!rule.site_rules[0]).map(rule => {
             this.config.route.rules.push({
                 rule_set: [
-                ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
+                    ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
                 ],
                 protocol: rule.protocol,
                 outbound: t(`outboundNames.${rule.outbound}`)
@@ -232,11 +235,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
             this.config.route.rules.push({
                 rule_set: [
-                ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
+                    ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
                 ],
                 protocol: rule.protocol,
                 outbound: t(`outboundNames.${rule.outbound}`)
-          });
+            });
         });
 
         rules.filter(rule => !!rule.ip_cidr).map(rule => {
@@ -256,7 +259,39 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.config.route.auto_detect_interface = true;
         this.config.route.final = t('outboundNames.Fall Back');
+        // 如果启用了 Clash UI，添加配置
+        // 如果启用 Clash UI 或传入了自定义参数，添加/覆盖 Clash API 配置
+        if (this.enableClashUI || this.externalController || this.externalUiDownloadUrl) {
+            const defaultExternalController = "0.0.0.0:9090";
+            const defaultExternalUiDownloadUrl = "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip";
+            const defaultExternalUi = "./ui";
+            const defaultExternalUiName = "zashboard";
+            const defaultSecret = "";
+            const defaultDownloadDetour = "DIRECT";
+            const defaultClashMode = "rule";
 
+            this.config.experimental = this.config.experimental || {};
+            const existingClashApi = this.config.experimental.clash_api || {};
+
+            const externalController = this.externalController || existingClashApi.external_controller || defaultExternalController;
+            const externalUiDownloadUrl = this.externalUiDownloadUrl || existingClashApi.external_ui_download_url || defaultExternalUiDownloadUrl;
+            const externalUi = existingClashApi.external_ui || defaultExternalUi;
+            const externalUiName = existingClashApi.external_ui_name || defaultExternalUiName;
+            const secret = existingClashApi.secret ?? defaultSecret;
+            const externalUiDownloadDetour = existingClashApi.external_ui_download_detour || defaultDownloadDetour;
+            const clashMode = existingClashApi.default_mode || defaultClashMode;
+
+            this.config.experimental.clash_api = {
+                ...existingClashApi,
+                external_controller: externalController,
+                external_ui: externalUi,
+                external_ui_name: externalUiName,
+                external_ui_download_url: externalUiDownloadUrl,
+                external_ui_download_detour: externalUiDownloadDetour,
+                secret,
+                default_mode: clashMode
+            };
+        }
         return this.config;
     }
 }
