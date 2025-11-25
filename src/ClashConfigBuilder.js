@@ -5,7 +5,7 @@ import { DeepCopy, parseCountryFromNodeName } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
@@ -14,6 +14,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         this.customRules = customRules;
         this.countryGroupNames = [];
         this.manualGroupName = null;
+        this.enableClashUI = enableClashUI;
+        this.externalController = externalController;
+        this.externalUiDownloadUrl = externalUiDownloadUrl;
     }
 
     getProxies() {
@@ -471,6 +474,27 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
         this.config.rules = [...ruleResults];
         this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+
+        // Enable Clash UI (external controller/dashboard) when requested or when custom UI params are provided
+        if (this.enableClashUI || this.externalController || this.externalUiDownloadUrl) {
+            const defaultController = '0.0.0.0:9090';
+            const defaultUiPath = './ui';
+            const defaultUiName = 'zashboard';
+            const defaultUiUrl = 'https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip';
+            const defaultSecret = '';
+
+            const controller = this.externalController || this.config['external-controller'] || defaultController;
+            const uiPath = this.config['external-ui'] || defaultUiPath;
+            const uiName = this.config['external-ui-name'] || defaultUiName;
+            const uiUrl = this.externalUiDownloadUrl || this.config['external-ui-url'] || defaultUiUrl;
+            const secret = this.config['secret'] ?? defaultSecret;
+
+            this.config['external-controller'] = controller;
+            this.config['external-ui'] = uiPath;
+            this.config['external-ui-name'] = uiName;
+            this.config['external-ui-url'] = uiUrl;
+            this.config['secret'] = secret;
+        }
 
         return yaml.dump(this.config);
     }

@@ -26,6 +26,9 @@ async function handleRequest(request) {
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
       const groupByCountry = url.searchParams.get('group_by_country') === 'true';
+      const enableClashUI = url.searchParams.get('enable_clash_ui') === 'true';
+      const externalController = url.searchParams.get('external_controller');
+      const externalUiDownloadUrl = url.searchParams.get('external_ui_download_url');
       // 获取语言参数，如果为空则使用默认值
       let lang = url.searchParams.get('lang') || 'zh-CN';
       // Get custom UserAgent
@@ -69,9 +72,9 @@ async function handleRequest(request) {
 
       let configBuilder;
       if (url.pathname.startsWith('/singbox')) {
-        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry);
+        configBuilder = new SingboxConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, enableClashUI, externalController, externalUiDownloadUrl);
       } else if (url.pathname.startsWith('/clash')) {
-        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry);
+        configBuilder = new ClashConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, enableClashUI, externalController, externalUiDownloadUrl);
       } else {
         configBuilder = new SurgeConfigBuilder(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry)
           .setSubscriptionUrl(url.href);
