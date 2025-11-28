@@ -28,6 +28,13 @@ export const generateStyles = () => `
     --muted-color: #6c757d;
     --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
     --shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);
+
+    /* Typography Scale - 统一字号系统 */
+    --font-size-base: 1rem;           /* 16px - 基础字号 */
+    --font-size-sm: 0.875rem;         /* 14px - 小号文本、帮助文本、tooltip */
+    --font-size-xs: 0.75rem;          /* 12px - 极小文本 */
+    --font-size-lg: 1.125rem;         /* 18px - 大号文本 */
+    --font-size-xl: 1.25rem;          /* 20px - 标题 */
   }
 
   [data-theme="dark"] {
@@ -63,7 +70,7 @@ export const generateStyles = () => `
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 16px; /* Explicit base size */
+    font-size: var(--font-size-base); /* 使用统一的基础字号 */
     line-height: 1.6;
     transition: background-color 0.3s var(--transition-timing), color 0.3s var(--transition-timing);
     padding-top: 80px; /* Space for fixed navbar */
@@ -109,8 +116,8 @@ export const generateStyles = () => `
   }
 
   .form-section {
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
     border: 1px solid var(--section-border);
     border-radius: 10px;
     background: transparent; /* Unified background */
@@ -138,20 +145,20 @@ export const generateStyles = () => `
   }
     
   .form-section-title {
-    font-size: 1.25rem; /* Larger title */
+    font-size: var(--font-size-xl); /* 统一标题字号 */
     font-weight: 700; /* Bolder */
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     color: var(--text-color);
     letter-spacing: -0.02em;
   }
 
   .input-group {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
 
   .form-control, .form-select {
-    padding: 0.875rem 1.25rem; /* Larger padding */
-    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: var(--font-size-base); /* 统一表单控件字号 */
     border-radius: 0.75rem;
     border: 1px solid var(--input-border);
     transition: all 0.2s ease-in-out;
@@ -164,7 +171,7 @@ export const generateStyles = () => `
 
   .btn {
     padding: 0.75rem 1.5rem; /* Larger buttons */
-    font-size: 1rem;
+    font-size: var(--font-size-base); /* 统一按钮字号 */
     font-weight: 600;
     letter-spacing: 0.01em;
     transition: all 0.2s ease-in-out;
@@ -204,17 +211,254 @@ export const generateStyles = () => `
   }
 
   .link-card {
-    background-color: var(--section-bg);
+    background-color: var(--card-bg);
     border: 1px solid var(--section-border);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    transition: all 0.2s ease;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
   .link-card:hover {
     border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .link-card .form-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .link-card .input-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .link-card .form-control {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border-right: none;
+    border-radius: 0.5rem 0 0 0.5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .link-card .btn {
+    padding: 0.75rem 1rem;
+    border-left: 1px solid var(--input-border);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .link-card .btn:last-child {
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+
+  .link-card .btn:hover {
+    transform: scale(1.05);
+  }
+
+  .link-card .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  .link-card .btn-outline-secondary:hover {
+    background-color: var(--text-color);
+    color: var(--card-bg);
+  }
+
+  /* Responsive adjustments for link cards */
+  @media (max-width: 768px) {
+    .link-card {
+      padding: 1.25rem;
+    }
+
+    .link-card .form-label {
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .link-card .input-group {
+      flex-wrap: nowrap;
+    }
+
+    .link-card .form-control {
+      font-size: 0.85rem;
+      padding: 0.6rem 0.75rem;
+      min-width: 0;
+    }
+
+    .link-card .btn {
+      padding: 0.6rem 0.85rem;
+      font-size: 0.9rem;
+    }
+
+    /* Stack buttons vertically on very small screens if needed */
+    @media (max-width: 480px) {
+      .link-card .input-group {
+        flex-wrap: wrap;
+      }
+
+      .link-card .form-control {
+        flex: 1 1 100%;
+        border-radius: 0.5rem 0.5rem 0 0;
+        border-right: 1px solid var(--input-border);
+      }
+
+      .link-card .btn {
+        flex: 1;
+        border-radius: 0;
+      }
+
+      .link-card .btn:last-child {
+        border-radius: 0 0 0.5rem 0.5rem;
+      }
+    }
+  }
+
+  /* Subscribe Section Styling */
+  .subscribe-section {
+    padding: 1.5rem 0;
+  }
+
+  .subscribe-section h4 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+    position: relative;
+    padding-bottom: 1rem;
+  }
+
+  .subscribe-section h4::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), transparent);
+    border-radius: 2px;
+  }
+
+  .subscribe-section .row {
+    margin-bottom: 0;
+  }
+
+  .subscribe-section .col-12,
+  .subscribe-section .col-md-6 {
+    margin-bottom: 1.5rem;
+  }
+
+  .subscribe-section .justify-content-center {
+    margin-top: 2rem;
+  }
+
+  /* Custom Path Section Styling */
+  .subscribe-section .mb-4 {
+    background-color: var(--section-bg);
+    border: 1px solid var(--section-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .subscribe-section .mb-4 .form-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+  }
+
+  .subscribe-section .mb-4 .input-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-radius: 0.5rem;
+    overflow: visible;
+  }
+
+  .subscribe-section .mb-4 .input-group-text {
+    background-color: var(--input-bg);
+    border-right: none;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted-color);
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .subscribe-section .mb-4 .form-control,
+  .subscribe-section .mb-4 .form-select {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Shorten Button Styling */
+  .subscribe-section .btn-primary {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .subscribe-section .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(13, 110, 253, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .subscribe-section h4 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .subscribe-section .mb-4 {
+      padding: 1.25rem;
+    }
+
+    .subscribe-section .btn-primary {
+      padding: 0.875rem 1.5rem;
+      font-size: 1rem;
+    }
+  }
+
+  /* Dark mode specific adjustments for subscribe section */
+  [data-theme="dark"] .link-card {
     background-color: var(--card-bg);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--section-border);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="dark"] .link-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  [data-theme="dark"] .subscribe-section .mb-4 {
+    background-color: var(--section-bg);
+    border-color: var(--section-border);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="dark"] .subscribe-section .btn-primary {
+    box-shadow: 0 4px 8px rgba(55, 90, 127, 0.4);
+  }
+
+  [data-theme="dark"] .subscribe-section .btn-primary:hover {
+    box-shadow: 0 6px 12px rgba(55, 90, 127, 0.6);
   }
 
   .fade-in-section {
@@ -240,7 +484,7 @@ export const generateStyles = () => `
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--text-color);
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm); /* 统一表单标签字号 */
   }
 
   /* Make muted helper text readable, especially in dark mode */
@@ -304,7 +548,7 @@ export const generateStyles = () => `
     position: relative;
     display: inline-block;
     vertical-align: super;
-    font-size: 1em;
+    font-size: var(--font-size-sm); /* 统一tooltip图标字号 */
   }
 
   .question-mark {
@@ -329,10 +573,12 @@ export const generateStyles = () => `
     border-radius: 6px;
     padding: 10px;
     z-index: 1000;
-    width: 180px;
+    width: 220px; /* 增加宽度以适应更多内容 */
     max-width: 90vw;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: opacity 0.3s, visibility 0.3s;
+    font-size: var(--font-size-sm); /* 统一tooltip内容字号 */
+    line-height: 1.5; /* 改善可读性 */
   }
 
   .tooltip-icon:hover .tooltip-content {
@@ -516,7 +762,7 @@ export const generateStyles = () => `
     color: var(--text-color);
     transition: all 0.3s var(--transition-timing);
     border-bottom: 3px solid transparent;
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm); /* 统一tab字号 */
   }
 
   .custom-rules-tab:hover {
@@ -572,7 +818,7 @@ export const generateStyles = () => `
   }
 
   .conversion-controls .btn {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm); /* 统一控制按钮字号 */
     padding: 0.5rem 0.875rem;
     margin-bottom: 0.25rem;
     white-space: nowrap;
@@ -694,7 +940,7 @@ export const generateStyles = () => `
 
   .empty-state p {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm); /* 统一空状态文本字号 */
   }
 
   /* JSON Validation States */
@@ -709,7 +955,7 @@ export const generateStyles = () => `
   }
 
   .json-validation-message {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm); /* 统一验证消息字号 */
     margin-top: 0.5rem;
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
@@ -857,7 +1103,7 @@ export const generateStyles = () => `
   .qr-card p {
     margin-top: 10px;
     color: #333;
-    font-size: 16px;
+    font-size: var(--font-size-base); /* 统一QR卡片文本字号 */
   }
 
   .base-url-label {
@@ -866,9 +1112,48 @@ export const generateStyles = () => `
     border: 1px solid var(--input-border);
     border-radius: 0.25rem;
     padding: 0.375rem 0.75rem;
-    font-size: 1rem;
+    font-size: var(--font-size-base); /* 统一标签字号 */
     line-height: 1.5;
   }
+
+  /* Toast Notifications */
+  .toast-container {
+    z-index: 9999 !important;
+  }
+
+  .toast {
+    font-size: var(--font-size-sm);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .toast-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+  }
+
+  .toast-body {
+    padding: 0.75rem;
+  }
+
+  /* Toast variants - 暗色模式兼容 */
+  [data-theme="dark"] .toast {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+  }
+
+  [data-theme="dark"] .toast-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--input-border);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .toast .btn-close {
+    filter: invert(1);
+  }
+
 
   #subscribeLinksContainer {
     max-height: 0;

@@ -25,6 +25,7 @@ const generateHead = () => `
     <meta property="og:url" content="https://sublink-worker.sageer.me/">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
       ${generateStyles()}
@@ -35,9 +36,10 @@ const generateHead = () => `
 const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
     ${generateNavbar()}
+    ${generateToastContainer()}
     <div class="container main-container">
       <div class="row justify-content-center">
-        <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <div class="col-12 col-md-11 col-lg-10 col-xl-9">
           <div class="card main-card shadow-lg">
             ${generateCardHeader()}
             <div class="card-body p-4 p-md-5">
@@ -74,6 +76,17 @@ const generateDarkModeToggle = () => `
   <button id="darkModeToggle" class="btn btn-link nav-link p-0">
     <i class="fas fa-moon"></i>
   </button>
+`;
+
+const generateToastContainer = () => `
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="liveToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body"></div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
 `;
 
 const generateCardHeader = () => `
@@ -148,44 +161,43 @@ const generateButtonContainer = () => `
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <div class="subscribe-section">
-    <h4 class="mb-4 text-center"><i class="fas fa-link me-2 text-primary"></i>Subscription Links</h4>
-    <div class="row g-4">
-      <div class="col-12 col-md-6">
-        ${generateLinkInput('Xray Link (Base64)', 'xrayLink', xrayUrl, 'fa-radiation')}
+    <h4 class="text-center">${t('subscriptionLinks')}</h4>
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-6">
+        ${generateLinkInput(t('xrayLink'), 'xrayLink', xrayUrl)}
       </div>
-      <div class="col-12 col-md-6">
-        ${generateLinkInput('SingBox Link', 'singboxLink', singboxUrl, 'fa-box')}
+      <div class="col-12 col-lg-6">
+        ${generateLinkInput(t('singboxLink'), 'singboxLink', singboxUrl)}
       </div>
-      <div class="col-12 col-md-6">
-        ${generateLinkInput('Clash Link', 'clashLink', clashUrl, 'fa-cat')}
+      <div class="col-12 col-lg-6">
+        ${generateLinkInput(t('clashLink'), 'clashLink', clashUrl)}
       </div>
-      <div class="col-12 col-md-6">
-        ${generateLinkInput('Surge Link', 'surgeLink', surgeUrl, 'fa-bolt')}
+      <div class="col-12 col-lg-6">
+        ${generateLinkInput(t('surgeLink'), 'surgeLink', surgeUrl)}
       </div>
     </div>
-    <div class="row mt-4 justify-content-center">
-      <div class="col-md-8">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10">
         ${generateCustomPathSection(baseUrl)}
       </div>
     </div>
-    <div class="row mt-3 justify-content-center">
-      <div class="col-md-6">
+    <div class="row justify-content-center mt-3">
+      <div class="col-12 col-md-8 col-lg-6">
         ${generateShortenButton()}
       </div>
     </div>
   </div>
 `;
 
-const generateLinkInput = (label, id, value, icon) => `
+const generateLinkInput = (label, id, value) => `
   <div class="link-card h-100">
-    <label for="${id}" class="form-label small text-muted fw-bold text-uppercase">${label}</label>
+    <label for="${id}" class="form-label">${label}</label>
     <div class="input-group">
-      <span class="input-group-text bg-white border-end-0"><i class="fas ${icon} text-secondary"></i></span>
-      <input type="text" class="form-control border-start-0 ps-0" id="${id}" value="${value}" readonly onclick="this.select()">
-      <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('${id}')" title="Copy">
+      <input type="text" class="form-control" id="${id}" value="${value}" readonly onclick="this.select()">
+      <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('${id}')" title="${t('copy')}">
         <i class="fas fa-copy"></i>
       </button>
-      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')" title="QR Code">
+      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')" title="${t('qrCode')}">
         <i class="fas fa-qrcode"></i>
       </button>
     </div>
@@ -225,6 +237,7 @@ const generateShortenButton = () => `
 
 const generateScripts = () => `
   <script>
+    ${showToastFunction()}
     ${copyToClipboardFunction()}
     ${shortenAllUrlsFunction()}
     ${darkModeToggleFunction()}
@@ -256,7 +269,7 @@ const customPathFunctions = () => `
   function updateSavedPathsDropdown() {
     const savedPaths = JSON.parse(localStorage.getItem('savedCustomPaths') || '[]');
     const dropdown = document.getElementById('savedCustomPaths');
-    dropdown.innerHTML = '<option value="">Saved paths</option>';
+    dropdown.innerHTML = '<option value="">${t("savedPaths")}</option>';
     savedPaths.forEach(path => {
       const option = document.createElement('option');
       option.value = path;
@@ -309,6 +322,38 @@ const advancedOptionsToggleFunction = () => `
   });
 `;
 
+const showToastFunction = () => `
+  function showToast(message, type = 'info') {
+    const toastEl = document.getElementById('liveToast');
+    const toastBody = toastEl.querySelector('.toast-body');
+
+    // 清除之前的样式类
+    toastEl.className = 'toast align-items-center';
+
+    // 根据类型设置样式
+    if (type === 'success') {
+      toastEl.classList.add('text-bg-success');
+      toastBody.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + message;
+    } else if (type === 'error') {
+      toastEl.classList.add('text-bg-danger');
+      toastBody.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + message;
+    } else if (type === 'warning') {
+      toastEl.classList.add('text-bg-warning');
+      toastBody.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + message;
+    } else {
+      toastEl.classList.add('text-bg-info');
+      toastBody.innerHTML = '<i class="fas fa-info-circle me-2"></i>' + message;
+    }
+
+    // 显示toast
+    const toast = new bootstrap.Toast(toastEl, {
+      autohide: true,
+      delay: 3000
+    });
+    toast.show();
+  }
+`;
+
 const copyToClipboardFunction = () => `
   function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
@@ -317,7 +362,7 @@ const copyToClipboardFunction = () => `
     
     const button = element.nextElementSibling;
     const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    button.innerHTML = '<i class="fas fa-check"></i> ' + '${t("copied")}';
     button.classList.remove('btn-outline-secondary');
     button.classList.add('btn-success');
     setTimeout(() => {
@@ -351,13 +396,13 @@ const shortenAllUrlsFunction = () => `
     try {
       isShortening = true;
       shortenButton.disabled = true;
-      shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Shortening...';
+      shortenButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>${t("shortening")}';
 
       const singboxLink = document.getElementById('singboxLink');
       const customShortCode = document.getElementById('customShortCode').value;
 
       if (singboxLink.value.includes('/b/')) {
-        alert('Links are already shortened!');
+        showToast('${t("alreadyShortened")}', 'warning');
         return;
       }
 
@@ -373,11 +418,11 @@ const shortenAllUrlsFunction = () => `
       surgeLink.value = window.location.origin + '/s/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
-      alert('Failed to shorten URLs. Please try again.');
+      showToast('${t("shortenFailed")}', 'error');
     } finally {
       isShortening = false;
       shortenButton.disabled = false;
-      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Shorten Links';
+      shortenButton.innerHTML = '<i class="fas fa-compress-alt me-2"></i>${t("shortenLinks")}';
     }
   }
 `;
@@ -1351,9 +1396,9 @@ const customRuleFunctions = () => `
       }
     });
     if (allValid) {
-      alert('${t('allJSONValid')}');
+      showToast('${t('allJSONValid')}', 'success');
     } else {
-      alert('${t('jsonValidationErrors')}:\\n\\n' + errorMessages.join('\\n'));
+      showToast('${t('jsonValidationErrors')}:\\n\\n' + errorMessages.join('\\n'), 'error');
     }
   }
 
@@ -1450,7 +1495,7 @@ const generateQRCodeFunction = () => `
     const input = document.getElementById(id);
     const text = input.value;
     if (!text) {
-      alert('No link provided!');
+      showToast('${t("noLinkProvided")}', 'warning');
       return;
     }
     try {
@@ -1463,13 +1508,13 @@ const generateQRCodeFunction = () => `
       const margin = Math.floor(cellSize * 0.5);
 
       const qrImage = qr.createDataURL(cellSize, margin);
-      
+
       const modal = document.createElement('div');
       modal.className = 'qr-modal';
       modal.innerHTML = \`
         <div class="qr-card">
           <img src="\${qrImage}" alt="QR Code">
-          <p>Scan QR Code</p>
+          <p>${t("scanQRCode")}</p>
         </div>
       \`;
 
@@ -1492,7 +1537,7 @@ const generateQRCodeFunction = () => `
       });
     } catch (error) {
       console.error('Error in generating:', error);
-      alert('Try to use short links!');
+      showToast('${t("tryShortLinks")}', 'error');
     }
   }
 
@@ -1536,10 +1581,10 @@ const saveConfig = () => `
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('configId', configId);
       window.history.pushState({}, '', currentUrl);
-      alert('Configuration saved successfully!');
+      showToast('${t("configSaved")}', 'success');
     })
     .catch(error => {
-      alert('Error: ' + error.message);
+      showToast('${t("error")}' + error.message, 'error');
     });
   }
 `;
