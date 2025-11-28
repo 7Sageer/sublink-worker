@@ -1,81 +1,111 @@
 export const generateStyles = () => `
   :root {
-    --bg-color: #f0f2f5;
-    --text-color: #495057;
+    --bg-color: #f8f9fa;
+    --text-color: #212529;
     --card-bg: #ffffff;
-    --card-header-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    --btn-primary-bg: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    --card-header-bg: transparent;
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
     --input-bg: #ffffff;
-    --input-border: #ced4da;
-    --input-text: #495057;
+    --input-border: #dee2e6;
+    --input-focus-border: #86b7fe;
+    --input-focus-shadow: rgba(13, 110, 253, 0.25);
+    --input-text: #212529;
     --placeholder-color: #6c757d;
-    --section-border: rgba(0, 0, 0, 0.1);
-    --section-bg: rgba(0, 0, 0, 0.02);
+    --section-border: #e9ecef;
+    --section-bg: #f8f9fa;
     --select-bg: #ffffff;
-    --select-text: #495057;
-    --select-border: #ced4da;
+    --select-text: #212529;
+    --select-border: #dee2e6;
     --dropdown-bg: #ffffff;
-    --dropdown-text: #495057;
-    --dropdown-hover-bg: #f8f9fa;
-    --dropdown-hover-text: #495057;
+    --dropdown-text: #212529;
+    --dropdown-hover-bg: #e9ecef;
+    --dropdown-hover-text: #1e2125;
     --switch-bg: #e9ecef;
-    --switch-checked-bg: #6a11cb;
-    --transition-speed: 0.3s;
-    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+    --switch-checked-bg: #0d6efd;
+    --transition-speed: 0.2s;
+    --transition-timing: ease-in-out;
     --muted-color: #6c757d;
+    --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+    --shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);
   }
 
   [data-theme="dark"] {
-    --bg-color: #1a1a1a;
+    --bg-color: #121212;
     --text-color: #e0e0e0;
-    --card-bg: #2c2c2c;
-    --card-header-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
-    --btn-primary-bg: linear-gradient(135deg, #4a0e8f 0%, #1a5ab8 100%);
-    --input-bg: #3c3c3c;
-    --input-border: #555555;
+    --card-bg: #1e1e1e;
+    --card-header-bg: transparent;
+    --primary-color: #375a7f;
+    --primary-hover: #2f4d6f;
+    --input-bg: #2c2c2c;
+    --input-border: #444;
+    --input-focus-border: #5c7cfa;
+    --input-focus-shadow: rgba(92, 124, 250, 0.25);
     --input-text: #e0e0e0;
     --placeholder-color: #adb5bd;
-    --section-border: rgba(255, 255, 255, 0.1);
-    --section-bg: rgba(255, 255, 255, 0.02);
-    --select-bg: #3c3c3c;
+    --section-border: #2c2c2c;
+    --section-bg: #252525;
+    --select-bg: #2c2c2c;
     --select-text: #e0e0e0;
-    --select-border: #555555;
+    --select-border: #444;
     --dropdown-bg: #2c2c2c;
     --dropdown-text: #e0e0e0;
     --dropdown-hover-bg: #3c3c3c;
-    --dropdown-hover-text: #e0e0e0;
-    --switch-bg: #555555;
-    --switch-checked-bg: #4a0e8f;
-    --muted-color: #c7cbd6;
+    --dropdown-hover-text: #ffffff;
+    --switch-bg: #444;
+    --switch-checked-bg: #375a7f;
+    --muted-color: #a0a0a0;
+    --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.3);
+    --shadow-lg: 0 1rem 3rem rgba(0,0,0,.5);
   }
-
-  .container { max-width: 800px; }
 
   body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px; /* Explicit base size */
+    line-height: 1.6;
     transition: background-color 0.3s var(--transition-timing), color 0.3s var(--transition-timing);
+    padding-top: 80px; /* Space for fixed navbar */
   }
 
+  /* Navbar */
+  .navbar {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--section-border);
+    transition: background-color 0.3s var(--transition-timing), border-color 0.3s var(--transition-timing);
+  }
+
+  .navbar-brand {
+    color: var(--text-color) !important;
+  }
+
+  .nav-link {
+    color: var(--text-color) !important;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--primary-color) !important;
+  }
+
+  /* Card */
   .card {
     background-color: var(--card-bg);
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    border: 1px solid var(--section-border); /* Subtle border for definition */
+    border-radius: 1.25rem; /* Larger radius */
+    box-shadow: var(--shadow-lg);
+    transition: background-color 0.3s var(--transition-timing), box-shadow 0.3s var(--transition-timing);
   }
 
   .card-header {
     background: var(--card-header-bg);
-    color: white;
-    border-radius: 15px 15px 0 0;
-    padding: 2.5rem 2rem;
-    border-bottom: 1px solid var(--section-border);
+    color: var(--text-color);
+    border-bottom: none;
   }
 
   .card-body {
-    padding: 2rem;
+    color: var(--text-color);
   }
 
   .form-section {
@@ -83,7 +113,7 @@ export const generateStyles = () => `
     margin-bottom: 1.5rem;
     border: 1px solid var(--section-border);
     border-radius: 10px;
-    background: var(--section-bg);
+    background: transparent; /* Unified background */
   }
 
   /* Ensure form button containers have proper spacing */
@@ -108,10 +138,11 @@ export const generateStyles = () => `
   }
     
   .form-section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    font-size: 1.25rem; /* Larger title */
+    font-weight: 700; /* Bolder */
+    margin-bottom: 1.25rem;
     color: var(--text-color);
+    letter-spacing: -0.02em;
   }
 
   .input-group {
@@ -119,31 +150,44 @@ export const generateStyles = () => `
   }
 
   .form-control, .form-select {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    padding: 0.875rem 1.25rem; /* Larger padding */
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--input-border);
+    transition: all 0.2s ease-in-out;
   }
 
   .form-control:focus, .form-select:focus {
-    border-color: #6a11cb;
-    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--input-focus-shadow);
   }
 
   .btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    padding: 0.75rem 1.5rem; /* Larger buttons */
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.75rem;
   }
 
   .btn-primary {
-    background: var(--btn-primary-bg);
-    border: none;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
   }
 
   .btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  .hover-lift {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   }
 
   .input-group-text, .form-control {
@@ -155,10 +199,32 @@ export const generateStyles = () => `
   .form-control:focus {
     background-color: var(--input-bg);
     color: var(--input-text);
-    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 0 0.25rem var(--input-focus-shadow);
   }
 
-  .input-group { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04); }
+  .link-card {
+    background-color: var(--section-bg);
+    border: 1px solid var(--section-border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .link-card:hover {
+    border-color: var(--primary-color);
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .fade-in-section {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   h2, h4 {
     color: var(--text-color);
@@ -171,8 +237,10 @@ export const generateStyles = () => `
   }
 
   .form-label {
-    font-weight: 500;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
     color: var(--text-color);
+    font-size: 0.95rem;
   }
 
   /* Make muted helper text readable, especially in dark mode */
@@ -327,8 +395,8 @@ export const generateStyles = () => `
   .form-select:focus {
     background-color: var(--select-bg);
     color: var(--select-text);
-    border-color: var(--checkbox-checked-border);
-    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--input-focus-shadow);
   }
 
   .form-control::placeholder {
@@ -398,7 +466,7 @@ export const generateStyles = () => `
   .custom-rules-container {
     border: 1px solid var(--input-border);
     border-radius: 10px;
-    background-color: var(--card-bg);
+    background-color: transparent; /* Unified background */
     overflow: hidden;
   }
 
@@ -435,7 +503,7 @@ export const generateStyles = () => `
   .custom-rules-tabs {
     display: flex;
     border-bottom: 2px solid var(--input-border);
-    background-color: var(--card-bg);
+    background-color: transparent; /* Unified background */
   }
 
   .custom-rules-tab {
@@ -457,8 +525,8 @@ export const generateStyles = () => `
   }
 
   .custom-rules-tab.active {
-    color: #6a11cb;
-    border-bottom-color: #6a11cb;
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
     background-color: var(--dropdown-hover-bg);
     font-weight: 600;
   }
@@ -474,8 +542,8 @@ export const generateStyles = () => `
   }
 
   [data-theme="dark"] .custom-rules-tab.active {
-    color: #8a4fff;
-    border-bottom-color: #8a4fff;
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
     background-color: var(--dropdown-hover-bg);
   }
 
@@ -517,14 +585,14 @@ export const generateStyles = () => `
   }
 
   .conversion-controls .btn-outline-primary {
-    border-color: #6a11cb;
-    color: #6a11cb;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
     background-color: transparent;
   }
 
   .conversion-controls .btn-outline-primary:hover {
-    background-color: #6a11cb;
-    border-color: #6a11cb;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
     color: white;
   }
 
@@ -566,13 +634,13 @@ export const generateStyles = () => `
 
   /* Dark mode specific button adjustments */
   [data-theme="dark"] .conversion-controls .btn-outline-primary {
-    border-color: #8a4fff;
-    color: #8a4fff;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
   }
 
   [data-theme="dark"] .conversion-controls .btn-outline-primary:hover {
-    background-color: #8a4fff;
-    border-color: #8a4fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
     color: white;
   }
 
@@ -689,8 +757,8 @@ export const generateStyles = () => `
   }
 
   .custom-rule:hover, .custom-rule-json:hover {
-    border-color: #6a11cb;
-    box-shadow: 0 2px 8px rgba(106, 17, 203, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px var(--input-focus-shadow);
   }
 
   .custom-rule h6, .custom-rule-json h6 {
@@ -713,9 +781,9 @@ export const generateStyles = () => `
 
   .custom-rule .form-control:focus, .custom-rule-json .form-control:focus {
     background-color: var(--input-bg);
-    border-color: #6a11cb;
+    border-color: var(--primary-color);
     color: var(--text-color);
-    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+    box-shadow: 0 0 0 0.2rem var(--input-focus-shadow);
   }
 
   .custom-rule .form-control::placeholder, .custom-rule-json .form-control::placeholder {
@@ -725,14 +793,14 @@ export const generateStyles = () => `
   /* Dark mode specific adjustments for custom rule cards */
   [data-theme="dark"] .custom-rule:hover,
   [data-theme="dark"] .custom-rule-json:hover {
-    border-color: #8a4fff;
-    box-shadow: 0 2px 8px rgba(138, 79, 255, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px var(--input-focus-shadow);
   }
 
   [data-theme="dark"] .custom-rule .form-control:focus,
   [data-theme="dark"] .custom-rule-json .form-control:focus {
-    border-color: #8a4fff;
-    box-shadow: 0 0 0 0.2rem rgba(138, 79, 255, 0.25);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--input-focus-shadow);
   }
 
   .header-container {

@@ -34,15 +34,18 @@ const generateHead = () => `
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   <body>
-    ${generateDarkModeToggle()}
-    ${generateGithubLink()}
-    <div class="container mt-5">
-      <div class="card mb-5">
-        ${generateCardHeader()}
-        <div class="card-body">
-          ${generateForm()}
-          <div id="subscribeLinksContainer">
-            ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
+    ${generateNavbar()}
+    <div class="container main-container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+          <div class="card main-card shadow-lg">
+            ${generateCardHeader()}
+            <div class="card-body p-4 p-md-5">
+              ${generateForm()}
+              <div id="subscribeLinksContainer" class="mt-5 pt-4 border-top fade-in-section">
+                ${generateSubscribeLinks(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl)}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -51,89 +54,138 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
   </body>
 `;
 
+const generateNavbar = () => `
+  <nav class="navbar navbar-expand-lg shadow-sm fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-primary" href="#">
+        <i class="fas fa-bolt me-2"></i>Sublink Worker
+      </a>
+      <div class="d-flex align-items-center gap-3">
+        ${generateDarkModeToggle()}
+        <a href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm rounded-pill">
+          <i class="fab fa-github me-1"></i> GitHub
+        </a>
+      </div>
+    </div>
+  </nav>
+`;
+
 const generateDarkModeToggle = () => `
-  <button id="darkModeToggle" class="btn btn-outline-secondary">
+  <button id="darkModeToggle" class="btn btn-link nav-link p-0">
     <i class="fas fa-moon"></i>
   </button>
 `;
 
-const generateGithubLink = () => `
-  <a href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer" class="github-link">
-    <i class="fab fa-github"></i>
-  </a>
-`;
-
 const generateCardHeader = () => `
-  <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Sublink Worker</h1>
+  <div class="card-header text-center border-0 bg-transparent pt-5 pb-3">
+    <h1 class="display-5 fw-bold mb-2">Configuration Converter</h1>
+    <p class="text-muted lead fs-6">Convert and optimize your subscription links easily</p>
   </div>
 `;
 
 // Form Components
 const generateForm = () => `
   <form method="POST" id="encodeForm">
-    ${generateShareUrlsSection()}
-    ${generateAdvancedOptionsToggle()}
-    ${generateAdvancedOptions()}
-    ${generateButtonContainer()}
+    <div class="row g-4">
+      <div class="col-12">
+        ${generateShareUrlsSection()}
+      </div>
+      <div class="col-12">
+        ${generateAdvancedOptionsToggle()}
+        ${generateAdvancedOptions()}
+      </div>
+      <div class="col-12">
+        ${generateButtonContainer()}
+      </div>
+    </div>
   </form>
 `;
 
 const generateShareUrlsSection = () => `
-  <div class="form-section">
-    <div class="form-section-title">${t('shareUrls')}</div>
-    <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
+  <div class="form-floating mb-3">
+    <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" style="height: 120px"></textarea>
+    <label for="inputTextarea">${t('shareUrls')}</label>
   </div>
 `;
 
 const generateAdvancedOptionsToggle = () => `
-  <div class="form-check form-switch mb-3">
-    <input class="form-check-input" type="checkbox" id="advancedToggle">
-    <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
+  <div class="d-flex align-items-center mb-3">
+    <div class="form-check form-switch custom-switch">
+      <input class="form-check-input" type="checkbox" id="advancedToggle">
+      <label class="form-check-label fw-medium" for="advancedToggle">${t('advancedOptions')}</label>
+    </div>
   </div>
 `;
 
 const generateAdvancedOptions = () => `
-  <div id="advancedOptions">
-    ${generateRuleSetSelection()}
-    ${generateGeneralOptions()}
-    ${generateBaseConfigSection()}
-    ${generateUASection()}
+  <div id="advancedOptions" class="advanced-options-container">
+    <div class="card border-0 shadow-none rounded-3 p-3 mb-3">
+      ${generateRuleSetSelection()}
+      <hr class="my-3 opacity-25">
+      ${generateGeneralOptions()}
+      <hr class="my-3 opacity-25">
+      ${generateBaseConfigSection()}
+      <hr class="my-3 opacity-25">
+      ${generateUASection()}
+    </div>
   </div>
 `;
 
 const generateButtonContainer = () => `
-  <div class="button-container d-flex gap-2 mt-4">
-    <button type="submit" class="btn btn-primary flex-grow-1">
-      <i class="fas fa-sync-alt me-2"></i>${t('convert')}
-    </button>
-    <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
-      <i class="fas fa-trash-alt me-2"></i>${t('clear')}
-    </button>
+  <div class="row g-3 mt-2">
+    <div class="col-6">
+      <button type="submit" class="btn btn-primary w-100 btn-lg rounded-pill shadow-sm hover-lift">
+        <i class="fas fa-sync-alt me-2"></i>${t('convert')}
+      </button>
+    </div>
+    <div class="col-6">
+      <button type="button" class="btn btn-outline-secondary w-100 btn-lg rounded-pill hover-lift" id="clearFormBtn">
+        <i class="fas fa-trash-alt me-2"></i>${t('clear')}
+      </button>
+    </div>
   </div>
 `;
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
-  <div class="mt-4">
-    ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
-    ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
-    ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
-    ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
-    ${generateCustomPathSection(baseUrl)}
-    ${generateShortenButton()}
+  <div class="subscribe-section">
+    <h4 class="mb-4 text-center"><i class="fas fa-link me-2 text-primary"></i>Subscription Links</h4>
+    <div class="row g-4">
+      <div class="col-12 col-md-6">
+        ${generateLinkInput('Xray Link (Base64)', 'xrayLink', xrayUrl, 'fa-radiation')}
+      </div>
+      <div class="col-12 col-md-6">
+        ${generateLinkInput('SingBox Link', 'singboxLink', singboxUrl, 'fa-box')}
+      </div>
+      <div class="col-12 col-md-6">
+        ${generateLinkInput('Clash Link', 'clashLink', clashUrl, 'fa-cat')}
+      </div>
+      <div class="col-12 col-md-6">
+        ${generateLinkInput('Surge Link', 'surgeLink', surgeUrl, 'fa-bolt')}
+      </div>
+    </div>
+    <div class="row mt-4 justify-content-center">
+      <div class="col-md-8">
+        ${generateCustomPathSection(baseUrl)}
+      </div>
+    </div>
+    <div class="row mt-3 justify-content-center">
+      <div class="col-md-6">
+        ${generateShortenButton()}
+      </div>
+    </div>
   </div>
 `;
 
-const generateLinkInput = (label, id, value) => `
-  <div class="mb-4">
-    <label for="${id}" class="form-label">${label}</label>
+const generateLinkInput = (label, id, value, icon) => `
+  <div class="link-card h-100">
+    <label for="${id}" class="form-label small text-muted fw-bold text-uppercase">${label}</label>
     <div class="input-group">
-      <span class="input-group-text"><i class="fas fa-link"></i></span>
-      <input type="text" class="form-control" id="${id}" value="${value}" readonly>
-      <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('${id}')">
+      <span class="input-group-text bg-white border-end-0"><i class="fas ${icon} text-secondary"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" id="${id}" value="${value}" readonly onclick="this.select()">
+      <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('${id}')" title="Copy">
         <i class="fas fa-copy"></i>
       </button>
-      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')">
+      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')" title="QR Code">
         <i class="fas fa-qrcode"></i>
       </button>
     </div>
