@@ -265,7 +265,6 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             const defaultExternalController = "0.0.0.0:9090";
             const defaultExternalUiDownloadUrl = "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip";
             const defaultExternalUi = "./ui";
-            const defaultExternalUiName = "zashboard";
             const defaultSecret = "";
             const defaultDownloadDetour = "DIRECT";
             const defaultClashMode = "rule";
@@ -276,7 +275,6 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             const externalController = this.externalController || existingClashApi.external_controller || defaultExternalController;
             const externalUiDownloadUrl = this.externalUiDownloadUrl || existingClashApi.external_ui_download_url || defaultExternalUiDownloadUrl;
             const externalUi = existingClashApi.external_ui || defaultExternalUi;
-            const externalUiName = existingClashApi.external_ui_name || defaultExternalUiName;
             const secret = existingClashApi.secret ?? defaultSecret;
             const externalUiDownloadDetour = existingClashApi.external_ui_download_detour || defaultDownloadDetour;
             const clashMode = existingClashApi.default_mode || defaultClashMode;
@@ -285,7 +283,6 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 ...existingClashApi,
                 external_controller: externalController,
                 external_ui: externalUi,
-                external_ui_name: externalUiName,
                 external_ui_download_url: externalUiDownloadUrl,
                 external_ui_download_detour: externalUiDownloadDetour,
                 secret,
