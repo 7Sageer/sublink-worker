@@ -7,11 +7,13 @@ import { PREDEFINED_RULE_SETS } from './config.js';
 import { t, setLanguage } from './i18n/index.js';
 import yaml from 'js-yaml';
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+export default {
+  async fetch(request, env, ctx) {
+    return handleRequest(request, env);
+  }
+};
 
-async function handleRequest(request) {
+async function handleRequest(request, env) {
   try {
     const url = new URL(request.url);
     const lang = url.searchParams.get('lang');
@@ -64,7 +66,7 @@ async function handleRequest(request) {
       const configId = url.searchParams.get('configId');
       let baseConfig;
       if (configId) {
-        const customConfig = await SUBLINK_KV.get(configId);
+        const customConfig = await env.SUBLINK_KV.get(configId);
         if (customConfig) {
           baseConfig = JSON.parse(customConfig);
         }
@@ -108,7 +110,7 @@ async function handleRequest(request) {
       }
 
       const shortCode = GenerateWebPath();
-      await SUBLINK_KV.put(shortCode, originalUrl);
+      await env.SUBLINK_KV.put(shortCode, originalUrl);
 
       const shortUrl = `${url.origin}/s/${shortCode}`;
       return new Response(JSON.stringify({ shortUrl }), {
@@ -131,7 +133,7 @@ async function handleRequest(request) {
         shortCode = GenerateWebPath();
       }
 
-      await SUBLINK_KV.put(shortCode, queryString);
+      await env.SUBLINK_KV.put(shortCode, queryString);
 
       return new Response(shortCode, {
         headers: { 'Content-Type': 'text/plain' }
@@ -139,7 +141,7 @@ async function handleRequest(request) {
 
     } else if (url.pathname.startsWith('/b/') || url.pathname.startsWith('/c/') || url.pathname.startsWith('/x/') || url.pathname.startsWith('/s/')) {
       const shortCode = url.pathname.split('/')[2];
-      const originalParam = await SUBLINK_KV.get(shortCode);
+      const originalParam = await env.SUBLINK_KV.get(shortCode);
       let originalUrl;
 
       if (url.pathname.startsWith('/b/')) {
@@ -242,7 +244,7 @@ async function handleRequest(request) {
         // 验证 JSON 格式
         JSON.parse(configString);
 
-        await SUBLINK_KV.put(configId, configString, {
+        await env.SUBLINK_KV.put(configId, configString, {
           expirationTtl: 60 * 60 * 24 * 30  // 30 days
         });
 
@@ -265,7 +267,7 @@ async function handleRequest(request) {
       try {
         const urlObj = new URL(shortUrl);
         const pathParts = urlObj.pathname.split('/');
-        
+
         if (pathParts.length < 3) {
           return new Response(t('invalidShortUrl'), { status: 400 });
         }
@@ -277,7 +279,7 @@ async function handleRequest(request) {
           return new Response(t('invalidShortUrl'), { status: 400 });
         }
 
-        const originalParam = await SUBLINK_KV.get(shortCode);
+        const originalParam = await env.SUBLINK_KV.get(shortCode);
         if (originalParam === null) {
           return new Response(t('shortUrlNotFound'), { status: 404 });
         }
