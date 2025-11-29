@@ -5,14 +5,21 @@ export const CustomRules = (props) => {
     const { t } = props;
 
     return (
-        <div x-data="customRulesData()" class="p-6">
+        <div x-data="customRulesData()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-stream text-gray-400"></i>
+                    {t('customRulesSection')}
+                </h3>
+            </div>
+
             <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-6 gap-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">{t('customRulesSectionTooltip')}</p>
 
                 <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     <button
                         type="button" x-on:click="mode = 'form'"
-                    x-bind:class="{'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm': mode === 'form', 'text-gray-500 dark:text-gray-400': mode !== 'form'}"
+                    x-bind:class="{'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm': mode === 'form', 'text-gray-500 dark:text-gray-400': mode !== 'form'}"
                     class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2"
           >
                     <i class="fas fa-list"></i>
@@ -20,7 +27,7 @@ export const CustomRules = (props) => {
                 </button>
                 <button
                     type="button" x-on:click="mode = 'json'"
-                x-bind:class="{'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm': mode === 'json', 'text-gray-500 dark:text-gray-400': mode !== 'json'}"
+                x-bind:class="{'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm': mode === 'json', 'text-gray-500 dark:text-gray-400': mode !== 'json'}"
                 class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2"
           >
                 <i class="fas fa-code"></i>
@@ -37,7 +44,7 @@ export const CustomRules = (props) => {
                     <i class="fas fa-plus text-2xl"></i>
                 </div>
                 <p class="text-gray-500 dark:text-gray-400 mb-4">{t('noCustomRulesForm')}</p>
-                <button type="button" x-on:click="addRule()" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 font-medium">
+                <button type="button" x-on:click="addRule()" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200 font-medium">
                 {t('addCustomRule')}
             </button>
         </div>
@@ -45,10 +52,10 @@ export const CustomRules = (props) => {
 
     <div class="space-y-4">
         <template x-for="(rule, index) in rules" x-bind:key="index">
-        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:border-purple-200 dark:hover:border-purple-900/50">
+        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:border-primary-200 dark:hover:border-primary-900/50">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                    <span class="w-6 h-6 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs" x-text="index + 1"></span>
+                    <span class="w-6 h-6 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center text-xs" x-text="index + 1"></span>
                     {t('customRule')}
                 </h3>
                 <button type="button" x-on:click="removeRule(index)" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20">
@@ -65,7 +72,7 @@ export const CustomRules = (props) => {
                 <input
                     type="text"
                     x-model="rule.name"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder="e.g., MyRule"
                 />
             </div>
@@ -78,7 +85,7 @@ export const CustomRules = (props) => {
                 <input
                     type="text"
                     x-model="rule.domain_suffix"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder={t('customRuleDomainSuffixPlaceholder')}
                 />
             </div>
@@ -91,7 +98,7 @@ export const CustomRules = (props) => {
                 <input
                     type="text"
                     x-model="rule.domain_keyword"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder={t('customRuleDomainKeywordPlaceholder')}
                 />
             </div>
@@ -104,7 +111,7 @@ export const CustomRules = (props) => {
                 <input
                     type="text"
                     x-model="rule.ip_cidr"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder={t('customRuleIPCIDRPlaceholder')}
                 />
             </div>
@@ -113,12 +120,12 @@ export const CustomRules = (props) => {
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
                     {t('customRuleProtocol')}
-                    <i class="fas fa-info-circle text-gray-400 hover:text-purple-500 cursor-help" title={t('customRuleProtocolTooltip')}></i>
+                    <i class="fas fa-info-circle text-gray-400 hover:text-primary-500 cursor-help" title={t('customRuleProtocolTooltip')}></i>
                 </label>
                 <input
                     type="text"
                     x-model="rule.protocol"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder={t('customRuleProtocolPlaceholder')}
                 />
             </div>
@@ -127,12 +134,12 @@ export const CustomRules = (props) => {
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
                     {t('customRuleGeoSite')}
-                    <i class="fas fa-info-circle text-gray-400 hover:text-purple-500 cursor-help" title={t('customRuleGeoSiteTooltip')}></i>
+                    <i class="fas fa-info-circle text-gray-400 hover:text-primary-500 cursor-help" title={t('customRuleGeoSiteTooltip')}></i>
                 </label>
                 <input
                     type="text"
                     x-model="rule.site_rules"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder={t('customRuleGeoSitePlaceholder')}
                 />
             </div>
@@ -141,12 +148,12 @@ export const CustomRules = (props) => {
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
                     {t('customRuleGeoIP')}
-                    <i class="fas fa-info-circle text-gray-400 hover:text-purple-500 cursor-help" title={t('customRuleGeoIPTooltip')}></i>
+                    <i class="fas fa-info-circle text-gray-400 hover:text-primary-500 cursor-help" title={t('customRuleGeoIPTooltip')}></i>
                 </label>
                 <input
                     type="text"
                     x-model="rule.ip_rules"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     placeholder={t('customRuleGeoIPPlaceholder')}
                 />
             </div>
@@ -156,7 +163,7 @@ export const CustomRules = (props) => {
         </div>
 
         <div class="mt-6 flex flex-wrap gap-3">
-          <button type="button" x-on:click="addRule()" class="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors duration-200 font-medium flex items-center gap-2">
+          <button type="button" x-on:click="addRule()" class="px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors duration-200 font-medium flex items-center gap-2">
             <i class="fas fa-plus"></i>
             {t('addCustomRule')}
           </button>
@@ -172,7 +179,7 @@ export const CustomRules = (props) => {
         <div class="relative">
             <textarea
                 x-model="jsonContent"
-                class="w-full min-h-[16rem] px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-y"
+                class="w-full min-h-[16rem] px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-y"
                 placeholder='[{"name": "MyRule", "domain_suffix": ["example.com"], "outbound": "Proxy"}]'
             ></textarea>
             <div class="absolute bottom-4 right-4 flex gap-2">

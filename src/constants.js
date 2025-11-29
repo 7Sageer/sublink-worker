@@ -7,8 +7,8 @@ export const APP_KEYWORDS = 'clash, singbox, surge, subscription, converter, sub
 
 // Subtitles for different languages
 export const APP_SUBTITLE = {
-    'zh-CN': 'Serverless 订阅管理最佳实践',
-    'en-US': 'Best Practice for Serverless Subscription Management',
-    'fa': 'بهترین روش برای مدیریت اشتراک بدون سرور',
-    'ru': 'Лучшая практика управления подписками без сервера'
+    'zh-CN': '高效聚合与管理您的代理节点',
+    'en-US': 'Efficiently Aggregate and Manage Your Proxy Nodes',
+    'fa': 'تجمیع و مدیریت کارآمد نودهای پروکسی شما',
+    'ru': 'Эффективная агрегация и управление вашими прокси-узлами'
 };

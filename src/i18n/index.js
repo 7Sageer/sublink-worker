@@ -70,7 +70,7 @@ export const translations = {
     customRuleJSON: 'JSON规则',
     customRuleJSONTooltip: '使用JSON格式添加自定义规则，支持批量添加',
     customRulesSection: '自定义规则',
-    customRulesSectionTooltip: '创建自定义路由规则来控制特定流量的路由行为。支持表单和JSON两种编辑方式，可以相互转换。',
+    customRulesSectionTooltip: '创建自定义路由规则来控制特定流量的路由行为。',
     customRulesForm: '表单视图',
     customRulesJSON: 'JSON视图',
     customRule: '自定义规则',
