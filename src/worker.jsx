@@ -117,7 +117,9 @@ app.get('/clash', async (c) => {
             externalUiDownloadUrl
         );
         await builder.build();
-        return c.text(builder.formatConfig());
+        return c.text(builder.formatConfig(), 200, {
+            'Content-Type': 'text/yaml; charset=utf-8'
+        });
     } catch (e) {
         return c.text(`Error: ${e.message}`, 500);
     }

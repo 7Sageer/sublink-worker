@@ -11,7 +11,7 @@ describe('Worker', () => {
     });
 
     it('GET /singbox returns JSON', async () => {
-        const config = 'vmess://example';
+        const config = 'vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogInRlc3QiLA0KICAiYWRkIjogIjEuMS4xLjEiLA0KICAicG9ydCI6ICI0NDMiLA0KICAiaWQiOiAiYWRkNjY2NjYtODg4OC04ODg4LTg4ODgtODg4ODg4ODg4ODg4IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ3cyIsDQogICJ0eXBlIjogIm5vbmUiLA0KICAiaG9zdCI6ICIiLA0KICAicGF0aCI6ICIvIiwNCiAgInRscyI6ICJ0bHMiDQp9';
         const res = await app.request(`http://localhost/singbox?config=${encodeURIComponent(config)}`);
         expect(res.status).toBe(200);
         expect(res.headers.get('content-type')).toContain('application/json');
@@ -20,7 +20,7 @@ describe('Worker', () => {
     });
 
     it('GET /clash returns YAML', async () => {
-        const config = 'vmess://example';
+        const config = 'vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogInRlc3QiLA0KICAiYWRkIjogIjEuMS4xLjEiLA0KICAicG9ydCI6ICI0NDMiLA0KICAiaWQiOiAiYWRkNjY2NjYtODg4OC04ODg4LTg4ODgtODg4ODg4ODg4ODg4IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ3cyIsDQogICJ0eXBlIjogIm5vbmUiLA0KICAiaG9zdCI6ICIiLA0KICAicGF0aCI6ICIvIiwNCiAgInRscyI6ICJ0bHMiDQp9';
         const res = await app.request(`http://localhost/clash?config=${encodeURIComponent(config)}`);
         expect(res.status).toBe(200);
         // Clash builder returns text/yaml
