@@ -7,3 +7,6 @@ compatibility_flags = ["nodejs_compat"]
 kv_namespaces = [
   { binding = "SUBLINK_KV", id = "8943789ed0af49659f887fc740d11240" }
 ]
+
+[assets]
+directory = "./public"

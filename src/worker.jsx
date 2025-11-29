@@ -310,8 +310,8 @@ app.get('/resolve', async (c) => {
     }
 });
 
-app.get('/favicon.ico', (c) => {
-    return c.redirect('https://cravatar.cn/avatar/9240d78bbea4cf05fb04f2b86f22b18d?s=160&d=retro&r=g');
+app.get('/favicon.ico', async (c) => {
+    return c.env.ASSETS.fetch(c.req.raw);
 });
 
 export default app;
