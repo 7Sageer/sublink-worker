@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { ClashConfigBuilder } from '../src/ClashConfigBuilder.js';
-import { setLanguage, t } from '../src/i18n/index.js';
+import { createTranslator } from '../src/i18n/index.js';
+import { groupProxiesByCountry } from '../src/utils.js';
 
-// Set language for tests
-setLanguage('zh-CN');
+// Create translator for tests
+const t = createTranslator('zh-CN');
 
 describe('Country Group Tests', () => {
     it('should group proxies by country correctly', async () => {

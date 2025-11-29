@@ -1,7 +1,7 @@
 import { ProxyParser, convertYamlProxyToObject } from './ProxyParsers.js';
 import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64, parseCountryFromNodeName } from './utils.js';
 import yaml from 'js-yaml';
-import { t, setLanguage } from './i18n/index.js';
+import { createTranslator } from './i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 
 export class BaseConfigBuilder {
@@ -10,7 +10,7 @@ export class BaseConfigBuilder {
         this.config = DeepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
-        setLanguage(lang);
+        this.t = createTranslator(lang);
         this.userAgent = userAgent;
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
@@ -75,7 +75,7 @@ export class BaseConfigBuilder {
                         // not YAML; fall through
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
         }
 
         // Otherwise, line-by-line processing (URLs, subscription content, remote lists, etc.)

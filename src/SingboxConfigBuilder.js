@@ -1,17 +1,23 @@
 import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy, parseCountryFromNodeName } from './utils.js';
-import { t } from './i18n/index.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
+        super(inputString, baseConfig, lang, userAgent, groupByCountry);
         if (baseConfig === undefined) {
             baseConfig = SING_BOX_CONFIG;
             if (baseConfig.dns && baseConfig.dns.servers) {
-                baseConfig.dns.servers[0].detour = t('outboundNames.Node Select');
+                baseConfig.dns.servers[0].detour = this.t('outboundNames.Node Select');
             }
         }
-        super(inputString, baseConfig, lang, userAgent, groupByCountry);
+        this.config = DeepCopy(baseConfig); // Re-assign config after super call if needed, but super already does it. Wait.
+        // Super constructor initializes this.config with baseConfig.
+        // But here we modify baseConfig BEFORE super call? No, we can't use 'this' before super.
+        // So we must move the baseConfig logic to BEFORE super call, but we need 'this.t' which is initialized in super.
+        // Catch-22.
+        // Solution: Initialize this.t in super, then modify this.config in child constructor.
+
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.countryGroupNames = [];
@@ -19,6 +25,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.enableClashUI = enableClashUI;
         this.externalController = externalController;
         this.externalUiDownloadUrl = externalUiDownloadUrl;
+
+        // Apply the modification that was previously done before super
+        if (this.config.dns && this.config.dns.servers) {
+            this.config.dns.servers[0].detour = this.t('outboundNames.Node Select');
+        }
     }
 
     getProxies() {
@@ -60,16 +71,16 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     addAutoSelectGroup(proxyList) {
         this.config.outbounds.unshift({
             type: "urltest",
-            tag: t('outboundNames.Auto Select'),
+            tag: this.t('outboundNames.Auto Select'),
             outbounds: DeepCopy(proxyList),
         });
     }
 
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        proxyList.unshift('DIRECT', 'REJECT', this.t('outboundNames.Auto Select'));
         this.config.outbounds.unshift({
             type: "selector",
-            tag: t('outboundNames.Node Select'),
+            tag: this.t('outboundNames.Node Select'),
             outbounds: proxyList
         });
     }
@@ -78,13 +89,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         const normalize = (s) => typeof s === 'string' ? s.trim() : s;
         const base = this.groupByCountry
             ? [
-                t('outboundNames.Node Select'),
-                t('outboundNames.Auto Select'),
+                this.t('outboundNames.Node Select'),
+                this.t('outboundNames.Auto Select'),
                 ...(this.manualGroupName ? [this.manualGroupName] : []),
                 ...(this.countryGroupNames || [])
             ]
             : [
-                t('outboundNames.Node Select'),
+                this.t('outboundNames.Node Select'),
                 ...proxyList
             ];
         const combined = ['DIRECT', 'REJECT', ...base].filter(Boolean);
@@ -99,11 +110,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
-            if (outbound !== t('outboundNames.Node Select')) {
+            if (outbound !== this.t('outboundNames.Node Select')) {
                 const selectorMembers = this.buildSelectorMembers(proxyList);
                 this.config.outbounds.push({
                     type: "selector",
-                    tag: t(`outboundNames.${outbound}`),
+                    tag: this.t(`outboundNames.${outbound}`),
                     outbounds: selectorMembers
                 });
             }
@@ -127,7 +138,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         const selectorMembers = this.buildSelectorMembers(proxyList);
         this.config.outbounds.push({
             type: "selector",
-            tag: t('outboundNames.Fall Back'),
+            tag: this.t('outboundNames.Fall Back'),
             outbounds: selectorMembers
         });
     }
@@ -151,7 +162,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         const existingTags = new Set((this.config.outbounds || []).map(o => normalize(o?.tag)).filter(Boolean));
 
         const manualProxyNames = proxies.map(p => p?.tag).filter(Boolean);
-        const manualGroupName = manualProxyNames.length > 0 ? t('outboundNames.Manual Switch') : null;
+        const manualGroupName = manualProxyNames.length > 0 ? this.t('outboundNames.Manual Switch') : null;
         if (manualGroupName) {
             const manualNorm = normalize(manualGroupName);
             if (!existingTags.has(manualNorm)) {
@@ -185,14 +196,14 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             countryGroupNames.push(groupName);
         });
 
-        const nodeSelectTag = t('outboundNames.Node Select');
+        const nodeSelectTag = this.t('outboundNames.Node Select');
         const nodeSelectGroup = this.config.outbounds.find(o => normalize(o?.tag) === normalize(nodeSelectTag));
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.outbounds)) {
             const seen = new Set();
             const rebuilt = [
                 'DIRECT',
                 'REJECT',
-                t('outboundNames.Auto Select'),
+                this.t('outboundNames.Auto Select'),
                 ...(manualGroupName ? [manualGroupName] : []),
                 ...countryGroupNames
             ].filter(Boolean);
@@ -218,7 +229,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 domain_suffix: rule.domain_suffix,
                 domain_keyword: rule.domain_keyword,
                 protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
@@ -228,7 +239,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                     ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
                 ],
                 protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
@@ -238,7 +249,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                     ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip}-ip`))
                 ],
                 protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
@@ -246,19 +257,19 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             this.config.route.rules.push({
                 ip_cidr: rule.ip_cidr,
                 protocol: rule.protocol,
-                outbound: t(`outboundNames.${rule.outbound}`)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
         this.config.route.rules.unshift(
             { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: t('outboundNames.Node Select') },
+            { clash_mode: 'global', outbound: this.t('outboundNames.Node Select') },
             { action: 'sniff' },
             { protocol: 'dns', action: 'hijack-dns' }
         );
 
         this.config.route.auto_detect_interface = true;
-        this.config.route.final = t('outboundNames.Fall Back');
+        this.config.route.final = this.t('outboundNames.Fall Back');
         // 如果启用了 Clash UI，添加配置
         // 如果启用 Clash UI 或传入了自定义参数，添加/覆盖 Clash API 配置
         if (this.enableClashUI || this.externalController || this.externalUiDownloadUrl) {

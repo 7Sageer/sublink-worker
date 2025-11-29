@@ -15,6 +15,7 @@
     "wrangler": "^3.60.3"
   },
   "dependencies": {
+    "hono": "^4.10.7",
     "js-yaml": "^4.1.0"
   },
   "engines": {

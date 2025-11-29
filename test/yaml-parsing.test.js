@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { BaseConfigBuilder } from '../src/BaseConfigBuilder.js';
-import { setLanguage } from '../src/i18n/index.js';
+import yaml from 'js-yaml';
+import { createTranslator } from '../src/i18n/index.js';
+import { SingboxConfigBuilder } from '../src/SingboxConfigBuilder.js';
 
 // Test cases inline (from test-cases.yaml)
 const testCases = [

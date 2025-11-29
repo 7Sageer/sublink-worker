@@ -2,7 +2,6 @@ import yaml from 'js-yaml';
 import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy, parseCountryFromNodeName } from './utils.js';
-import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
@@ -28,7 +27,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
-        switch(proxy.type) {
+        switch (proxy.type) {
             case 'shadowsocks':
                 return {
                     name: proxy.tag,
@@ -96,7 +95,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'ws-opts': proxy.transport?.type === 'ws' ? {
                         path: proxy.transport.path,
                         headers: proxy.transport.headers
-                    }: undefined,
+                    } : undefined,
                     'reality-opts': proxy.tls.reality?.enabled ? {
                         'public-key': proxy.tls.reality.public_key,
                         'short-id': proxy.tls.reality.short_id,
@@ -104,7 +103,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
-                    tfo : proxy.tcp_fast_open,
+                    tfo: proxy.tcp_fast_open,
                     'skip-cert-verify': !!proxy.tls?.insecure,
                     ...(typeof proxy.udp !== 'undefined' ? { udp: proxy.udp } : {}),
                     ...(proxy.alpn ? { alpn: proxy.alpn } : {}),
@@ -146,7 +145,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'ws-opts': proxy.transport?.type === 'ws' ? {
                         path: proxy.transport.path,
                         headers: proxy.transport.headers
-                    }: undefined,
+                    } : undefined,
                     'reality-opts': proxy.tls.reality?.enabled ? {
                         'public-key': proxy.tls.reality.public_key,
                         'short-id': proxy.tls.reality.short_id,
@@ -154,7 +153,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
-                    tfo : proxy.tcp_fast_open,
+                    tfo: proxy.tcp_fast_open,
                     'skip-cert-verify': !!proxy.tls?.insecure,
                     ...(proxy.alpn ? { alpn: proxy.alpn } : {}),
                     'flow': proxy.flow ?? undefined,
@@ -203,24 +202,24 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
         // Find proxies with the same or partially matching name
         const similarProxies = this.config.proxies.filter(p => p.name.includes(proxy.name));
-    
+
         // Check if there is a proxy with identical data excluding the 'name' field
         const isIdentical = similarProxies.some(p => {
             const { name: _, ...restOfProxy } = proxy; // Exclude the 'name' attribute
             const { name: __, ...restOfP } = p;       // Exclude the 'name' attribute
             return JSON.stringify(restOfProxy) === JSON.stringify(restOfP);
         });
-    
+
         if (isIdentical) {
             // If there is a proxy with identical data, skip adding it
             return;
         }
-    
+
         // If there are proxies with similar names but different data, modify the name
         if (similarProxies.length > 0) {
             proxy.name = `${proxy.name} ${similarProxies.length + 1}`;
         }
-    
+
         // Add the proxy to the configuration
         this.config.proxies.push(proxy);
     }
@@ -228,7 +227,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addAutoSelectGroup(proxyList) {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-        const autoName = t('outboundNames.Auto Select');
+        const autoName = this.t('outboundNames.Auto Select');
         const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(autoName));
         if (exists) return;
         this.config['proxy-groups'].push({
@@ -244,13 +243,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addNodeSelectGroup(proxyList) {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-        const nodeName = t('outboundNames.Node Select');
+        const nodeName = this.t('outboundNames.Node Select');
         const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(nodeName));
         if (exists) return;
         const list = [
             'DIRECT',
             'REJECT',
-            t('outboundNames.Auto Select'),
+            this.t('outboundNames.Auto Select'),
             ...proxyList
         ];
         this.config['proxy-groups'].unshift({
@@ -265,15 +264,15 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         const directReject = ['DIRECT', 'REJECT'];
         const base = this.groupByCountry
             ? [
-                t('outboundNames.Node Select'),
-                t('outboundNames.Auto Select'),
+                this.t('outboundNames.Node Select'),
+                this.t('outboundNames.Auto Select'),
                 ...(this.manualGroupName ? [this.manualGroupName] : []),
                 ...((this.countryGroupNames || []))
-              ]
+            ]
             : [
-                t('outboundNames.Node Select'),
+                this.t('outboundNames.Node Select'),
                 ...proxyList
-              ];
+            ];
         const combined = [...directReject, ...base].filter(Boolean);
         const seen = new Set();
         return combined.filter(name => {
@@ -286,9 +285,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
-            if (outbound !== t('outboundNames.Node Select')) {
+            if (outbound !== this.t('outboundNames.Node Select')) {
                 const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-                const name = t(`outboundNames.${outbound}`);
+                const name = this.t(`outboundNames.${outbound}`);
                 const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(name));
                 if (!exists) {
                     const proxies = this.buildSelectGroupMembers(proxyList);
@@ -306,7 +305,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-                const name = t(`outboundNames.${rule.name}`);
+                const name = this.t(`outboundNames.${rule.name}`);
                 const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(name));
                 if (!exists) {
                     const proxies = this.buildSelectGroupMembers(proxyList);
@@ -322,7 +321,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addFallBackGroup(proxyList) {
         const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-        const name = t('outboundNames.Fall Back');
+        const name = this.t('outboundNames.Fall Back');
         const exists = this.config['proxy-groups'].some(g => g && normalize(g.name) === normalize(name));
         if (exists) return;
         const proxies = this.buildSelectGroupMembers(proxyList);
@@ -350,9 +349,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
         const normalize = (s) => typeof s === 'string' ? s.trim() : s;
         const existingNames = new Set((this.config['proxy-groups'] || []).map(g => normalize(g?.name)).filter(Boolean));
-        
+
         const manualProxyNames = proxies.map(p => p?.name).filter(Boolean);
-        const manualGroupName = manualProxyNames.length > 0 ? t('outboundNames.Manual Switch') : null;
+        const manualGroupName = manualProxyNames.length > 0 ? this.t('outboundNames.Manual Switch') : null;
         if (manualGroupName) {
             const manualNorm = normalize(manualGroupName);
             if (!existingNames.has(manualNorm)) {
@@ -386,13 +385,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             countryGroupNames.push(groupName);
         });
 
-        const nodeSelectGroup = this.config['proxy-groups'].find(g => g && g.name === t('outboundNames.Node Select'));
+        const nodeSelectGroup = this.config['proxy-groups'].find(g => g && g.name === this.t('outboundNames.Node Select'));
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.proxies)) {
             const seen = new Set();
             const rebuilt = [
                 'DIRECT',
                 'REJECT',
-                t('outboundNames.Auto Select'),
+                this.t('outboundNames.Auto Select'),
                 ...(manualGroupName ? [manualGroupName] : []),
                 ...countryGroupNames
             ].filter(Boolean);
@@ -425,28 +424,28 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
         rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
             rule.domain_suffix.forEach(suffix => {
-                ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
+                ruleResults.push(`DOMAIN-SUFFIX,${suffix},${this.t('outboundNames.' + rule.outbound)}`);
             });
             rule.domain_keyword.forEach(keyword => {
-                ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
+                ruleResults.push(`DOMAIN-KEYWORD,${keyword},${this.t('outboundNames.' + rule.outbound)}`);
             });
         });
 
         rules.filter(rule => !!rule.site_rules[0]).map(rule => {
             rule.site_rules.forEach(site => {
-                ruleResults.push(`RULE-SET,${site},${t('outboundNames.'+ rule.outbound)}`);
+                ruleResults.push(`RULE-SET,${site},${this.t('outboundNames.' + rule.outbound)}`);
             });
         });
 
         rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
             rule.ip_rules.forEach(ip => {
-                ruleResults.push(`RULE-SET,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                ruleResults.push(`RULE-SET,${ip},${this.t('outboundNames.' + rule.outbound)},no-resolve`);
             });
         });
 
         rules.filter(rule => !!rule.ip_cidr).map(rule => {
             rule.ip_cidr.forEach(cidr => {
-                ruleResults.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                ruleResults.push(`IP-CIDR,${cidr},${this.t('outboundNames.' + rule.outbound)},no-resolve`);
             });
         });
 
@@ -473,7 +472,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         }
 
         this.config.rules = [...ruleResults];
-        this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+        this.config.rules.push(`MATCH,${this.t('outboundNames.Fall Back')}`);
 
         // Enable Clash UI (external controller/dashboard) when requested or when custom UI params are provided
         if (this.enableClashUI || this.externalController || this.externalUiDownloadUrl) {

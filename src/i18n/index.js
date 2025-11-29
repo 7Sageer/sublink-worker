@@ -1,6 +1,7 @@
-import {checkStartsWith} from "../utils.js";
+import { checkStartsWith } from "../utils.js";
+
 // 定义语言包
-const translations = {
+export const translations = {
   'zh-CN': {
     enableClashUI: '启用 Clash API',
     enableClashUITip: '在 SingBox 配置中启用 Clash API (支持 Dashboard 面板)，默认端口 9090',
@@ -32,6 +33,11 @@ const translations = {
     clearConfig: '清除配置',
     convert: '转换',
     clear: '清除',
+    processing: '处理中...',
+    errorGeneratingLinks: '生成链接时出错',
+    confirmClearConfig: '确定要清除配置吗？',
+    confirmClearAll: '确定要清除所有内容吗？',
+    saveConfigSuccess: '配置保存成功！',
     customPath: '自定义路径',
     savedPaths: '已保存的路径',
     shortenLinks: '生成短链接',
@@ -164,6 +170,11 @@ const translations = {
     clearConfig: 'Clear Config',
     convert: 'Convert',
     clear: 'Clear',
+    processing: 'Processing...',
+    errorGeneratingLinks: 'Error generating links',
+    confirmClearConfig: 'Are you sure you want to clear the configuration?',
+    confirmClearAll: 'Are you sure you want to clear all?',
+    saveConfigSuccess: 'Configuration saved successfully!',
     customPath: 'Custom Path',
     savedPaths: 'Saved Paths',
     shortenLinks: 'Generate Short Links',
@@ -216,7 +227,7 @@ const translations = {
     invalidJSON: 'Invalid JSON format',
     allJSONValid: 'All JSON rules are valid!',
     jsonValidationErrors: 'JSON validation errors',
-    outboundNames:{
+    outboundNames: {
       'Auto Select': '⚡ Auto Select',
       'Node Select': '🚀 Node Select',
       'Fall Back': '🐟 Fall Back',
@@ -289,6 +300,11 @@ const translations = {
     clearConfig: 'پاک کردن پیکربندی',
     convert: 'تبدیل',
     clear: 'پاک کردن',
+    processing: 'در حال پردازش...',
+    errorGeneratingLinks: 'خطا در ایجاد لینک‌ها',
+    confirmClearConfig: 'آیا مطمئن هستید که می‌خواهید پیکربندی را پاک کنید؟',
+    confirmClearAll: 'آیا مطمئن هستید که می‌خواهید همه را پاک کنید؟',
+    saveConfigSuccess: 'پیکربندی با موفقیت ذخیره شد!',
     customPath: 'مسیر سفارشی',
     savedPaths: 'مسیرهای ذخیره شده',
     shortenLinks: 'ایجاد لینک‌های کوتاه',
@@ -414,6 +430,11 @@ const translations = {
     clearConfig: 'Очистить конфигурацию',
     convert: 'Преобразовать',
     clear: 'Очистить',
+    processing: 'Обработка...',
+    errorGeneratingLinks: 'Ошибка при создании ссылок',
+    confirmClearConfig: 'Вы уверены, что хотите очистить конфигурацию?',
+    confirmClearAll: 'Вы уверены, что хотите очистить всё?',
+    saveConfigSuccess: 'Конфигурация успешно сохранена!',
     customPath: 'Пользовательский путь',
     savedPaths: 'Сохранённые пути',
     shortenLinks: 'Создать короткие ссылки',
@@ -516,55 +537,36 @@ const translations = {
   }
 };
 
-// 当前语言
-let currentLang = 'zh-CN';
-
-
-// 设置语言
-export function setLanguage(lang) {
-  if(translations[lang]) {
-    currentLang = lang;
-  } else if(checkStartsWith(lang, 'en')) {
-    currentLang = 'en-US';
-  } else if(checkStartsWith(lang, 'fa')) {
-    currentLang = 'fa';
-  } else if(checkStartsWith(lang, 'ru')) {
-    currentLang = 'ru';
+export function resolveLanguage(lang) {
+  if (translations[lang]) {
+    return lang;
+  } else if (checkStartsWith(lang, 'en')) {
+    return 'en-US';
+  } else if (checkStartsWith(lang, 'fa')) {
+    return 'fa';
+  } else if (checkStartsWith(lang, 'ru')) {
+    return 'ru';
   } else {
-    currentLang = 'zh-CN';
+    return 'zh-CN';
   }
 }
 
-// 获取翻译，支持嵌套键值访问
-export function t(key) {
-  const keys = key.split('.');
-  let value = translations[currentLang];
-  
-  // 逐级查找翻译值
-  for (const k of keys) {
-    value = value?.[k];
-    if (value === undefined) {
-      if (checkStartsWith(key, 'outboundNames.')) {
-        return key.split('.')[1];
+export function createTranslator(lang) {
+  const currentLang = resolveLanguage(lang);
+
+  return function t(key) {
+    const keys = key.split('.');
+    let value = translations[currentLang];
+
+    for (const k of keys) {
+      value = value?.[k];
+      if (value === undefined) {
+        if (checkStartsWith(key, 'outboundNames.')) {
+          return key.split('.')[1];
+        }
+        return key;
       }
-      // 找不到翻译时返回原始键名
-      return key;
     }
-  }
-  return value;
-}
-
-// 获取当前语言
-export function getCurrentLang() {
-  return currentLang;
-}
-
-// 获取默认规则列表
-export function getDefaultRules() {
-  return translations[currentLang].defaultRules;
-}
-
-// 获取出站集
-export function getOutbounds(){
-  return translations[currentLang].outboundNames;
+    return value;
+  };
 }
