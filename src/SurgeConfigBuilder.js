@@ -1,6 +1,6 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { parseCountryFromNodeName } from './utils.js';
-import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { groupProxiesByCountry } from './utils.js';
+import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config/index.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry) {
@@ -252,18 +252,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
     addCountryGroups() {
         const proxies = this.getProxies();
-        const countryGroups = {};
-
-        proxies.forEach(proxy => {
-            const proxyName = this.getProxyName(proxy);
-            const countryInfo = parseCountryFromNodeName(proxyName);
-            if (countryInfo) {
-                const { name } = countryInfo;
-                if (!countryGroups[name]) {
-                    countryGroups[name] = { ...countryInfo, proxies: [] };
-                }
-                countryGroups[name].proxies.push(proxyName);
-            }
+        const countryGroups = groupProxiesByCountry(proxies, {
+            getName: proxy => this.getProxyName(proxy)
         });
 
         const existing = new Set((this.config['proxy-groups'] || [])

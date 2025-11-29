@@ -152,6 +152,63 @@ export function tryDecodeSubscriptionLines(input, { decodeUriComponent = false }
 
 	return trimmed;
 }
+
+export function groupProxiesByCountry(proxies, { getName } = {}) {
+	const extractor = typeof getName === 'function'
+		? getName
+		: (proxy) => {
+			if (proxy == null) return undefined;
+			if (typeof proxy === 'string') {
+				return proxy;
+			}
+			if (typeof proxy === 'object') {
+				return proxy.name ?? proxy.tag ?? proxy.id ?? proxy.ps;
+			}
+			return undefined;
+		};
+
+	const normalizeName = (value) => {
+		if (typeof value !== 'string') {
+			return undefined;
+		}
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return undefined;
+		}
+		const eqIndex = trimmed.indexOf('=');
+		if (eqIndex > -1) {
+			const beforeEq = trimmed.slice(0, eqIndex).trim();
+			if (beforeEq) {
+				return beforeEq;
+			}
+		}
+		return trimmed;
+	};
+
+	const grouped = {};
+	if (!Array.isArray(proxies) || proxies.length === 0) {
+		return grouped;
+	}
+
+	proxies.forEach(proxy => {
+		const rawName = extractor(proxy);
+		const proxyName = normalizeName(rawName);
+		if (!proxyName) {
+			return;
+		}
+		const countryInfo = parseCountryFromNodeName(proxyName);
+		if (!countryInfo) {
+			return;
+		}
+		const { name } = countryInfo;
+		if (!grouped[name]) {
+			grouped[name] = { ...countryInfo, proxies: [] };
+		}
+		grouped[name].proxies.push(proxyName);
+	});
+
+	return grouped;
+}
 export function DeepCopy(obj) {
 	if (obj === null || typeof obj !== 'object') {
 		return obj;

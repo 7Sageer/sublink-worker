@@ -1,8 +1,8 @@
 import { ProxyParser, convertYamlProxyToObject } from './ProxyParsers.js';
-import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64, parseCountryFromNodeName } from './utils.js';
+import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64 } from './utils.js';
 import yaml from 'js-yaml';
 import { createTranslator } from './i18n/index.js';
-import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config/index.js';
 
 export class BaseConfigBuilder {
     constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {

@@ -2,7 +2,7 @@
 /** @jsxImportSource hono/jsx */
 import { CustomRules } from './CustomRules.jsx';
 import { formScriptFn } from './formScript.js';
-import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config.js';
+import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 const LINK_FIELDS = [
   { key: 'xray', labelKey: 'xrayLink' },

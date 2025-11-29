@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config/index.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { DeepCopy, parseCountryFromNodeName } from './utils.js';
+import { DeepCopy, groupProxiesByCountry } from './utils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
@@ -334,17 +334,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addCountryGroups() {
         const proxies = this.getProxies();
-        const countryGroups = {};
-
-        proxies.forEach(proxy => {
-            const countryInfo = parseCountryFromNodeName(proxy.name);
-            if (countryInfo) {
-                const { name } = countryInfo;
-                if (!countryGroups[name]) {
-                    countryGroups[name] = { ...countryInfo, proxies: [] };
-                }
-                countryGroups[name].proxies.push(proxy.name);
-            }
+        const countryGroups = groupProxiesByCountry(proxies, {
+            getName: proxy => this.getProxyName(proxy)
         });
 
         const normalize = (s) => typeof s === 'string' ? s.trim() : s;
