@@ -8,7 +8,7 @@ export const Navbar = () => {
             <div class="container mx-auto px-4">
                 <div class="flex items-center justify-between h-16">
                     <a href="#" class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
-                        <i class="fas fa-bolt text-primary-500"></i>
+                        <img src="/favicon.ico" alt={`${APP_NAME} logo`} class="w-6 h-6" />
                         <span>{APP_NAME}</span>
                     </a>
                     <div class="flex items-center gap-3">

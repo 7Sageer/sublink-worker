@@ -173,3 +173,5 @@ dist
 
 .editorconfig
 .prettierrc
+.vercel
+.vercel-build
