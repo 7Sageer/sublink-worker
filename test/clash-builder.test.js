@@ -10,20 +10,20 @@ describe('Clash Builder Tests', () => {
   it('should clean up proxy-groups and remove non-existent proxies', async () => {
     const input = `
 proxies:
-- name: Valid - SS
-type: ss
-server: example.com
-port: 443
-cipher: aes - 128 - gcm
-password: test
-proxy - groups:
-- name: 自定义选择
-type: select
-proxies:
-- DIRECT
-  - REJECT
-  - Valid - SS
-  - " NotExist "
+  - name: Valid-SS
+    type: ss
+    server: example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+proxy-groups:
+  - name: 自定义选择
+    type: select
+    proxies:
+      - DIRECT
+      - REJECT
+      - Valid-SS
+      - NotExist
     `;
 
     const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');

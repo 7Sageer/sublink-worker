@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { createTranslator } from '../src/i18n/index.js';
 import { SingboxConfigBuilder } from '../src/SingboxConfigBuilder.js';
+import { BaseConfigBuilder } from '../src/BaseConfigBuilder.js';
 
 // Test cases inline (from test-cases.yaml)
 const testCases = [
@@ -177,9 +178,6 @@ proxy-groups:
         }
     }
 ];
-
-// Set language for tests
-setLanguage('zh-CN');
 
 /**
  * Helper function to get nested property by path (e.g., "tls.alpn")
