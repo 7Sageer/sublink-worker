@@ -1,5 +1,6 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
+import { APP_NAME, GITHUB_REPO } from '../constants.js';
 
 export const Navbar = () => {
     return (
@@ -8,7 +9,7 @@ export const Navbar = () => {
                 <div class="flex items-center justify-between h-16">
                     <a href="#" class="flex items-center gap-2 text-xl font-bold text-blue-600 dark:text-blue-400">
                         <i class="fas fa-bolt"></i>
-                        <span>Sublink Worker</span>
+                        <span>{APP_NAME}</span>
                     </a>
                     <div class="flex items-center gap-3">
                         <button
@@ -19,7 +20,7 @@ export const Navbar = () => {
                             <i class="fas" x-bind:class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
                         </button>
                         <a
-                            href="https://github.com/7Sageer/sublink-worker"
+                            href={GITHUB_REPO}
                             target="_blank"
                             rel="noopener noreferrer"
                             class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"

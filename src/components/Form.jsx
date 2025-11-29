@@ -4,6 +4,13 @@ import { CustomRules } from './CustomRules.jsx';
 import { formScriptFn } from './formScript.js';
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config.js';
 
+const LINK_FIELDS = [
+  { key: 'xray', labelKey: 'xrayLink' },
+  { key: 'singbox', labelKey: 'singboxLink' },
+  { key: 'clash', labelKey: 'clashLink' },
+  { key: 'surge', labelKey: 'surgeLink' }
+];
+
 export const Form = (props) => {
   const { t } = props;
 
@@ -13,7 +20,15 @@ export const Form = (props) => {
     saveConfigSuccess: t('saveConfigSuccess'),
     confirmClearConfig: t('confirmClearConfig'),
     confirmClearAll: t('confirmClearAll'),
-    errorGeneratingLinks: t('errorGeneratingLinks')
+    errorGeneratingLinks: t('errorGeneratingLinks'),
+    shortenLinks: t('shortenLinks'),
+    shortening: t('shortening'),
+    alreadyShortened: t('alreadyShortened'),
+    shortenFailed: t('shortenFailed'),
+    customShortCode: t('customShortCode'),
+    optional: t('optional'),
+    customShortCodePlaceholder: t('customShortCodePlaceholder'),
+    showFullLinks: t('showFullLinks')
   };
 
   const scriptContent = `
@@ -76,7 +91,7 @@ export const Form = (props) => {
         <option value="balanced">{t('balanced')}</option>
         <option value="comprehensive">{t('comprehensive')}</option>
       </select>
-            </div>
+          </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
     {UNIFIED_RULES.map((rule) => (
@@ -144,7 +159,7 @@ export const Form = (props) => {
                   <input type="text" x-model="externalUiDownloadUrl" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder={t('externalUiDownloadUrlPlaceholder')} />
                 </div>
               </div>
-            </div>
+          </div>
           </div>
 
   {/* Base Config */ }
@@ -158,7 +173,7 @@ export const Form = (props) => {
                 <option value="singbox">SingBox (JSON)</option>
                 <option value="clash">Clash (YAML)</option>
               </select>
-            </div>
+          </div>
             
             <textarea 
               x-model="configEditor" 
@@ -174,7 +189,7 @@ export const Form = (props) => {
               <button type="button" x-on:click="clearBaseConfig()" class="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors font-medium text-sm" >
   { t('clearConfig') }
               </button>
-            </div>
+          </div>
           </div >
 
   {/* User Agent */ }
@@ -217,104 +232,80 @@ class="px-6 py-3.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 bo
   {/* Results Section */ }
   <div x-cloak x-show="generatedLinks" x-data="{ copied: null }" {...{'x-transition:enter': 'transition ease-out duration-500', 'x-transition:enter-start': 'opacity-0 transform translate-y-8', 'x-transition:enter-end': 'opacity-100 transform translate-y-0'}} class="mt-12">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 transition-all duration-300 hover:shadow-md">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
-        <span class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
-          <i class="fas fa-link text-sm"></i>
-        </span>
-        {t('subscriptionLinks')}
-      </h2>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+            <i class="fas fa-link text-sm"></i>
+          </span>
+          {t('subscriptionLinks')}
+        </h2>
+      </div>
 
-      <div class="space-y-4">
-        {/* Xray Link */}
-        <div class="relative group">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('xrayLink')}
-          </label>
-          <div class="flex gap-2">
+      <div class="mt-6 space-y-4">
+        {LINK_FIELDS.map((field) => (
+          <div class="relative group" key={field.key}>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t(field.labelKey)}
+            </label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                readonly
+                x-bind:value={`shortenedLinks ? shortenedLinks?.${field.key} : generatedLinks?.${field.key}`}
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:border-transparent transition-all duration-200 font-mono text-sm"
+                x-bind:class="shortenedLinks ? 'text-purple-600 dark:text-purple-400 font-semibold focus:ring-purple-500' : 'text-gray-600 dark:text-gray-400 focus:ring-green-500'"
+              />
+              <button
+                type="button"
+                x-on:click={`navigator.clipboard.writeText((shortenedLinks || generatedLinks)?.${field.key}); copied = '${field.key}'; setTimeout(() => copied = null, 2000)`}
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                x-bind:class={`{
+                  'hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400': !shortenedLinks,
+                  'hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400': shortenedLinks,
+                  'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': !shortenedLinks && copied === '${field.key}',
+                  'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': shortenedLinks && copied === '${field.key}'
+                }`}
+              >
+                <i class="fas" x-bind:class={`copied === '${field.key}' ? 'fa-check' : 'fa-copy'`}></i>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Shortening Controls */}
+      <div class="mt-6">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-full max-w-md">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">
+              {t('customShortCode')} <span class="text-gray-400">({t('optional')})</span>
+            </label>
             <input
               type="text"
-              readonly
-              x-bind:value="generatedLinks?.xray"
-              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
+              x-model="customShortCode"
+              placeholder={t('customShortCodePlaceholder')}
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center"
             />
-            <button
-              type="button"
-              x-on:click="navigator.clipboard.writeText(generatedLinks?.xray); copied = 'xray'; setTimeout(() => copied = null, 2000)"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
-              x-bind:class="{'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': copied === 'xray'}"
-            >
-              <i class="fas fa-copy" x-bind:class="copied === 'xray' ? 'fa-check' : 'fa-copy'"></i>
-            </button>
           </div>
         </div>
-
-        {/* SingBox Link */}
-        <div class="relative group">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('singboxLink')}
-          </label>
-          <div class="flex gap-2">
-            <input
-              type="text"
-              readonly
-              x-bind:value="generatedLinks?.singbox"
-              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
-            />
-            <button
-              type="button"
-              x-on:click="navigator.clipboard.writeText(generatedLinks?.singbox); copied = 'singbox'; setTimeout(() => copied = null, 2000)"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
-              x-bind:class="{'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': copied === 'singbox'}"
-            >
-              <i class="fas fa-copy" x-bind:class="copied === 'singbox' ? 'fa-check' : 'fa-copy'"></i>
-            </button>
-          </div>
-        </div>
-
-        {/* Clash Link */}
-        <div class="relative group">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('clashLink')}
-          </label>
-          <div class="flex gap-2">
-            <input
-              type="text"
-              readonly
-              x-bind:value="generatedLinks?.clash"
-              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
-            />
-            <button
-              type="button"
-              x-on:click="navigator.clipboard.writeText(generatedLinks?.clash); copied = 'clash'; setTimeout(() => copied = null, 2000)"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
-              x-bind:class="{'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': copied === 'clash'}"
-            >
-              <i class="fas fa-copy" x-bind:class="copied === 'clash' ? 'fa-check' : 'fa-copy'"></i>
-            </button>
-          </div>
-        </div>
-
-        {/* Surge Link */}
-        <div class="relative group">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('surgeLink')}
-          </label>
-          <div class="flex gap-2">
-            <input
-              type="text"
-              readonly
-              x-bind:value="generatedLinks?.surge"
-              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
-            />
-            <button
-              type="button"
-              x-on:click="navigator.clipboard.writeText(generatedLinks?.surge); copied = 'surge'; setTimeout(() => copied = null, 2000)"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
-              x-bind:class="{'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': copied === 'surge'}"
-            >
-              <i class="fas fa-copy" x-bind:class="copied === 'surge' ? 'fa-check' : 'fa-copy'"></i>
-            </button>
-          </div>
+        <div class="flex justify-center mt-4">
+          <button
+            type="button"
+            x-on:click="shortenedLinks ? shortenedLinks = null : shortenLinks()"
+            x-bind:disabled="!shortenedLinks && shortening"
+            class="px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg"
+            x-bind:class="shortenedLinks
+              ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm'
+              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/30 hover:shadow-purple-500/40 disabled:opacity-50 disabled:cursor-not-allowed'"
+          >
+            <i
+              class="fas"
+              x-bind:class="shortenedLinks ? 'fa-expand-alt' : (shortening ? 'fa-spinner fa-spin' : 'fa-compress-alt')"
+            ></i>
+            <span
+              x-text="shortenedLinks ? showFullLinksText : (shortening ? shorteningText : shortenLinksText)"
+            ></span>
+          </button>
         </div>
       </div>
     </div>

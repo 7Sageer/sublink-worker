@@ -7,8 +7,9 @@ import { Form } from './components/Form.jsx';
 import { SingboxConfigBuilder } from './SingboxConfigBuilder.js';
 import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
-import { createTranslator } from './i18n/index.js';
+import { createTranslator, resolveLanguage } from './i18n/index.js';
 import { encodeBase64, GenerateWebPath, tryDecodeSubscriptionLines } from './utils.js';
+import { APP_NAME, APP_SUBTITLE } from './constants.js';
 import yaml from 'js-yaml';
 
 const app = new Hono();
@@ -24,6 +25,8 @@ app.use('*', async (c, next) => {
 // Main Page
 app.get('/', (c) => {
     const t = c.get('t');
+    const lang = resolveLanguage(c.get('lang'));
+    const subtitle = APP_SUBTITLE[lang] || APP_SUBTITLE['zh-CN'];
 
     return c.html(
         <Layout title={t('pageTitle')} description={t('pageDescription')} keywords={t('pageKeywords')}>
@@ -32,10 +35,10 @@ app.get('/', (c) => {
                 <div class="max-w-4xl mx-auto">
                     <div class="text-center mb-12 pt-8">
                         <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
-                            {t('pageTitle')}
+                            {APP_NAME}
                         </h1>
                         <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            {t('pageDescription')}
+                            {subtitle}
                         </p>
                     </div>
                     <Form t={t} />

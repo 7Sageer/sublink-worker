@@ -3,6 +3,14 @@ export const formScriptFn = (t) => {
         return {
             input: '',
             showAdvanced: false,
+            // Accordion states for each section (二级手风琴状态)
+            accordionSections: {
+                rules: true,        // 规则选择 - 默认展开
+                customRules: false, // 自定义规则
+                general: false,     // 通用设置
+                baseConfig: false,  // 基础配置
+                ua: false          // User Agent
+            },
             selectedRules: [],
             selectedPredefinedRule: 'balanced',
             groupByCountry: false,
@@ -14,15 +22,24 @@ export const formScriptFn = (t) => {
             customUA: '',
             loading: false,
             generatedLinks: null,
+            shortenedLinks: null,
+            shortening: false,
+            customShortCode: '',
             // These will be populated from window.APP_TRANSLATIONS
             processingText: '',
             convertText: '',
+            shortenLinksText: '',
+            shorteningText: '',
+            showFullLinksText: '',
 
             init() {
                 // Load translations
                 if (window.APP_TRANSLATIONS) {
                     this.processingText = window.APP_TRANSLATIONS.processing;
                     this.convertText = window.APP_TRANSLATIONS.convert;
+                    this.shortenLinksText = window.APP_TRANSLATIONS.shortenLinks;
+                    this.shorteningText = window.APP_TRANSLATIONS.shortening;
+                    this.showFullLinksText = window.APP_TRANSLATIONS.showFullLinks;
                 }
 
                 // Load saved data
@@ -35,6 +52,17 @@ export const formScriptFn = (t) => {
                 this.customUA = localStorage.getItem('userAgent') || '';
                 this.configEditor = localStorage.getItem('configEditor') || '';
                 this.configType = localStorage.getItem('configType') || 'singbox';
+                this.customShortCode = localStorage.getItem('customShortCode') || '';
+
+                // Load accordion states
+                const savedAccordion = localStorage.getItem('accordionSections');
+                if (savedAccordion) {
+                    try {
+                        this.accordionSections = JSON.parse(savedAccordion);
+                    } catch (e) {
+                        // If parsing fails, keep defaults
+                    }
+                }
 
                 // Initialize rules
                 this.applyPredefinedRule();
@@ -49,6 +77,12 @@ export const formScriptFn = (t) => {
                 this.$watch('customUA', val => localStorage.setItem('userAgent', val));
                 this.$watch('configEditor', val => localStorage.setItem('configEditor', val));
                 this.$watch('configType', val => localStorage.setItem('configType', val));
+                this.$watch('customShortCode', val => localStorage.setItem('customShortCode', val));
+                this.$watch('accordionSections', val => localStorage.setItem('accordionSections', JSON.stringify(val)), { deep: true });
+            },
+
+            toggleAccordion(section) {
+                this.accordionSections[section] = !this.accordionSections[section];
             },
 
             applyPredefinedRule() {
@@ -78,11 +112,16 @@ export const formScriptFn = (t) => {
                 if (confirm(window.APP_TRANSLATIONS.confirmClearAll)) {
                     this.input = '';
                     this.generatedLinks = null;
+                    this.shortenedLinks = null;
+                    this.customShortCode = '';
+                    // Also clear from localStorage
+                    localStorage.removeItem('customShortCode');
                 }
             },
 
             async submitForm() {
                 this.loading = true;
+                this.shortenedLinks = null; // Reset shortened links when generating new links
                 try {
                     // Get custom rules from the child component via the hidden input
                     const customRulesInput = document.querySelector('input[name="customRules"]');
@@ -130,6 +169,74 @@ export const formScriptFn = (t) => {
                     alert(window.APP_TRANSLATIONS.errorGeneratingLinks);
                 } finally {
                     this.loading = false;
+                }
+            },
+
+            async shortenLinks() {
+                // Check if links are already shortened
+                if (this.shortenedLinks) {
+                    alert(window.APP_TRANSLATIONS.alreadyShortened);
+                    return;
+                }
+
+                if (!this.generatedLinks) {
+                    return;
+                }
+
+                this.shortening = true;
+                try {
+                    const origin = window.location.origin;
+                    const shortened = {};
+
+                    // Use custom short code if provided, otherwise let backend generate it once
+                    let shortCode = this.customShortCode.trim();
+                    let isFirstRequest = true;
+
+                    // Shorten each link type
+                    for (const [type, url] of Object.entries(this.generatedLinks)) {
+                        try {
+                            let apiUrl = `${origin}/shorten-v2?url=${encodeURIComponent(url)}`;
+
+                            // For the first request, either use custom code or let backend generate
+                            // For subsequent requests, use the code from first request
+                            if (shortCode) {
+                                apiUrl += `&shortCode=${encodeURIComponent(shortCode)}`;
+                            }
+
+                            const response = await fetch(apiUrl);
+                            if (!response.ok) {
+                                throw new Error(`Failed to shorten ${type} link`);
+                            }
+                            const returnedCode = await response.text();
+
+                            // If this is the first request and no custom code was provided,
+                            // use the backend-generated code for all subsequent requests
+                            if (isFirstRequest && !shortCode) {
+                                shortCode = returnedCode;
+                            }
+                            isFirstRequest = false;
+
+                            // Map types to their corresponding path prefixes
+                            const prefixMap = {
+                                xray: 'x',
+                                singbox: 'b',
+                                clash: 'c',
+                                surge: 's'
+                            };
+
+                            shortened[type] = `${origin}/${prefixMap[type]}/${returnedCode}`;
+                        } catch (error) {
+                            console.error(`Error shortening ${type} link:`, error);
+                            throw error;
+                        }
+                    }
+
+                    this.shortenedLinks = shortened;
+                } catch (error) {
+                    console.error('Error shortening links:', error);
+                    alert(window.APP_TRANSLATIONS.shortenFailed);
+                } finally {
+                    this.shortening = false;
                 }
             }
         }

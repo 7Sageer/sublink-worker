@@ -1,8 +1,9 @@
 import { html } from 'hono/html'
+import { APP_KEYWORDS } from '../constants.js';
 
 export const Layout = (props) => {
-    const { title, children } = props
-    return html`
+  const { title, children } = props
+  return html`
     <!DOCTYPE html>
     <html lang="en" x-data="appData()">
       <head>
@@ -10,7 +11,7 @@ export const Layout = (props) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>${title}</title>
         <meta name="description" content="Convert and optimize your subscription links easily" />
-        <meta name="keywords" content="clash, singbox, surge, subscription, converter, sublink" />
+        <meta name="keywords" content="${APP_KEYWORDS}" />
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
         <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>

@@ -5,17 +5,9 @@ export const CustomRules = (props) => {
     const { t } = props;
 
     return (
-        <div x-data="customRulesData()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 transition-all duration-300 hover:shadow-md">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <span class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                            <i class="fas fa-gavel text-sm"></i>
-                        </span>
-                        {t('customRulesSection')}
-                    </h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('customRulesSectionTooltip')}</p>
-                </div>
+        <div x-data="customRulesData()" class="p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-6 gap-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">{t('customRulesSectionTooltip')}</p>
 
                 <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     <button
@@ -180,7 +172,7 @@ export const CustomRules = (props) => {
         <div class="relative">
             <textarea
                 x-model="jsonContent"
-                class="w-full h-96 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-y"
+                class="w-full min-h-[16rem] px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-y"
                 placeholder='[{"name": "MyRule", "domain_suffix": ["example.com"], "outbound": "Proxy"}]'
             ></textarea>
             <div class="absolute bottom-4 right-4 flex gap-2">
