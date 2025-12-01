@@ -1,22 +1,13 @@
 import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config/index.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy, groupProxiesByCountry } from './utils.js';
+import { addProxyWithDedup } from './builders/helpers/proxyHelpers.js';
+import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers, uniqueNames } from './builders/helpers/groupBuilder.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
-        super(inputString, baseConfig, lang, userAgent, groupByCountry);
-        if (baseConfig === undefined) {
-            baseConfig = SING_BOX_CONFIG;
-            if (baseConfig.dns && baseConfig.dns.servers) {
-                baseConfig.dns.servers[0].detour = this.t('outboundNames.Node Select');
-            }
-        }
-        this.config = DeepCopy(baseConfig); // Re-assign config after super call if needed, but super already does it. Wait.
-        // Super constructor initializes this.config with baseConfig.
-        // But here we modify baseConfig BEFORE super call? No, we can't use 'this' before super.
-        // So we must move the baseConfig logic to BEFORE super call, but we need 'this.t' which is initialized in super.
-        // Catch-22.
-        // Solution: Initialize this.t in super, then modify this.config in child constructor.
+        const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
 
         this.selectedRules = selectedRules;
         this.customRules = customRules;
@@ -26,8 +17,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.externalController = externalController;
         this.externalUiDownloadUrl = externalUiDownloadUrl;
 
-        // Apply the modification that was previously done before super
-        if (this.config.dns && this.config.dns.servers) {
+        if (this.config?.dns?.servers?.length > 0) {
             this.config.dns.servers[0].detour = this.t('outboundNames.Node Select');
         }
     }
@@ -45,66 +35,62 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     addProxyToConfig(proxy) {
-        // Check if there are proxies with similar tags in existing outbounds
-        const similarProxies = this.config.outbounds.filter(p => p.tag && p.tag.includes(proxy.tag));
-
-        // Check if there is a proxy with identical data (excluding the tag)
-        const isIdentical = similarProxies.some(p => {
-            const { tag: _, ...restOfProxy } = proxy; // Exclude the tag attribute
-            const { tag: __, ...restOfP } = p;       // Exclude the tag attribute
-            return JSON.stringify(restOfProxy) === JSON.stringify(restOfP);
+        this.config.outbounds = this.config.outbounds || [];
+        addProxyWithDedup(this.config.outbounds, proxy, {
+            getName: (item) => item?.tag,
+            setName: (item, name) => {
+                if (item) item.tag = name;
+            },
+            isSame: (existing = {}, incoming = {}) => {
+                const { tag: _incomingTag, ...restIncoming } = incoming;
+                const { tag: _existingTag, ...restExisting } = existing;
+                return JSON.stringify(restIncoming) === JSON.stringify(restExisting);
+            }
         });
+    }
 
-        if (isIdentical) {
-            // If there is a proxy with identical data, skip adding it
-            return;
-        }
-
-        // If there are proxies with similar tags but different data, modify the tag name
-        if (similarProxies.length > 0) {
-            proxy.tag = `${proxy.tag} ${similarProxies.length + 1}`;
-        }
-
-        this.config.outbounds.push(proxy);
+    hasOutboundTag(tag) {
+        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
+        const target = normalize(tag);
+        return (this.config.outbounds || []).some(outbound => normalize(outbound?.tag) === target);
     }
 
     addAutoSelectGroup(proxyList) {
+        this.config.outbounds = this.config.outbounds || [];
+        const tag = this.t('outboundNames.Auto Select');
+        if (this.hasOutboundTag(tag)) return;
         this.config.outbounds.unshift({
             type: "urltest",
-            tag: this.t('outboundNames.Auto Select'),
-            outbounds: DeepCopy(proxyList),
+            tag,
+            outbounds: DeepCopy(uniqueNames(proxyList)),
         });
     }
 
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', this.t('outboundNames.Auto Select'));
+        this.config.outbounds = this.config.outbounds || [];
+        const tag = this.t('outboundNames.Node Select');
+        if (this.hasOutboundTag(tag)) return;
+        const members = buildNodeSelectMembers({
+            proxyList,
+            translator: this.t,
+            groupByCountry: this.groupByCountry,
+            manualGroupName: this.manualGroupName,
+            countryGroupNames: this.countryGroupNames
+        });
         this.config.outbounds.unshift({
             type: "selector",
-            tag: this.t('outboundNames.Node Select'),
-            outbounds: proxyList
+            tag,
+            outbounds: members
         });
     }
 
     buildSelectorMembers(proxyList = []) {
-        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-        const base = this.groupByCountry
-            ? [
-                this.t('outboundNames.Node Select'),
-                this.t('outboundNames.Auto Select'),
-                ...(this.manualGroupName ? [this.manualGroupName] : []),
-                ...(this.countryGroupNames || [])
-            ]
-            : [
-                this.t('outboundNames.Node Select'),
-                ...proxyList
-            ];
-        const combined = ['DIRECT', 'REJECT', ...base].filter(Boolean);
-        const seen = new Set();
-        return combined.filter(name => {
-            const key = normalize(name);
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
+        return buildSelectorMemberList({
+            proxyList,
+            translator: this.t,
+            groupByCountry: this.groupByCountry,
+            manualGroupName: this.manualGroupName,
+            countryGroupNames: this.countryGroupNames
         });
     }
 
@@ -112,9 +98,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         outbounds.forEach(outbound => {
             if (outbound !== this.t('outboundNames.Node Select')) {
                 const selectorMembers = this.buildSelectorMembers(proxyList);
+                const tag = this.t(`outboundNames.${outbound}`);
+                if (this.hasOutboundTag(tag)) {
+                    return;
+                }
                 this.config.outbounds.push({
                     type: "selector",
-                    tag: this.t(`outboundNames.${outbound}`),
+                    tag,
                     outbounds: selectorMembers
                 });
             }
@@ -125,6 +115,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 const selectorMembers = this.buildSelectorMembers(proxyList);
+                if (this.hasOutboundTag(rule.name)) return;
                 this.config.outbounds.push({
                     type: "selector",
                     tag: rule.name,
@@ -136,6 +127,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
     addFallBackGroup(proxyList) {
         const selectorMembers = this.buildSelectorMembers(proxyList);
+        if (this.hasOutboundTag(this.t('outboundNames.Fall Back'))) return;
         this.config.outbounds.push({
             type: "selector",
             tag: this.t('outboundNames.Fall Back'),
@@ -190,19 +182,14 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         const nodeSelectTag = this.t('outboundNames.Node Select');
         const nodeSelectGroup = this.config.outbounds.find(o => normalize(o?.tag) === normalize(nodeSelectTag));
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.outbounds)) {
-            const seen = new Set();
-            const rebuilt = [
+            const rebuilt = uniqueNames([
                 'DIRECT',
                 'REJECT',
                 this.t('outboundNames.Auto Select'),
                 ...(manualGroupName ? [manualGroupName] : []),
                 ...countryGroupNames
-            ].filter(Boolean);
-            nodeSelectGroup.outbounds = rebuilt.filter(name => {
-                if (seen.has(name)) return false;
-                seen.add(name);
-                return true;
-            });
+            ].filter(Boolean));
+            nodeSelectGroup.outbounds = rebuilt;
         }
 
         this.countryGroupNames = countryGroupNames;

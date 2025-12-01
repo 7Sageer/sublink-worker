@@ -1,4 +1,4 @@
-import { ProxyParser, convertYamlProxyToObject } from './ProxyParsers.js';
+import { ProxyParser, convertYamlProxyToObject } from './parsers/index.js';
 import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64 } from './utils.js';
 import yaml from 'js-yaml';
 import { createTranslator } from './i18n/index.js';
