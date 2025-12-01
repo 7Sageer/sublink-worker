@@ -2,19 +2,25 @@
   "name": "sublink-worker",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
+    "build": "node scripts/build-vercel.mjs",
     "deploy": "npm run setup-kv && wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "test": "vitest",
-    "setup-kv": "node scripts/setup-kv.js"
+    "setup-kv": "node scripts/setup-kv.cjs",
+    "build:node": "node_modules/.bin/esbuild src/platforms/node-server.js --bundle --platform=node --target=node18 --format=esm --outfile=dist/node-server.mjs",
+    "dev:node": "npm run build:node && node dist/node-server.mjs"
   },
   "devDependencies": {
+    "esbuild": "^0.25.10",
     "@cloudflare/vitest-pool-workers": "^0.8.0",
     "vitest": "^3.0.0 <3.1.0",
     "wrangler": "^3.60.3"
   },
   "dependencies": {
+    "esbuild-register": "^3.6.0",
     "hono": "^4.10.7",
     "js-yaml": "^4.1.0"
   },

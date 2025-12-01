@@ -30,6 +30,27 @@
 npm run deploy
 ```
 
+### Run with Node/Vercel/Docker
+- **Local Node runtime**
+  - `npm run build:node && node dist/node-server.mjs`
+  - Provide storage credentials via `KV_REST_API_URL` / `KV_REST_API_TOKEN` (Upstash/Vercel KV) or rely on the built-in in-memory store for quick tests.
+- **Vercel**
+  - Set `KV_REST_API_URL` and `KV_REST_API_TOKEN` inside your project settings (Vercel KV supplies both automatically).
+  - `vercel deploy` (rewrites are configured in `vercel.json` to serve the Hono app from `api/index.js`).
+- **Docker**
+  - `docker build -t sublink-worker .`
+  - `docker run -p 8787:8787 -e KV_REST_API_URL=... -e KV_REST_API_TOKEN=... sublink-worker`
+  - The container listens on `8787` by default; override with `PORT`.
+
+### Runtime Environment Variables
+| Variable | Description | Default |
+| --- | --- | --- |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Upstash/Vercel KV REST endpoint + token, used outside Cloudflare Workers | unset |
+| `CONFIG_TTL_SECONDS` | TTL applied to stored base configs | `2592000` (30 days) |
+| `SHORT_LINK_TTL_SECONDS` | TTL applied to generated short links (if supported by runtime) | no expiry |
+| `STATIC_DIR` | Directory for serving assets in Node/Vercel runtime | `public` |
+| `DISABLE_MEMORY_KV` | When `true`, disables the in-memory KV fallback on Node/Vercel | `false` |
+
 ## ✨ Features
 
 ### Supported Protocols

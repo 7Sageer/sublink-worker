@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import app from '../src/worker.jsx';
+import { createApp } from '../src/app/createApp.jsx';
+import { MemoryKVAdapter } from '../src/adapters/kv/memoryKv.js';
+
+const runtime = {
+    kv: new MemoryKVAdapter(),
+    assetFetcher: null,
+    logger: console,
+    config: {
+        configTtlSeconds: 60,
+        shortLinkTtlSeconds: null
+    }
+};
+
+const app = createApp(runtime);
 
 describe('Worker', () => {
     it('responds with HTML on root path', async () => {
