@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { createTranslator } from '../src/i18n/index.js';
-import { ClashConfigBuilder } from '../src/ClashConfigBuilder.js';
+import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 
 // Create translator for tests
 const t = createTranslator('zh-CN');

@@ -1,8 +1,8 @@
-import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config/index.js';
+import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { DeepCopy, groupProxiesByCountry } from './utils.js';
-import { addProxyWithDedup } from './builders/helpers/proxyHelpers.js';
-import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers, uniqueNames } from './builders/helpers/groupBuilder.js';
+import { DeepCopy, groupProxiesByCountry } from '../utils.js';
+import { addProxyWithDedup } from './helpers/proxyHelpers.js';
+import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
-import { ClashConfigBuilder } from '../src/ClashConfigBuilder.js';
+import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { createTranslator } from '../src/i18n/index.js';
 import { groupProxiesByCountry } from '../src/utils.js';
 
@@ -70,17 +70,17 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         }
     });
 
-	it('groupProxiesByCountry helper normalizes names', () => {
-		const sample = [
-			{ name: 'HK-Node-1' },
-			{ tag: '香港节点2' },
-			'US-Node-1 = ss, example.com, 443',
-			'台湾节点 = trojan, example.com, 443'
-		];
-		const grouped = groupProxiesByCountry(sample);
-		expect(Object.keys(grouped)).toEqual(expect.arrayContaining(['Hong Kong', 'United States', 'Taiwan']));
-		expect(grouped['Hong Kong'].proxies).toHaveLength(2);
-		expect(grouped['United States'].proxies).toHaveLength(1);
-		expect(grouped['Taiwan'].proxies).toHaveLength(1);
-	});
+    it('groupProxiesByCountry helper normalizes names', () => {
+        const sample = [
+            { name: 'HK-Node-1' },
+            { tag: '香港节点2' },
+            'US-Node-1 = ss, example.com, 443',
+            '台湾节点 = trojan, example.com, 443'
+        ];
+        const grouped = groupProxiesByCountry(sample);
+        expect(Object.keys(grouped)).toEqual(expect.arrayContaining(['Hong Kong', 'United States', 'Taiwan']));
+        expect(grouped['Hong Kong'].proxies).toHaveLength(2);
+        expect(grouped['United States'].proxies).toHaveLength(1);
+        expect(grouped['Taiwan'].proxies).toHaveLength(1);
+    });
 });

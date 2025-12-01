@@ -1,10 +1,10 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config/index.js';
+import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { DeepCopy, groupProxiesByCountry } from './utils.js';
-import { addProxyWithDedup } from './builders/helpers/proxyHelpers.js';
-import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './builders/helpers/groupBuilder.js';
-import { emitClashRules, sanitizeClashProxyGroups } from './builders/helpers/clashConfigUtils.js';
+import { DeepCopy, groupProxiesByCountry } from '../utils.js';
+import { addProxyWithDedup } from './helpers/proxyHelpers.js';
+import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
+import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigUtils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
