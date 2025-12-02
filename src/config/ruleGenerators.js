@@ -43,8 +43,8 @@ export function generateRules(selectedRules = [], customRules = []) {
 	customRules.reverse();
 	customRules.forEach((rule) => {
 		rules.unshift({
-			site_rules: rule.site.split(','),
-			ip_rules: rule.ip.split(','),
+			site_rules: rule.site ? rule.site.split(',') : [],
+			ip_rules: rule.ip ? rule.ip.split(',') : [],
 			domain_suffix: rule.domain_suffix ? rule.domain_suffix.split(',') : [],
 			domain_keyword: rule.domain_keyword ? rule.domain_keyword.split(',') : [],
 			ip_cidr: rule.ip_cidr ? rule.ip_cidr.split(',') : [],
@@ -104,7 +104,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 
 	if (customRules) {
 		customRules.forEach(rule => {
-			if (rule.site != '') {
+			if (rule.site && rule.site != '') {
 				rule.site.split(',').forEach(site => {
 					site_rule_sets.push({
 						tag: site.trim(),
@@ -114,7 +114,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					});
 				});
 			}
-			if (rule.ip != '') {
+			if (rule.ip && rule.ip != '') {
 				rule.ip.split(',').forEach(ip => {
 					ip_rule_sets.push({
 						tag: `${ip.trim()}-ip`,
@@ -194,7 +194,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 	// Add custom rules
 	if (customRules) {
 		customRules.forEach(rule => {
-			if (rule.site != '') {
+			if (rule.site && rule.site != '') {
 				rule.site.split(',').forEach(site => {
 					const site_trimmed = site.trim();
 					site_rule_providers[site_trimmed] = {
@@ -207,7 +207,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 					};
 				});
 			}
-			if (rule.ip != '') {
+			if (rule.ip && rule.ip != '') {
 				rule.ip.split(',').forEach(ip => {
 					const ip_trimmed = ip.trim();
 					ip_rule_providers[ip_trimmed] = {
