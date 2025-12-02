@@ -4,9 +4,10 @@ import { convertYamlProxyToObject } from '../convertYamlProxyToObject.js';
 
 export async function fetchSubscription(url, userAgent) {
     try {
-        let headers = new Headers({
-            'User-Agent': userAgent
-        });
+        const headers = new Headers();
+        if (userAgent) {
+            headers.set('User-Agent', userAgent);
+        }
         const response = await fetch(url, {
             method: 'GET',
             headers: headers

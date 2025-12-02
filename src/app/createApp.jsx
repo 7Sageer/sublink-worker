@@ -14,6 +14,9 @@ import { ShortLinkService } from '../services/shortLinkService.js';
 import { ConfigStorageService } from '../services/configStorageService.js';
 import { ServiceError, MissingDependencyError } from '../services/errors.js';
 import { normalizeRuntime } from '../runtime/runtimeConfig.js';
+import { PREDEFINED_RULE_SETS } from '../config/index.js';
+
+const DEFAULT_USER_AGENT = 'curl/7.74.0';
 
 export function createApp(bindings = {}) {
     const runtime = normalizeRuntime(bindings);
@@ -64,9 +67,9 @@ export function createApp(bindings = {}) {
                 return c.text('Missing config parameter', 400);
             }
 
-            const selectedRules = parseJsonArray(c.req.query('selectedRules'));
+            const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
             const customRules = parseJsonArray(c.req.query('customRules'));
-            const ua = c.req.query('ua');
+            const ua = c.req.query('ua') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
@@ -106,9 +109,9 @@ export function createApp(bindings = {}) {
                 return c.text('Missing config parameter', 400);
             }
 
-            const selectedRules = parseJsonArray(c.req.query('selectedRules'));
+            const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
             const customRules = parseJsonArray(c.req.query('customRules'));
-            const ua = c.req.query('ua');
+            const ua = c.req.query('ua') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
@@ -150,9 +153,9 @@ export function createApp(bindings = {}) {
                 return c.text('Missing config parameter', 400);
             }
 
-            const selectedRules = parseJsonArray(c.req.query('selectedRules'));
+            const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
             const customRules = parseJsonArray(c.req.query('customRules'));
-            const ua = c.req.query('ua');
+            const ua = c.req.query('ua') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const configId = c.req.query('configId');
             const lang = c.get('lang');
@@ -190,7 +193,7 @@ export function createApp(bindings = {}) {
 
         const proxylist = inputString.split('\n');
         const finalProxyList = [];
-        const userAgent = c.req.query('ua') || 'curl/7.74.0';
+        const userAgent = c.req.query('ua') || DEFAULT_USER_AGENT;
         const headers = { 'User-Agent': userAgent };
 
         for (const proxy of proxylist) {
@@ -321,6 +324,26 @@ export function createApp(bindings = {}) {
     });
 
     return app;
+}
+
+export function parseSelectedRules(raw) {
+    if (!raw) return [];
+
+    // 首先检查是否是预设名称 (minimal, balanced, comprehensive)
+    // 这确保向后兼容主分支的 API 行为
+    if (typeof raw === 'string' && PREDEFINED_RULE_SETS[raw]) {
+        return PREDEFINED_RULE_SETS[raw];
+    }
+
+    // 尝试解析为 JSON 数组
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        // 解析失败，回退到 minimal 预设
+        console.warn(`Failed to parse selectedRules: ${raw}, falling back to minimal`);
+        return PREDEFINED_RULE_SETS.minimal;
+    }
 }
 
 function parseJsonArray(raw) {

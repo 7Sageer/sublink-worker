@@ -99,7 +99,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         outbounds.forEach(outbound => {
             if (outbound !== this.t('outboundNames.Node Select')) {
                 const selectorMembers = this.buildSelectorMembers(proxyList);
-                const tag = this.t(`outboundNames.${outbound} `);
+                const tag = this.t(`outboundNames.${outbound}`);
                 if (this.hasOutboundTag(tag)) {
                     return;
                 }
@@ -167,7 +167,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             if (!countryProxies || countryProxies.length === 0) {
                 return;
             }
-            const groupName = `${emoji} ${name} `;
+            const groupName = `${emoji} ${name}`;
             const norm = normalize(groupName);
             if (!existingTags.has(norm)) {
                 this.config.outbounds.push({
@@ -208,7 +208,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 domain_suffix: rule.domain_suffix,
                 domain_keyword: rule.domain_keyword,
                 protocol: rule.protocol,
-                outbound: this.t(`outboundNames.${rule.outbound} `)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
@@ -218,7 +218,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                     ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
                 ],
                 protocol: rule.protocol,
-                outbound: this.t(`outboundNames.${rule.outbound} `)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
@@ -228,7 +228,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                     ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip} -ip`))
                 ],
                 protocol: rule.protocol,
-                outbound: this.t(`outboundNames.${rule.outbound} `)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
@@ -236,7 +236,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             this.config.route.rules.push({
                 ip_cidr: rule.ip_cidr,
                 protocol: rule.protocol,
-                outbound: this.t(`outboundNames.${rule.outbound} `)
+                outbound: this.t(`outboundNames.${rule.outbound}`)
             });
         });
 
