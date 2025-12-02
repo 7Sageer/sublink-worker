@@ -1,6 +1,7 @@
 services:
   worker:
-    build: .
+    image: ${SUBLINK_WORKER_IMAGE:-ghcr.io/7sageer/sublink-worker:latest}
+    pull_policy: always
     ports:
       - "8787:8787"
     environment:

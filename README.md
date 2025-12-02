@@ -39,14 +39,15 @@ npm run deploy
   - Set `KV_REST_API_URL` and `KV_REST_API_TOKEN` inside your project settings (Vercel KV supplies both automatically).
   - `vercel deploy` (rewrites are configured in `vercel.json` to serve the Hono app from `api/index.js`).
 - **Docker**
-  - `docker build -t sublink-worker .`
-  - `docker run -p 8787:8787 -e REDIS_HOST=redis -e REDIS_PORT=6379 sublink-worker`
+  - Pull the published image: `docker pull ghcr.io/7sageer/sublink-worker:latest`
+  - Run: `docker run -p 8787:8787 -e REDIS_HOST=redis -e REDIS_PORT=6379 ghcr.io/7sageer/sublink-worker:latest`
+  - Build locally when testing changes: `docker build -t sublink-worker:dev .` and point Compose to it with `SUBLINK_WORKER_IMAGE=sublink-worker:dev docker compose up`.
   - The container listens on `8787` by default; override with `PORT`.
   - See `docker-compose.yml` for a ready-to-use Redis deployment (RDB persistence enabled by default).
 
 #### Docker Compose (Redis)
 
-If you prefer a fully self-hosted stack, run `docker compose up -d` to start both the worker and a Redis 7 instance configured with RDB snapshots (`redis.conf`). Data is stored on the `redis-data` volume, so short links/configurations survive container restarts.
+If you prefer a fully self-hosted stack, run `docker compose up -d` to start both the worker and a Redis 7 instance configured with RDB snapshots (`redis.conf`). Compose pulls the multi-arch image from GHCR by default; set `SUBLINK_WORKER_IMAGE` if you need to pin a specific tag or a locally built image. Data is stored on the `redis-data` volume, so short links/configurations survive container restarts.
 
 ### Runtime Environment Variables
 | Variable | Description | Default |
@@ -70,6 +71,10 @@ Node/Vercel/Docker builds resolve storage in this order:
 3. In-memory KV (unless `DISABLE_MEMORY_KV=true`).
 
 Choose the option that matches your operational needs; Redis is recommended when you deploy via Docker and require self-managed persistence.
+
+## 🧱 Container Image & CI
+
+Every push to `main`, version tag, or manual trigger runs `.github/workflows/docker-image.yml`, which builds a multi-architecture container and publishes it to `ghcr.io/7sageer/sublink-worker` with the tags `latest`, the branch/tag name, and the commit SHA. Docker Compose references this image via `SUBLINK_WORKER_IMAGE` by default, so you can simply run `docker compose pull && docker compose up -d` to stay current, or override the variable to pin a specific tag.
 
 ## ✨ Features
 

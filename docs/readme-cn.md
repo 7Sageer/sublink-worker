@@ -31,7 +31,13 @@ npm run deploy
 ## ⚙️ 运行与存储
 
 - Node/Vercel 运行时优先使用自托管 Redis（通过 `REDIS_URL` 或 `REDIS_HOST`/`REDIS_PORT` 配置），其次是 Upstash/Vercel KV（`KV_REST_API_URL`、`KV_REST_API_TOKEN`），最后才会退回内存存储（可用 `DISABLE_MEMORY_KV=true` 禁止）。
-- Docker 部署可以直接运行 `docker run ...` 并注入上述环境变量，或者使用仓库内的 `docker-compose.yml`，它会同时启动 Redis（默认开启 RDB 持久化）与 Worker，数据写入 `redis-data` 卷中即可安全持久化。
+- Docker 部署优先使用 GitHub Actions 自动构建并发布的镜像：`docker pull ghcr.io/7sageer/sublink-worker:latest`，运行时注入 `REDIS_HOST`/`REDIS_PORT` 等环境变量即可；本地调试可 `docker build -t sublink-worker:dev .` 并通过 `SUBLINK_WORKER_IMAGE` 指定给 compose。
+- 仓库内 `docker-compose.yml` 会同时启动 Redis（默认开启 RDB 持久化）与 Worker，默认拉取 GHCR 镜像。需要固定版本或者使用本地镜像时，将 `SUBLINK_WORKER_IMAGE` 设置为目标镜像名即可，数据写入 `redis-data` 卷中确保安全持久化。
+
+## 🧱 容器镜像 & CI
+
+- `.github/workflows/docker-image.yml` 在 `main` 推送、标签发布和手动触发时运行，构建 amd64/arm64 双架构镜像并推送到 `ghcr.io/7sageer/sublink-worker`。
+- 每次构建会生成 `latest`、分支/标签名以及 commit SHA 对应的 tag，`docker-compose.yml` 默认通过 `SUBLINK_WORKER_IMAGE` 使用这些镜像，因此 `docker compose pull && docker compose up -d` 就能保持最新；如需锁定某个 tag，只需在命令前导出 `SUBLINK_WORKER_IMAGE=ghcr.io/7sageer/sublink-worker:<tag>`。
 - 常用环境变量：
   - `REDIS_URL` 或 `REDIS_HOST`+`REDIS_PORT`
   - `REDIS_USERNAME`、`REDIS_PASSWORD`、`REDIS_TLS`
