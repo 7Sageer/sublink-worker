@@ -42,14 +42,37 @@ export const Form = (props) => {
       <form {...{'x-on:submit.prevent': 'submitForm'}} class="space-y-8">
 
       {/* Input Section */}
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-md">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-md group">
         <div class="mb-4">
-          <label for="input" class="block text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <span class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center">
-              <i class="fas fa-link text-sm"></i>
-            </span>
-            {t('shareUrls')}
-          </label>
+          <div class="flex items-center justify-between mb-2">
+            <label for="input" class="block text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <span class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                <i class="fas fa-link text-sm"></i>
+              </span>
+              {t('shareUrls')}
+            </label>
+            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button 
+                type="button" 
+                x-on:click="navigator.clipboard.readText().then(text => input = text).catch(() => {})" 
+                class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1"
+                title={t('paste')}
+              >
+                <i class="fas fa-paste"></i>
+                <span class="hidden sm:inline">{t('paste')}</span>
+              </button>
+              <button 
+                type="button" 
+                x-on:click="input = ''" 
+                x-show="input" 
+                class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1"
+                title={t('clear')}
+              >
+                <i class="fas fa-times"></i>
+                <span class="hidden sm:inline">{t('clear')}</span>
+              </button>
+            </div>
+          </div>
           <textarea
             id="input"
             name="input"
@@ -63,17 +86,29 @@ export const Form = (props) => {
       </div>
 
       {/* Advanced Options Toggle */}
-      <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" x-on:click="showAdvanced = !showAdvanced">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center">
-          <i class="fas fa-sliders-h"></i>
+      <div 
+        class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" 
+        x-on:click="showAdvanced = !showAdvanced"
+        role="button"
+        tabindex="0"
+        {...{
+          'x-on:keydown.enter.prevent': 'showAdvanced = !showAdvanced',
+          'x-on:keydown.space.prevent': 'showAdvanced = !showAdvanced'
+        }}
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+            <i class="fas fa-sliders-h"></i>
+          </div>
+          <span class="font-semibold text-gray-900 dark:text-white">{t('advancedOptions')}</span>
         </div>
-        <span class="font-semibold text-gray-900 dark:text-white">{t('advancedOptions')}</span>
+        <div 
+          class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition-transform duration-300" 
+          x-bind:class="{'rotate-180': showAdvanced}"
+        >
+          <i class="fas fa-chevron-down"></i>
+        </div>
       </div>
-      <div class="w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full relative transition-colors duration-300" x-bind:class="{'bg-primary-500': showAdvanced}">
-      <div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-300 shadow-sm" x-bind:class="{'translate-x-6': showAdvanced}"></div>
-          </div >
-        </div >
 
   {/* Advanced Options Content */ }
   <div x-show="showAdvanced" {...{'x-transition:enter': 'transition ease-out duration-300', 'x-transition:enter-start': 'opacity-0 transform -translate-y-4', 'x-transition:enter-end': 'opacity-100 transform translate-y-0', 'x-transition:leave': 'transition ease-in duration-200', 'x-transition:leave-start': 'opacity-100 transform translate-y-0', 'x-transition:leave-end': 'opacity-0 transform -translate-y-4'}} class="space-y-6">
