@@ -6,12 +6,8 @@ import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './hel
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry) {
-        // Not yet implemented, set aside for later use ;)
-        // if (!baseConfig) {
-        //     baseConfig = SURGE_CONFIG;
-        // }
-        baseConfig = SURGE_CONFIG;
-        super(inputString, baseConfig, lang, userAgent, groupByCountry);
+        const resolvedBaseConfig = baseConfig ?? SURGE_CONFIG;
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;

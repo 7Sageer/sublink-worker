@@ -2,9 +2,9 @@
 
 ## 概述
 
-如果你不知道如何配置 SingBox 和 Clash 的配置格式，请不要使用此功能。
+如果你不知道如何配置 SingBox、Clash 或 Surge 的配置格式，请不要使用此功能。
 
-我们正试图让用户能够根据自己的需求修改 SingBox 和 Clash 的基础配置。这是一个实验性功能，主要面向高级用户。
+我们正试图让用户能够根据自己的需求修改 SingBox、Clash 以及 Surge 的基础配置。这是一个实验性功能，主要面向高级用户。
 
 如果需要使用此功能，请确保你了解 SingBox 和 Clash 的配置格式，并能够正确配置。
 
@@ -146,11 +146,50 @@ dns:
       "https://dns.google/dns-query"
 ```
 
+### Surge 默认配置
+
+> Surge 的基础配置需要以 JSON 形式提供，下方示例与代码中的 `SURGE_CONFIG` 保持一致，可作为自定义的起点。
+
+```json
+{
+  "general": {
+    "allow-wifi-access": false,
+    "wifi-access-http-port": 6152,
+    "wifi-access-socks5-port": 6153,
+    "http-listen": "127.0.0.1:6152",
+    "socks5-listen": "127.0.0.1:6153",
+    "allow-hotspot-access": false,
+    "skip-proxy": "127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,17.0.0.0/8,localhost,*.local,*.crashlytics.com,seed-sequoia.siri.apple.com,sequoia.apple.com",
+    "test-timeout": 5,
+    "proxy-test-url": "http://cp.cloudflare.com/generate_204",
+    "internet-test-url": "http://www.apple.com/library/test/success.html",
+    "geoip-maxmind-url": "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb",
+    "ipv6": false,
+    "show-error-page-for-reject": true,
+    "dns-server": "119.29.29.29, 180.184.1.1, 223.5.5.5, system",
+    "encrypted-dns-server": "https://223.5.5.5/dns-query",
+    "exclude-simple-hostnames": true,
+    "read-etc-hosts": true,
+    "always-real-ip": "*.msftconnecttest.com, *.msftncsi.com, *.srv.nintendo.net, *.stun.playstation.net, xbox.*.microsoft.com, *.xboxlive.com, *.logon.battlenet.com.cn, *.logon.battle.net, stun.l.google.com, easy-login.10099.com.cn,*-update.xoyocdn.com, *.prod.cloud.netflix.com, appboot.netflix.com, *-appboot.netflix.com",
+    "hijack-dns": "*:53",
+    "udp-policy-not-supported-behaviour": "REJECT",
+    "hide-vpn-icon": false
+  },
+  "replica": {
+    "hide-apple-request": true,
+    "hide-crashlytics-request": true,
+    "use-keyword-filter": false,
+    "hide-udp": false
+  }
+}
+```
+
 ## 注意事项
 
 1. **格式要求**：
    - SingBox 配置必须是有效的 JSON 格式
    - Clash 配置必须是有效的 YAML 格式
+   - Surge 配置必须是有效的 JSON 格式（建议直接基于示例进行修改）
    - 目前不支持跨客户端的配置，例如：使用 Clash 的配置文件将无法在 SingBox 中使用
    - 配置中的必要字段不能缺失
 

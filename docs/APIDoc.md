@@ -81,7 +81,7 @@ https://your-worker-domain.workers.dev
 
   ```json
   {
-    "type": "clash" | "singbox",  // 配置类型
+    "type": "clash" | "singbox" | "surge",  // 配置类型
     "content": "配置内容"  // 字符串格式的配置内容
   }
   ```
@@ -94,6 +94,7 @@ https://your-worker-domain.workers.dev
 - 配置内容会进行格式验证
 - Clash配置支持YAML和JSON格式
 - SingBox配置必须是有效的JSON格式
+- Surge配置需要提供与 `SURGE_CONFIG` 结构一致的有效JSON（推荐直接使用JSON对象）
 - 配置将保存30天
 - 配置ID可以通过URL参数`configId`使用
 

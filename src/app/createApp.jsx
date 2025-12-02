@@ -154,9 +154,24 @@ export function createApp(bindings = {}) {
             const customRules = parseJsonArray(c.req.query('customRules'));
             const ua = c.req.query('ua');
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
+            const configId = c.req.query('configId');
             const lang = c.get('lang');
 
-            const builder = new SurgeConfigBuilder(config, selectedRules, customRules, undefined, lang, ua, groupByCountry);
+            let baseConfig;
+            if (configId) {
+                const storage = requireConfigStorage(services.configStorage);
+                baseConfig = await storage.getConfigById(configId);
+            }
+
+            const builder = new SurgeConfigBuilder(
+                config,
+                selectedRules,
+                customRules,
+                baseConfig,
+                lang,
+                ua,
+                groupByCountry
+            );
             builder.setSubscriptionUrl(c.req.url);
             await builder.build();
 
