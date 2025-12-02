@@ -19,6 +19,12 @@ export const formScriptFn = (t) => {
             externalUiDownloadUrl: '',
             configType: 'singbox',
             configEditor: '',
+            savingConfig: false,
+            currentConfigId: '',
+            saveConfigText: '',
+            savingConfigText: '',
+            configContentRequiredText: '',
+            configSaveFailedText: '',
             customUA: '',
             loading: false,
             generatedLinks: null,
@@ -40,6 +46,10 @@ export const formScriptFn = (t) => {
                     this.shortenLinksText = window.APP_TRANSLATIONS.shortenLinks;
                     this.shorteningText = window.APP_TRANSLATIONS.shortening;
                     this.showFullLinksText = window.APP_TRANSLATIONS.showFullLinks;
+                    this.saveConfigText = window.APP_TRANSLATIONS.saveConfig;
+                    this.savingConfigText = window.APP_TRANSLATIONS.savingConfig;
+                    this.configContentRequiredText = window.APP_TRANSLATIONS.configContentRequired;
+                    this.configSaveFailedText = window.APP_TRANSLATIONS.configSaveFailed;
                 }
 
                 // Load saved data
@@ -53,6 +63,8 @@ export const formScriptFn = (t) => {
                 this.configEditor = localStorage.getItem('configEditor') || '';
                 this.configType = localStorage.getItem('configType') || 'singbox';
                 this.customShortCode = localStorage.getItem('customShortCode') || '';
+                const initialUrlParams = new URLSearchParams(window.location.search);
+                this.currentConfigId = initialUrlParams.get('configId') || '';
 
                 // Load accordion states
                 const savedAccordion = localStorage.getItem('accordionSections');
@@ -95,16 +107,53 @@ export const formScriptFn = (t) => {
                 }
             },
 
-            saveBaseConfig() {
-                localStorage.setItem('configEditor', this.configEditor);
-                localStorage.setItem('configType', this.configType);
-                alert(window.APP_TRANSLATIONS.saveConfigSuccess);
+            async saveBaseConfig() {
+                const content = (this.configEditor || '').trim();
+                if (!content) {
+                    alert(this.configContentRequiredText || window.APP_TRANSLATIONS.configContentRequired);
+                    return;
+                }
+
+                this.savingConfig = true;
+                try {
+                    const response = await fetch('/config', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type: this.configType,
+                            content: this.configEditor
+                        })
+                    });
+                    const responseText = await response.text();
+                    if (!response.ok) {
+                        throw new Error(responseText || response.statusText || 'Request failed');
+                    }
+                    const configId = responseText.trim();
+                    if (!configId) {
+                        throw new Error('Missing config ID');
+                    }
+                    this.currentConfigId = configId;
+                    this.updateConfigIdInUrl(configId);
+
+                    const successMessage = window.APP_TRANSLATIONS.saveConfigSuccess || 'Configuration saved successfully!';
+                    alert(`${successMessage}\nID: ${configId}`);
+                } catch (error) {
+                    console.error('Failed to save base config:', error);
+                    const errorPrefix = this.configSaveFailedText || window.APP_TRANSLATIONS.configSaveFailed || 'Failed to save configuration';
+                    alert(`${errorPrefix}: ${error?.message || 'Unknown error'}`);
+                } finally {
+                    this.savingConfig = false;
+                }
             },
 
             clearBaseConfig() {
                 if (confirm(window.APP_TRANSLATIONS.confirmClearConfig)) {
                     this.configEditor = '';
                     localStorage.removeItem('configEditor');
+                    this.currentConfigId = '';
+                    this.updateConfigIdInUrl(null);
                 }
             },
 
@@ -117,6 +166,16 @@ export const formScriptFn = (t) => {
                     // Also clear from localStorage
                     localStorage.removeItem('customShortCode');
                 }
+            },
+
+            updateConfigIdInUrl(configId) {
+                const url = new URL(window.location.href);
+                if (configId) {
+                    url.searchParams.set('configId', configId);
+                } else {
+                    url.searchParams.delete('configId');
+                }
+                window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
             },
 
             async submitForm() {
@@ -142,7 +201,7 @@ export const formScriptFn = (t) => {
 
                     // Add configId if present in URL
                     const urlParams = new URLSearchParams(window.location.search);
-                    const configId = urlParams.get('configId');
+                    const configId = this.currentConfigId || urlParams.get('configId');
                     if (configId) {
                         params.append('configId', configId);
                     }
