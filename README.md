@@ -32,24 +32,44 @@ npm run deploy
 
 ### Run with Node/Vercel/Docker
 - **Local Node runtime**
-  - `npm run build:node && node dist/node-server.mjs`
-  - Provide storage credentials via `KV_REST_API_URL` / `KV_REST_API_TOKEN` (Upstash/Vercel KV) or rely on the built-in in-memory store for quick tests.
+  - `npm run build:node && node dist/node-server.cjs`
+  - Provide storage credentials via `REDIS_URL` (or `REDIS_HOST`/`REDIS_PORT`) for self-hosted Redis, or fall back to `KV_REST_API_URL` / `KV_REST_API_TOKEN` (Upstash/Vercel KV). Without either option a temporary in-memory store is used.
+  - Set `DISABLE_MEMORY_KV=true` if you prefer the process to fail fast when no persistent backend is configured.
 - **Vercel**
   - Set `KV_REST_API_URL` and `KV_REST_API_TOKEN` inside your project settings (Vercel KV supplies both automatically).
   - `vercel deploy` (rewrites are configured in `vercel.json` to serve the Hono app from `api/index.js`).
 - **Docker**
   - `docker build -t sublink-worker .`
-  - `docker run -p 8787:8787 -e KV_REST_API_URL=... -e KV_REST_API_TOKEN=... sublink-worker`
+  - `docker run -p 8787:8787 -e REDIS_HOST=redis -e REDIS_PORT=6379 sublink-worker`
   - The container listens on `8787` by default; override with `PORT`.
+  - See `docker-compose.yml` for a ready-to-use Redis deployment (RDB persistence enabled by default).
+
+#### Docker Compose (Redis)
+
+If you prefer a fully self-hosted stack, run `docker compose up -d` to start both the worker and a Redis 7 instance configured with RDB snapshots (`redis.conf`). Data is stored on the `redis-data` volume, so short links/configurations survive container restarts.
 
 ### Runtime Environment Variables
 | Variable | Description | Default |
 | --- | --- | --- |
 | `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Upstash/Vercel KV REST endpoint + token, used outside Cloudflare Workers | unset |
+| `REDIS_URL` | Connection URL (`redis://user:pass@host:port/0`) for direct Redis access | unset |
+| `REDIS_HOST` / `REDIS_PORT` | Host/port pair if you don't use `REDIS_URL` | unset |
+| `REDIS_USERNAME` / `REDIS_PASSWORD` | Optional auth for Redis deployments | unset |
+| `REDIS_TLS` | Set to `true` to enable TLS when connecting to Redis | `false` |
+| `REDIS_KEY_PREFIX` | Optional namespacing prefix applied to each Redis key | unset |
 | `CONFIG_TTL_SECONDS` | TTL applied to stored base configs | `2592000` (30 days) |
 | `SHORT_LINK_TTL_SECONDS` | TTL applied to generated short links (if supported by runtime) | no expiry |
 | `STATIC_DIR` | Directory for serving assets in Node/Vercel runtime | `public` |
 | `DISABLE_MEMORY_KV` | When `true`, disables the in-memory KV fallback on Node/Vercel | `false` |
+
+### Storage Backends
+
+Node/Vercel/Docker builds resolve storage in this order:
+1. Redis (`REDIS_URL` or `REDIS_HOST`/`REDIS_PORT`) — pairs naturally with the provided Docker Compose file and gives full control over persistence (RDB snapshots by default).
+2. Upstash/Vercel KV (`KV_REST_API_URL` + `KV_REST_API_TOKEN`).
+3. In-memory KV (unless `DISABLE_MEMORY_KV=true`).
+
+Choose the option that matches your operational needs; Redis is recommended when you deploy via Docker and require self-managed persistence.
 
 ## ✨ Features
 

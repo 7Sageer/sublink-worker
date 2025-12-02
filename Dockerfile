@@ -22,4 +22,4 @@ COPY public ./public
 
 EXPOSE 8787
 
-CMD ["node", "dist/node-server.mjs"]
+CMD ["node", "dist/node-server.cjs"]

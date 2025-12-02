@@ -10,8 +10,8 @@
     "start": "wrangler dev",
     "test": "vitest",
     "setup-kv": "node scripts/setup-kv.cjs",
-    "build:node": "node_modules/.bin/esbuild src/platforms/node-server.js --bundle --platform=node --target=node18 --format=esm --outfile=dist/node-server.mjs",
-    "dev:node": "npm run build:node && node dist/node-server.mjs"
+    "build:node": "node_modules/.bin/esbuild src/platforms/node-server.js --bundle --platform=node --target=node18 --format=cjs --outfile=dist/node-server.cjs",
+    "dev:node": "npm run build:node && node dist/node-server.cjs"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.10.11",
@@ -22,6 +22,7 @@
   "dependencies": {
     "esbuild-register": "^3.6.0",
     "hono": "^4.10.7",
+    "ioredis": "^5.8.2",
     "js-yaml": "^4.1.1"
   },
   "engines": {

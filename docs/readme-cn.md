@@ -28,6 +28,17 @@
 npm run deploy
 ```
 
+## ⚙️ 运行与存储
+
+- Node/Vercel 运行时优先使用自托管 Redis（通过 `REDIS_URL` 或 `REDIS_HOST`/`REDIS_PORT` 配置），其次是 Upstash/Vercel KV（`KV_REST_API_URL`、`KV_REST_API_TOKEN`），最后才会退回内存存储（可用 `DISABLE_MEMORY_KV=true` 禁止）。
+- Docker 部署可以直接运行 `docker run ...` 并注入上述环境变量，或者使用仓库内的 `docker-compose.yml`，它会同时启动 Redis（默认开启 RDB 持久化）与 Worker，数据写入 `redis-data` 卷中即可安全持久化。
+- 常用环境变量：
+  - `REDIS_URL` 或 `REDIS_HOST`+`REDIS_PORT`
+  - `REDIS_USERNAME`、`REDIS_PASSWORD`、`REDIS_TLS`
+  - `REDIS_KEY_PREFIX`（可选，便于多实例共用 Redis）
+  - `KV_REST_API_URL`、`KV_REST_API_TOKEN`
+  - `DISABLE_MEMORY_KV`
+
 ## ✨ 功能特点
 
 ### 支持协议
