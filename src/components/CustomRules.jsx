@@ -1,6 +1,8 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
 
+import { ValidatedTextarea } from './ValidatedTextarea.jsx';
+
 export const CustomRules = (props) => {
     const { t } = props;
 
@@ -176,26 +178,36 @@ export const CustomRules = (props) => {
 
     {/* JSON Mode */ }
     <div x-show="mode === 'json'" {...{'x-transition:enter': 'transition ease-out duration-300', 'x-transition:enter-start': 'opacity-0 transform scale-95', 'x-transition:enter-end': 'opacity-100 transform scale-100'}}>
-        <div class="relative">
-            <textarea
-                x-model="jsonContent"
-                class="w-full min-h-[16rem] px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-y"
-                placeholder='[{"name": "MyRule", "domain_suffix": ["example.com"], "outbound": "Proxy"}]'
-            ></textarea>
-            <div class="absolute bottom-4 right-4 flex gap-2">
-                <button type="button" x-on:click="validateJson()" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                {t('validateJSON')}
-            </button>
-        </div>
-        </div>
-        <div x-show="jsonError" class="mt-2 text-red-500 text-sm flex items-center gap-1">
-          <i class="fas fa-exclamation-circle"></i>
-          <span x-text="jsonError"></span>
-        </div>
-        <div x-show="jsonValid" class="mt-2 text-green-500 text-sm flex items-center gap-1">
-          <i class="fas fa-check-circle"></i>
-          <span>{t('allJSONValid')}</span>
-        </div>
+        <ValidatedTextarea
+          id="customRulesJson"
+          name="customRulesJson"
+          model="jsonContent"
+          placeholder='[{"name": "MyRule", "domain_suffix": ["example.com"], "outbound": "Proxy"}]'
+          variant="mono"
+          textareaClass="min-h-[16rem]"
+          containerClass="group"
+          labelWrapperClass="flex items-center justify-end mb-2"
+          labelActionsWrapperClass="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          inlineActionsWrapperClass="absolute bottom-4 right-4 flex gap-2"
+          preserveLabelSpace={false}
+          pasteLabel={t('paste')}
+          clearLabel={t('clear')}
+          validation={{
+            button: {
+              key: 'validate-json',
+              label: t('validateJSON'),
+              attrs: { 'x-on:click': 'validateJson()' }
+            },
+            error: {
+              show: 'jsonError',
+              textExpr: 'jsonError'
+            },
+            success: {
+              show: 'jsonValid',
+              text: t('allJSONValid')
+            }
+          }}
+        />
       </div>
 
     {/* Hidden input to store the final JSON for form submission */ }

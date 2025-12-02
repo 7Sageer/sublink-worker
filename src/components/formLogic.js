@@ -25,6 +25,8 @@ export const formLogicFn = (t) => {
             savingConfigText: '',
             configContentRequiredText: '',
             configSaveFailedText: '',
+            configValidationState: '',
+            configValidationMessage: '',
             customUA: '',
             loading: false,
             generatedLinks: null,
@@ -87,8 +89,14 @@ export const formLogicFn = (t) => {
                 this.$watch('externalController', val => localStorage.setItem('externalController', val));
                 this.$watch('externalUiDownloadUrl', val => localStorage.setItem('externalUiDownloadUrl', val));
                 this.$watch('customUA', val => localStorage.setItem('userAgent', val));
-                this.$watch('configEditor', val => localStorage.setItem('configEditor', val));
-                this.$watch('configType', val => localStorage.setItem('configType', val));
+                this.$watch('configEditor', val => {
+                    localStorage.setItem('configEditor', val);
+                    this.resetConfigValidation();
+                });
+                this.$watch('configType', val => {
+                    localStorage.setItem('configType', val);
+                    this.resetConfigValidation();
+                });
                 this.$watch('customShortCode', val => localStorage.setItem('customShortCode', val));
                 this.$watch('accordionSections', val => localStorage.setItem('accordionSections', JSON.stringify(val)), { deep: true });
             },
@@ -105,6 +113,11 @@ export const formLogicFn = (t) => {
                 if (rules && rules[this.selectedPredefinedRule]) {
                     this.selectedRules = rules[this.selectedPredefinedRule];
                 }
+            },
+
+            resetConfigValidation() {
+                this.configValidationState = '';
+                this.configValidationMessage = '';
             },
 
             async saveBaseConfig() {
@@ -145,6 +158,36 @@ export const formLogicFn = (t) => {
                     alert(`${errorPrefix}: ${error?.message || 'Unknown error'}`);
                 } finally {
                     this.savingConfig = false;
+                }
+            },
+
+            validateBaseConfig() {
+                const content = (this.configEditor || '').trim();
+                if (!content) {
+                    this.configValidationState = 'error';
+                    this.configValidationMessage = this.configContentRequiredText || window.APP_TRANSLATIONS.configContentRequired;
+                    return;
+                }
+
+                try {
+                    if (this.configType === 'clash') {
+                        if (!window.jsyaml || !window.jsyaml.load) {
+                            throw new Error(window.APP_TRANSLATIONS.parserUnavailable || 'Parser unavailable. Please refresh and try again.');
+                        }
+                        window.jsyaml.load(content);
+                        this.configValidationState = 'success';
+                        this.configValidationMessage =
+                            window.APP_TRANSLATIONS.validYamlConfig || 'YAML config is valid';
+                    } else {
+                        JSON.parse(content);
+                        this.configValidationState = 'success';
+                        this.configValidationMessage =
+                            window.APP_TRANSLATIONS.validJsonConfig || 'JSON config is valid';
+                    }
+                } catch (error) {
+                    this.configValidationState = 'error';
+                    const prefix = window.APP_TRANSLATIONS.configValidationError || 'Config validation error: ';
+                    this.configValidationMessage = `${prefix}${error?.message || ''}`;
                 }
             },
 

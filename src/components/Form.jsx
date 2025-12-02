@@ -1,6 +1,8 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
 import { CustomRules } from './CustomRules.jsx';
+import { TextareaWithActions } from './TextareaWithActions.jsx';
+import { ValidatedTextarea } from './ValidatedTextarea.jsx';
 import { formLogicFn } from './formLogic.js';
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config/index.js';
 
@@ -47,46 +49,48 @@ export const Form = (props) => {
 
       {/* Input Section */}
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-md group">
-        <div class="mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <label for="input" class="block text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <span class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center">
-                <i class="fas fa-link text-sm"></i>
-              </span>
-              {t('shareUrls')}
-            </label>
-            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <button 
-                type="button" 
-                x-on:click="navigator.clipboard.readText().then(text => input = text).catch(() => {})" 
-                class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1"
-                title={t('paste')}
-              >
-                <i class="fas fa-paste"></i>
-                <span class="hidden sm:inline">{t('paste')}</span>
-              </button>
-              <button 
-                type="button" 
-                x-on:click="input = ''" 
-                x-show="input" 
-                class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1"
-                title={t('clear')}
-              >
-                <i class="fas fa-times"></i>
-                <span class="hidden sm:inline">{t('clear')}</span>
-              </button>
-            </div>
-          </div>
-          <textarea
-            id="input"
-            name="input"
-            x-model="input"
-            rows="5"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-y placeholder-gray-400 dark:placeholder-gray-500"
-            placeholder={t('urlPlaceholder')}
-            required
-          ></textarea>
-        </div>
+        <TextareaWithActions
+          id="input"
+          name="input"
+          label={t('shareUrls')}
+          labelPrefix={
+            <span class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+              <i class="fas fa-link text-sm"></i>
+            </span>
+          }
+          model="input"
+          rows={5}
+          placeholder={t('urlPlaceholder')}
+          required
+          labelActionsWrapperClass="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          labelActions={[
+            {
+              key: 'paste',
+              icon: 'fas fa-paste',
+              label: t('paste'),
+              hideLabelOnMobile: true,
+              className:
+                'px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1',
+              title: t('paste'),
+              attrs: {
+                'x-on:click': "navigator.clipboard.readText().then(text => input = text).catch(() => {})"
+              }
+            },
+            {
+              key: 'clear',
+              icon: 'fas fa-times',
+              label: t('clear'),
+              hideLabelOnMobile: true,
+              className:
+                'px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1',
+              title: t('clear'),
+              attrs: {
+                'x-on:click': "input = ''",
+                'x-show': 'input'
+              }
+            }
+          ]}
+        />
       </div>
 
       {/* Advanced Options Toggle */}
@@ -215,12 +219,40 @@ export const Form = (props) => {
               </select>
           </div>
             
-            <textarea 
-              x-model="configEditor" 
-              rows="5" 
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-y"
+            <ValidatedTextarea
+              id="configEditor"
+              name="configEditor"
+              model="configEditor"
+              rows={5}
               placeholder="Paste your custom config here..."
-            ></textarea>
+              variant="mono"
+              containerClass="mt-0 group"
+              labelWrapperClass="flex items-center justify-end mb-2"
+              labelActionsWrapperClass="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              pasteLabel={t('paste')}
+              clearLabel={t('clear')}
+              validation={{
+                button: {
+                  key: 'validate-config',
+                  label: t('validateConfig'),
+                  className:
+                    'px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center gap-2',
+                  attrs: {
+                    'x-on:click': 'validateBaseConfig()'
+                  }
+                },
+                success: {
+                  show: "configValidationState === 'success'",
+                  textExpr: 'configValidationMessage'
+                },
+                error: {
+                  show: "configValidationState === 'error'",
+                  textExpr: 'configValidationMessage'
+                }
+              }}
+              inlineActionsWrapperClass="absolute bottom-4 right-4 flex gap-2"
+              preserveLabelSpace={false}
+            />
             
             <div class="flex justify-end gap-3 mt-4">
               <button 
