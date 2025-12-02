@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { GenerateWebPath } from '../utils.js';
+import { generateWebPath } from '../utils.js';
 import { InvalidPayloadError, MissingDependencyError } from './errors.js';
 
 export class ConfigStorageService {
@@ -32,7 +32,7 @@ export class ConfigStorageService {
         }
 
         const kv = this.ensureKv();
-        const configId = `${type}_${GenerateWebPath(8)}`;
+        const configId = `${type}_${generateWebPath(8)}`;
         const configString = this.serializeConfig(type, content);
 
         // Validate string is JSON before storing

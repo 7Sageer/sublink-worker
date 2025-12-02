@@ -1,7 +1,7 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
 import { CustomRules } from './CustomRules.jsx';
-import { formScriptFn } from './formScript.js';
+import { formLogicFn } from './formLogic.js';
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 const LINK_FIELDS = [
@@ -38,7 +38,7 @@ export const Form = (props) => {
   const scriptContent = `
     window.APP_TRANSLATIONS = ${JSON.stringify(translations)};
     window.PREDEFINED_RULE_SETS = ${JSON.stringify(PREDEFINED_RULE_SETS)};
-    (${formScriptFn.toString()})();
+    (${formLogicFn.toString()})();
   `;
 
   return (

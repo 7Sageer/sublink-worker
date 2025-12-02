@@ -1,5 +1,5 @@
 import { ProxyParser, convertYamlProxyToObject } from '../parsers/index.js';
-import { DeepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
+import { deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
 import yaml from 'js-yaml';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
@@ -7,7 +7,7 @@ import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/ind
 export class BaseConfigBuilder {
     constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
         this.inputString = inputString;
-        this.config = DeepCopy(baseConfig);
+        this.config = deepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
         this.t = createTranslator(lang);
@@ -33,7 +33,7 @@ export class BaseConfigBuilder {
             try {
                 const obj = yaml.load(input.trim());
                 if (obj && typeof obj === 'object' && Array.isArray(obj.proxies)) {
-                    const overrides = DeepCopy(obj);
+                    const overrides = deepCopy(obj);
                     delete overrides.proxies;
                     if (Object.keys(overrides).length > 0) {
                         this.applyConfigOverrides(overrides);
@@ -60,7 +60,7 @@ export class BaseConfigBuilder {
                     try {
                         const obj = yaml.load(maybeYaml);
                         if (obj && typeof obj === 'object' && Array.isArray(obj.proxies)) {
-                            const overrides = DeepCopy(obj);
+                            const overrides = deepCopy(obj);
                             delete overrides.proxies;
                             if (Object.keys(overrides).length > 0) {
                                 this.applyConfigOverrides(overrides);
@@ -139,7 +139,7 @@ export class BaseConfigBuilder {
                 delete this.config[key];
                 this.appliedOverrideKeys.add(key);
             } else {
-                this.config[key] = DeepCopy(value);
+                this.config[key] = deepCopy(value);
                 this.appliedOverrideKeys.add(key);
             }
         });

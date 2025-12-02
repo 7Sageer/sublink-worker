@@ -17,7 +17,7 @@
     </a>
   </p>
   
-  <p><a href="/docs/README_CN.md">中文文档</a></p>
+  <p><a href="/docs/readme-cn.md">中文文档</a></p>
 </div>
 
 ## 🚀 Quick Start
@@ -81,7 +81,7 @@ npm run deploy
 
 ## 📖 API Documentation
 
-For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
+For detailed API documentation, please refer to [api-doc.md](/docs/api-doc.md)
 
 ### Main Endpoints
 - `/singbox` - Generate Sing-Box configuration
@@ -109,10 +109,10 @@ For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
 ├── style.js                 # Generate CSS for Web interface
 ├── config.js                # Store configuration information
 └── docs/
-    ├── APIDoc.md            # API documentation
-    ├── UpdateLogs.md        # Update logs
-    ├── FAQ.md               # Frequently asked questions
-    └── BaseConfig.md        # Basic configuration feature introduction
+    ├── api-doc.md           # API documentation
+    ├── update-logs.md       # Update logs
+    ├── faq.md               # Frequently asked questions
+    └── base-config.md       # Basic configuration feature introduction
 ```
 
 ## 🤝 Contribution

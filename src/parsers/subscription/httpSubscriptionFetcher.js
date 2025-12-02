@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { decodeBase64, DeepCopy } from '../../utils.js';
+import { decodeBase64, deepCopy } from '../../utils.js';
 import { convertYamlProxyToObject } from '../convertYamlProxyToObject.js';
 
 export async function fetchSubscription(url, userAgent) {
@@ -38,7 +38,7 @@ export async function fetchSubscription(url, userAgent) {
                     .map(p => convertYamlProxyToObject(p))
                     .filter(p => p != null);
                 if (proxies.length > 0) {
-                    const configOverrides = DeepCopy(parsed);
+                    const configOverrides = deepCopy(parsed);
                     delete configOverrides.proxies;
                     return {
                         type: 'yamlConfig',

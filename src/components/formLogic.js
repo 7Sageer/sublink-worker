@@ -1,4 +1,4 @@
-export const formScriptFn = (t) => {
+export const formLogicFn = (t) => {
     window.formData = function () {
         return {
             input: '',
