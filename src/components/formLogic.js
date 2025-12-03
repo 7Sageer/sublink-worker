@@ -1,3 +1,5 @@
+import { parseSurgeConfigInput } from '../utils/surgeConfigParser.js';
+
 export const formLogicFn = (t) => {
     window.formData = function () {
         return {
@@ -127,6 +129,18 @@ export const formLogicFn = (t) => {
                     return;
                 }
 
+                let payloadContent = this.configEditor;
+                if (this.configType === 'surge') {
+                    try {
+                        const { configObject } = parseSurgeConfigInput(this.configEditor);
+                        payloadContent = JSON.stringify(configObject);
+                    } catch (parseError) {
+                        const prefix = window.APP_TRANSLATIONS.configValidationError || 'Config validation error:';
+                        alert(`${prefix} ${parseError?.message || ''}`.trim());
+                        return;
+                    }
+                }
+
                 this.savingConfig = true;
                 try {
                     const response = await fetch('/config', {
@@ -136,7 +150,7 @@ export const formLogicFn = (t) => {
                         },
                         body: JSON.stringify({
                             type: this.configType,
-                            content: this.configEditor
+                            content: payloadContent
                         })
                     });
                     const responseText = await response.text();
@@ -178,6 +192,11 @@ export const formLogicFn = (t) => {
                         this.configValidationState = 'success';
                         this.configValidationMessage =
                             window.APP_TRANSLATIONS.validYamlConfig || 'YAML config is valid';
+                    } else if (this.configType === 'surge') {
+                        parseSurgeConfigInput(this.configEditor);
+                        this.configValidationState = 'success';
+                        this.configValidationMessage =
+                            window.APP_TRANSLATIONS.validJsonConfig || 'JSON config is valid';
                     } else {
                         JSON.parse(content);
                         this.configValidationState = 'success';
