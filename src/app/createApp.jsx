@@ -4,6 +4,7 @@ import { Hono } from 'hono';
 import { Layout } from '../components/Layout.jsx';
 import { Navbar } from '../components/Navbar.jsx';
 import { Form } from '../components/Form.jsx';
+import { Footer } from '../components/Footer.jsx';
 import { SingboxConfigBuilder } from '../builders/SingboxConfigBuilder.js';
 import { ClashConfigBuilder } from '../builders/ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from '../builders/SurgeConfigBuilder.js';
@@ -56,6 +57,7 @@ export function createApp(bindings = {}) {
                         <Form t={t} />
                     </div>
                 </div>
+                <Footer />
             </Layout>
         );
     });

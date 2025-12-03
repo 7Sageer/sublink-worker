@@ -92,14 +92,14 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     uuid: proxy.uuid,
                     cipher: proxy.security,
                     tls: proxy.tls?.enabled || false,
-                    'client-fingerprint': proxy.tls.utls?.fingerprint,
+                    'client-fingerprint': proxy.tls?.utls?.fingerprint,
                     servername: proxy.tls?.server_name || '',
                     network: proxy.transport?.type || 'tcp',
                     'ws-opts': proxy.transport?.type === 'ws' ? {
                         path: proxy.transport.path,
                         headers: proxy.transport.headers
                     } : undefined,
-                    'reality-opts': proxy.tls.reality?.enabled ? {
+                    'reality-opts': proxy.tls?.reality?.enabled ? {
                         'public-key': proxy.tls.reality.public_key,
                         'short-id': proxy.tls.reality.short_id,
                     } : undefined,
@@ -142,14 +142,14 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     password: proxy.password,
                     cipher: proxy.security,
                     tls: proxy.tls?.enabled || false,
-                    'client-fingerprint': proxy.tls.utls?.fingerprint,
+                    'client-fingerprint': proxy.tls?.utls?.fingerprint,
                     sni: proxy.tls?.server_name || '',
                     network: proxy.transport?.type || 'tcp',
                     'ws-opts': proxy.transport?.type === 'ws' ? {
                         path: proxy.transport.path,
                         headers: proxy.transport.headers
                     } : undefined,
-                    'reality-opts': proxy.tls.reality?.enabled ? {
+                    'reality-opts': proxy.tls?.reality?.enabled ? {
                         'public-key': proxy.tls.reality.public_key,
                         'short-id': proxy.tls.reality.short_id,
                     } : undefined,
