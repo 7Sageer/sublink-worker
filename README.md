@@ -70,10 +70,9 @@ For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
 
 ## 📝 Recent Updates
 
-### 2025-09-28
+### 2025-11-08
 
-- Fixed warnings caused by some configurations in Singbox 1.12.0
-- Various other small issues
+- feat(config): Added support for proxy configuration grouped by country, updated related translations
 
 ## 🔧 Project Structure
 

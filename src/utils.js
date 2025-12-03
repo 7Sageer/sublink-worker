@@ -241,3 +241,80 @@ export function createTransportConfig(params) {
 		})
 	};
 }
+
+// Parse boolean value from various formats
+export function parseBool(value, fallback = undefined) {
+	if (value === undefined || value === null) return fallback;
+	if (typeof value === 'boolean') return value;
+	const lowered = String(value).toLowerCase();
+	if (lowered === 'true' || lowered === '1') return true;
+	if (lowered === 'false' || lowered === '0') return false;
+	return fallback;
+}
+
+// Parse number value safely
+export function parseMaybeNumber(value) {
+	if (value === undefined || value === null) return undefined;
+	const num = Number(value);
+	return Number.isNaN(num) ? undefined : num;
+}
+
+// Parse comma-separated string to array
+export function parseArray(value) {
+	if (!value) return undefined;
+	if (Array.isArray(value)) return value;
+	return String(value)
+		.split(',')
+		.map(entry => entry.trim())
+		.filter(entry => entry.length > 0);
+}
+
+export function parseCountryFromNodeName(nodeName) {
+        const countryData = {
+            'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
+            'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
+            'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
+            'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
+            'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
+            'US': { name: 'United States', emoji: '🇺🇸', aliases: ['美国', 'United States', 'US'] },
+            'GB': { name: 'United Kingdom', emoji: '🇬🇧', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
+            'DE': { name: 'Germany', emoji: '🇩🇪', aliases: ['德国', 'Germany'] },
+            'FR': { name: 'France', emoji: '🇫🇷', aliases: ['法国', 'France'] },
+            'RU': { name: 'Russia', emoji: '🇷🇺', aliases: ['俄罗斯', 'Russia'] },
+            'CA': { name: 'Canada', emoji: '🇨🇦', aliases: ['加拿大', 'Canada'] },
+            'AU': { name: 'Australia', emoji: '🇦🇺', aliases: ['澳大利亚', 'Australia'] },
+		'IN': { name: 'India', emoji: '🇮🇳', aliases: ['印度', 'India'] },
+		'BR': { name: 'Brazil', emoji: '🇧🇷', aliases: ['巴西', 'Brazil'] },
+		'ZA': { name: 'South Africa', emoji: '🇿🇦', aliases: ['南非', 'South Africa'] },
+		'AR': { name: 'Argentina', emoji: '🇦🇷', aliases: ['阿根廷', 'Argentina'] },
+		'TR': { name: 'Turkey', emoji: '🇹🇷', aliases: ['土耳其', 'Turkey'] },
+		'NL': { name: 'Netherlands', emoji: '🇳🇱', aliases: ['荷兰', 'Netherlands'] },
+		'CH': { name: 'Switzerland', emoji: '🇨🇭', aliases: ['瑞士', 'Switzerland'] },
+		'SE': { name: 'Sweden', emoji: '🇸🇪', aliases: ['瑞典', 'Sweden'] },
+		'IT': { name: 'Italy', emoji: '🇮🇹', aliases: ['意大利', 'Italy'] },
+		'ES': { name: 'Spain', emoji: '🇪🇸', aliases: ['西班牙', 'Spain'] },
+		'IE': { name: 'Ireland', emoji: '🇮🇪', aliases: ['爱尔兰', 'Ireland'] },
+		'MY': { name: 'Malaysia', emoji: '🇲🇾', aliases: ['马来西亚', 'Malaysia'] },
+		'TH': { name: 'Thailand', emoji: '🇹🇭', aliases: ['泰国', 'Thailand'] },
+		'VN': { name: 'Vietnam', emoji: '🇻🇳', aliases: ['越南', 'Vietnam'] },
+		'PH': { name: 'Philippines', emoji: '🇵🇭', aliases: ['菲律宾', 'Philippines'] },
+		'ID': { name: 'Indonesia', emoji: '🇮🇩', aliases: ['印度尼西亚', 'Indonesia'] },
+		'NZ': { name: 'New Zealand', emoji: '🇳🇿', aliases: ['新西兰', 'New Zealand'] },
+		'AE': { name: 'United Arab Emirates', emoji: '🇦🇪', aliases: ['阿联酋', 'United Arab Emirates'] },
+	};
+
+	const allAliases = Object.values(countryData).flatMap(c => c.aliases);
+	const regex = new RegExp(allAliases.map(p => p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|'), 'i');
+	const match = nodeName.match(regex);
+
+	if (match) {
+		const matchedAlias = match[0];
+		for (const code in countryData) {
+			if (countryData[code].aliases.some(alias => alias.toLowerCase() === matchedAlias.toLowerCase())) {
+				return { code, ...countryData[code] };
+			}
+		}
+	}
+
+	return null;
+}

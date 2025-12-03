@@ -96,6 +96,7 @@ const generateAdvancedOptionsToggle = () => `
 const generateAdvancedOptions = () => `
   <div id="advancedOptions">
     ${generateRuleSetSelection()}
+    ${generateGeneralOptions()}
     ${generateBaseConfigSection()}
     ${generateUASection()}
   </div>
@@ -473,6 +474,48 @@ const generateJSONView = () => `
   </div>
 `;
 
+const generateGeneralOptions = () => `
+  <div class="form-section">
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+      <div class="form-section-title d-flex align-items-center mb-0" style="font-size: 1rem;">
+        ${t('groupByCountry')}
+        <span class="tooltip-icon ms-2">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            ${t('groupByCountryTip')}
+          </span>
+        </span>
+      </div>
+      <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" id="groupByCountry">
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center py-2">
+      <div class="form-section-title d-flex align-items-center mb-0" style="font-size: 1rem;">
+        ${t('enableClashUI')}
+        <span class="tooltip-icon ms-2">
+          <i class="fas fa-question-circle"></i>
+          <span class="tooltip-content">
+            ${t('enableClashUITip')}
+          </span>
+        </span>
+      </div>
+      <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" id="enableClashUI">
+      </div>
+    </div>
+    <div class="pt-2">
+      <label class="form-label mb-1" for="externalController">${t('externalController')}</label>
+      <input type="text" class="form-control" id="externalController" placeholder="${t('externalControllerPlaceholder')}">
+    </div>
+    <div class="pt-2">
+      <label class="form-label mb-1" for="externalUiDownloadUrl">${t('externalUiDownloadUrl')}</label>
+      <input type="text" class="form-control" id="externalUiDownloadUrl" placeholder="${t('externalUiDownloadUrlPlaceholder')}">
+    </div>
+  </div>
+`;
+
 const generateBaseConfigSection = () => `
   <div class="form-section">
     <div class="form-section-title d-flex align-items-center">
@@ -584,10 +627,19 @@ const submitFormFunction = () => `
     const inputString = formData.get('input');
 
     const userAgent = document.getElementById('customUA').value;
+    const groupByCountry = document.getElementById('groupByCountry').checked;
+    const enableClashUIChecked = document.getElementById('enableClashUI').checked;
+    const externalController = document.getElementById('externalController').value.trim();
+    const externalUiDownloadUrl = document.getElementById('externalUiDownloadUrl').value.trim();
+    const clashUIEnabled = !!(enableClashUIChecked || externalController || externalUiDownloadUrl);
     
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
+    localStorage.setItem('groupByCountry', groupByCountry);
+    localStorage.setItem('enableClashUI', clashUIEnabled);
+    localStorage.setItem('externalController', externalController);
+    localStorage.setItem('externalUiDownloadUrl', externalUiDownloadUrl);
 
     // Save UserAgent data to localStorage
     localStorage.setItem('userAgent', document.getElementById('customUA').value);
@@ -611,10 +663,15 @@ const submitFormFunction = () => `
     const customRules = parseCustomRules();
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
-    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const groupByCountryParam = groupByCountry ? '&group_by_country=true' : '';
+    const clashUiParam = clashUIEnabled ? '&enable_clash_ui=true' : '';
+    const externalControllerParam = externalController ? \`&external_controller=\${encodeURIComponent(externalController)}\` : '';
+    const externalUiDownloadUrlParam = externalUiDownloadUrl ? \`&external_ui_download_url=\${encodeURIComponent(externalUiDownloadUrl)}\` : '';
+    const clashUiQuery = \`\${clashUiParam}\${externalControllerParam}\${externalUiDownloadUrlParam}\`;
+    const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\${groupByCountryParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\${clashUiQuery}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\${clashUiQuery}\`;
+    const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\${groupByCountryParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
     document.getElementById('clashLink').value = clashUrl;
@@ -697,6 +754,32 @@ const submitFormFunction = () => `
         } catch (e) {
           console.error('Error parsing custom rules:', e);
         }
+      }
+
+      // Parse group_by_country
+      const groupByCountry = params.get('group_by_country');
+      if (groupByCountry) {
+        document.getElementById('groupByCountry').checked = groupByCountry === 'true';
+      }
+
+      // Parse enable_clash_ui 
+      const enableClashUI = params.get('enable_clash_ui');
+      if (enableClashUI) {
+        document.getElementById('enableClashUI').checked = enableClashUI === 'true';
+      }
+
+      const externalController = params.get('external_controller');
+      if (externalController) {
+        document.getElementById('externalController').value = externalController;
+      }
+
+      const externalUiDownloadUrl = params.get('external_ui_download_url');
+      if (externalUiDownloadUrl) {
+        document.getElementById('externalUiDownloadUrl').value = externalUiDownloadUrl;
+      }
+
+      if ((externalController && externalController.trim()) || (externalUiDownloadUrl && externalUiDownloadUrl.trim())) {
+        document.getElementById('enableClashUI').checked = true;
       }
 
       // Parse configuration ID
@@ -798,6 +881,30 @@ const submitFormFunction = () => `
         document.getElementById('advancedOptions').classList.add('show');
       }
     }
+
+    const groupByCountry = localStorage.getItem('groupByCountry');
+    if (groupByCountry) {
+      document.getElementById('groupByCountry').checked = groupByCountry === 'true';
+    }
+    
+    const enableClashUI = localStorage.getItem('enableClashUI');
+    if (enableClashUI) {
+      document.getElementById('enableClashUI').checked = enableClashUI === 'true';
+    }
+    
+    const savedExternalController = localStorage.getItem('externalController');
+    if (savedExternalController) {
+      document.getElementById('externalController').value = savedExternalController;
+    }
+
+    const savedExternalUiDownloadUrl = localStorage.getItem('externalUiDownloadUrl');
+    if (savedExternalUiDownloadUrl) {
+      document.getElementById('externalUiDownloadUrl').value = savedExternalUiDownloadUrl;
+    }
+
+    if (!enableClashUI && (savedExternalController || savedExternalUiDownloadUrl)) {
+      document.getElementById('enableClashUI').checked = true;
+    }
     
     // Load userAgent
     const savedUA = localStorage.getItem('userAgent');
@@ -857,10 +964,18 @@ const submitFormFunction = () => `
     localStorage.removeItem('configEditor'); 
     localStorage.removeItem('configType');
     localStorage.removeItem('userAgent');
+    localStorage.removeItem('groupByCountry');
+    localStorage.removeItem('enableClashUI');
+    localStorage.removeItem('externalController');
+    localStorage.removeItem('externalUiDownloadUrl');
     
     document.getElementById('inputTextarea').value = '';
     document.getElementById('advancedToggle').checked = false;
     document.getElementById('advancedOptions').classList.remove('show');
+    document.getElementById('groupByCountry').checked = false;
+    document.getElementById('enableClashUI').checked = false;
+    document.getElementById('externalController').value = '';
+    document.getElementById('externalUiDownloadUrl').value = '';
     document.getElementById('configEditor').value = '';
     document.getElementById('configType').value = 'singbox'; 
     document.getElementById('customUA').value = '';
