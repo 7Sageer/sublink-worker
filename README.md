@@ -8,16 +8,16 @@
     <img src="https://trendshift.io/api/badge/repositories/12291" alt="7Sageer%2Fsublink-worker | Trendshift" width="250" height="55"/>
   </a>
 
-  <br><br>
+  <br>
 
-  <p>
-    <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
-      <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" height="37"/>
-    </a>
-    <a href="https://vercel.com/new/clone?repository-url=https://github.com/7Sageer/sublink-worker&env=KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Vercel%20KV%20credentials%20for%20data%20storage&envLink=https://vercel.com/docs/storage/vercel-kv">
-      <img src="https://vercel.com/button" alt="Deploy to Vercel" height="38"/>
-    </a>
-  </p>
+<p style="display: flex; align-items: center; gap: 10px;">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" style="height: 32px;"/>
+  </a>
+  <a href="https://vercel.com/new/clone?repository-url=https://github.com/7Sageer/sublink-worker&env=KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Vercel%20KV%20credentials%20for%20data%20storage&envLink=https://vercel.com/docs/storage/vercel-kv">
+    <img src="https://vercel.com/button" alt="Deploy to Vercel" style="height: 32px;"/>
+  </a>
+</p>
 
   <br>
 
