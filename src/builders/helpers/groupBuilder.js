@@ -15,9 +15,9 @@ export function uniqueNames(names = []) {
 
 export function withDirectReject(options = []) {
     return uniqueNames([
+        ...options,
         'DIRECT',
-        'REJECT',
-        ...options
+        'REJECT'
     ]);
 }
 

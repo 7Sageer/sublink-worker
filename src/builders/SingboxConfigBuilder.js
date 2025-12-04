@@ -183,13 +183,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         const nodeSelectTag = this.t('outboundNames.Node Select');
         const nodeSelectGroup = this.config.outbounds.find(o => normalize(o?.tag) === normalize(nodeSelectTag));
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.outbounds)) {
-            const rebuilt = uniqueNames([
-                'DIRECT',
-                'REJECT',
-                this.t('outboundNames.Auto Select'),
-                ...(manualGroupName ? [manualGroupName] : []),
-                ...countryGroupNames
-            ].filter(Boolean));
+            const rebuilt = buildNodeSelectMembers({
+                proxyList: [],
+                translator: this.t,
+                groupByCountry: true,
+                manualGroupName,
+                countryGroupNames
+            });
             nodeSelectGroup.outbounds = rebuilt;
         }
 
@@ -225,7 +225,10 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
             this.config.route.rules.push({
                 rule_set: [
-                    ...(rule.ip_rules.filter(ip => ip.trim() !== '').map(ip => `${ip} -ip`))
+                    ...(rule.ip_rules
+                        .map(ip => ip.trim())
+                        .filter(ip => ip !== '')
+                        .map(ip => `${ip}-ip`))
                 ],
                 protocol: rule.protocol,
                 outbound: this.t(`outboundNames.${rule.outbound}`)

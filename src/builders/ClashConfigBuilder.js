@@ -352,13 +352,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
         const nodeSelectGroup = this.config['proxy-groups'].find(g => g && g.name === this.t('outboundNames.Node Select'));
         if (nodeSelectGroup && Array.isArray(nodeSelectGroup.proxies)) {
-            const rebuilt = uniqueNames([
-                'DIRECT',
-                'REJECT',
-                this.t('outboundNames.Auto Select'),
-                ...(manualGroupName ? [manualGroupName] : []),
-                ...countryGroupNames
-            ].filter(Boolean));
+            const rebuilt = buildNodeSelectMembers({
+                proxyList: [],
+                translator: this.t,
+                groupByCountry: true,
+                manualGroupName,
+                countryGroupNames
+            });
             nodeSelectGroup.proxies = rebuilt;
         }
         this.countryGroupNames = countryGroupNames;
