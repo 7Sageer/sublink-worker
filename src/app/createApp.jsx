@@ -43,21 +43,25 @@ export function createApp(bindings = {}) {
 
         return c.html(
             <Layout title={t('pageTitle')} description={t('pageDescription')} keywords={t('pageKeywords')}>
-                <Navbar />
-                <div class="container mx-auto px-4 py-8 pt-24">
-                    <div class="max-w-4xl mx-auto">
-                        <div class="text-center mb-12 pt-8">
-                            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
-                                {APP_NAME}
-                            </h1>
-                            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                                {subtitle}
-                            </p>
+                <div class="flex flex-col min-h-screen">
+                    <Navbar />
+                    <main class="flex-1">
+                        <div class="container mx-auto px-4 py-8 pt-24">
+                            <div class="max-w-4xl mx-auto">
+                                <div class="text-center mb-12 pt-8">
+                                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+                                        {APP_NAME}
+                                    </h1>
+                                    <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                                        {subtitle}
+                                    </p>
+                                </div>
+                                <Form t={t} />
+                            </div>
                         </div>
-                        <Form t={t} />
-                    </div>
+                    </main>
+                    <Footer />
                 </div>
-                <Footer />
             </Layout>
         );
     });
