@@ -171,7 +171,6 @@ dist
 .dev.vars
 .wrangler/
 
-test
 .editorconfig
 .prettierrc
-package-lock.json
+.vercel

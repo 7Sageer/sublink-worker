@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+dist
+.wrangler
+.git
+.gitignore
+Dockerfile
+vercel.json
