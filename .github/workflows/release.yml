@@ -29,9 +29,9 @@ jobs:
             ## Release ${{ steps.version.outputs.VERSION }}
 
             ### 📚 Documentation
-            - [Complete Changelog](https://www.sublink.works/updates/)
-            - [Deployment Guide](https://www.sublink.works/guide/)
-            - [API Documentation](https://www.sublink.works/api/)
+            - [Complete Changelog](https://sublink.works/updates/)
+            - [Deployment Guide](https://sublink.works/guide/)
+            - [API Documentation](https://sublink.works/api/)
 
             ### 🚀 Quick Start
             ```bash
@@ -47,7 +47,7 @@ jobs:
 
             ---
             **Note:** This release was automatically created by GitHub Actions.
-            For detailed changes, see the [changelog](https://www.sublink.works/updates/).
+            For detailed changes, see the [changelog](https://sublink.works/updates/).
           generate_release_notes: true  # Auto-generate notes from commits
           draft: false
           prerelease: false

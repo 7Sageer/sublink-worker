@@ -62,7 +62,7 @@ git commit -m "chore: release $VERSION"
 echo -e "${YELLOW}→ Creating Git tag $VERSION${NC}"
 git tag $VERSION -a -m "Release $VERSION
 
-See changelog: https://www.sublink.works/updates/"
+See changelog: https://sublink.works/updates/"
 
 # Push commit and tag
 echo -e "${YELLOW}→ Pushing to remote${NC}"
