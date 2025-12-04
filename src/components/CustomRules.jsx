@@ -54,13 +54,31 @@ export const CustomRules = (props) => {
 
     <div class="space-y-4">
         <template x-for="(rule, index) in rules" x-bind:key="index">
-        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:border-primary-200 dark:hover:border-primary-900/50">
+        <div
+          x-data="{ show: false }"
+          x-init="$nextTick(() => show = true)"
+          x-show="show"
+          class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:border-primary-200 dark:hover:border-primary-900/50"
+          {...{
+            'x-transition:enter': 'transition ease-out duration-300',
+            'x-transition:enter-start': 'opacity-0 -translate-y-2 scale-95',
+            'x-transition:enter-end': 'opacity-100 translate-y-0 scale-100',
+            'x-transition:leave': 'transition ease-in duration-200',
+            'x-transition:leave-start': 'opacity-100 translate-y-0 scale-100',
+            'x-transition:leave-end': 'opacity-0 translate-y-2 scale-95',
+            'x-on:custom-rules-clear.window': 'show = false'
+          }}
+        >
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                     <span class="w-6 h-6 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center text-xs" x-text="index + 1"></span>
                     {t('customRule')}
                 </h3>
-                <button type="button" x-on:click="removeRule(index)" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20">
+                <button
+                  type="button"
+                  x-on:click="show = false; setTimeout(() => removeRule(index), 200)"
+                  class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>
@@ -270,10 +288,15 @@ export const CustomRules = (props) => {
             },
             
             clearAll() {
-              if (confirm('${t('confirmClearAllRules')}')) {
+              if (!confirm('${t('confirmClearAllRules')}')) {
+                return;
+              }
+              
+              this.$dispatch('custom-rules-clear');
+              setTimeout(() => {
                 this.rules = [];
                 this.jsonContent = '[]';
-              }
+              }, 200);
             },
             
             validateJson() {
