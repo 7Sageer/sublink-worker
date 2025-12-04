@@ -7,7 +7,6 @@ RUN npm install
 
 COPY src ./src
 COPY public ./public
-COPY docs ./docs
 
 RUN npm run build:node
 

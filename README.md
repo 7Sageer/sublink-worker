@@ -19,8 +19,6 @@
   </a>
 </p>
 
-  <br>
-
   <h3>📚 Documentation</h3>
   <p>
     <a href="https://sublink.works"><b>🌐 Official Documentation</b></a> ·
