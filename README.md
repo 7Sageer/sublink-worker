@@ -21,14 +21,15 @@
 
   <h3>📚 Documentation</h3>
   <p>
+    <a href="https://app.sublink.works"><b>⚡ Live Demo</b></a> ·
     <a href="https://sublink.works"><b>🌐 Official Documentation</b></a> ·
     <a href="https://sublink.works/en/"><b>English</b></a> ·
     <a href="https://sublink.works"><b>中文</b></a>
   </p>
   <p>
-    <a href="https://sublink.works/guide/">Quick Start</a> ·
+    <a href="https://sublink.works/guide/quick-start/">Quick Start</a> ·
     <a href="https://sublink.works/api/">API Reference</a> ·
-    <a href="https://sublink.works/guide/faq">FAQ</a>
+    <a href="https://sublink.works/guide/faq/">FAQ</a>
   </p>
 </div>
 

@@ -21,6 +21,15 @@ export const Navbar = () => {
                             <i class="fas fa-book"></i>
                             <span>Docs</span>
                         </a>
+                        <a
+                            href={GITHUB_REPO}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="px-4 py-2 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 font-medium"
+                        >
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </a>
                         <button
                             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
                             x-on:click="toggleDarkMode()"
@@ -28,15 +37,6 @@ export const Navbar = () => {
                         >
                             <i class="fas" x-bind:class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
                         </button>
-                        <a
-                            href={GITHUB_REPO}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 font-medium"
-                        >
-                            <i class="fab fa-github"></i>
-                            <span>GitHub</span>
-                        </a>
                     </div>
                 </div>
             </div>
