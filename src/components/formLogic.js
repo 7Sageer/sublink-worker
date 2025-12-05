@@ -35,6 +35,8 @@ export const formLogicFn = (t) => {
             shortenedLinks: null,
             shortening: false,
             customShortCode: '',
+            parsingUrl: false,
+            parseDebounceTimer: null,
             // These will be populated from window.APP_TRANSLATIONS
             processingText: '',
             convertText: '',
@@ -84,7 +86,10 @@ export const formLogicFn = (t) => {
                 this.applyPredefinedRule();
 
                 // Watchers to save state
-                this.$watch('input', val => localStorage.setItem('inputTextarea', val));
+                this.$watch('input', val => {
+                    localStorage.setItem('inputTextarea', val);
+                    this.handleInputChange(val);
+                });
                 this.$watch('showAdvanced', val => localStorage.setItem('advancedToggle', val));
                 this.$watch('groupByCountry', val => localStorage.setItem('groupByCountry', val));
                 this.$watch('enableClashUI', val => localStorage.setItem('enableClashUI', val));
@@ -358,6 +363,173 @@ export const formLogicFn = (t) => {
                     alert(window.APP_TRANSLATIONS.shortenFailed);
                 } finally {
                     this.shortening = false;
+                }
+            },
+
+            // Handle input change with debounce
+            handleInputChange(val) {
+                // Clear previous timer
+                if (this.parseDebounceTimer) {
+                    clearTimeout(this.parseDebounceTimer);
+                }
+
+                // If input is empty, don't try to parse
+                if (!val || !val.trim()) {
+                    return;
+                }
+
+                // Debounce for 500ms
+                this.parseDebounceTimer = setTimeout(() => {
+                    this.tryParseSubscriptionUrl(val.trim());
+                }, 500);
+            },
+
+            // Check if input looks like a subscription URL
+            isSubscriptionUrl(text) {
+                // Check if it's a single line URL (not multiple lines)
+                if (text.includes('\n')) {
+                    return false;
+                }
+
+                try {
+                    const url = new URL(text);
+                    // Check if it matches our short link pattern: /[bcxs]/[code]
+                    const pathMatch = url.pathname.match(/^\/([bcxs])\/([a-zA-Z0-9_-]+)$/);
+                    if (pathMatch) {
+                        return true;
+                    }
+
+                    // Check if it's a full subscription URL with query params
+                    const fullMatch = url.pathname.match(/^\/(singbox|clash|xray|surge)$/);
+                    if (fullMatch && url.search) {
+                        return true;
+                    }
+
+                    return false;
+                } catch {
+                    return false;
+                }
+            },
+
+            // Try to parse subscription URL
+            async tryParseSubscriptionUrl(text) {
+                if (!this.isSubscriptionUrl(text)) {
+                    return;
+                }
+
+                this.parsingUrl = true;
+                try {
+                    let urlToParse;
+
+                    try {
+                        urlToParse = new URL(text);
+                    } catch {
+                        return;
+                    }
+
+                    // Check if it's a short link
+                    const shortMatch = urlToParse.pathname.match(/^\/([bcxs])\/([a-zA-Z0-9_-]+)$/);
+
+                    if (shortMatch) {
+                        // It's a short link, resolve it first
+                        const response = await fetch(`/resolve?url=${encodeURIComponent(text)}`);
+                        if (!response.ok) {
+                            console.warn('Failed to resolve short URL');
+                            return;
+                        }
+
+                        const data = await response.json();
+                        if (!data.originalUrl) {
+                            console.warn('No original URL returned');
+                            return;
+                        }
+
+                        urlToParse = new URL(data.originalUrl);
+                    }
+
+                    // Now parse the full URL and populate form
+                    this.populateFormFromUrl(urlToParse);
+
+                    // Show a success message
+                    const message = window.APP_TRANSLATIONS?.urlParsedSuccess || '已成功解析订阅链接配置';
+                    console.log(message);
+
+                } catch (error) {
+                    console.error('Error parsing subscription URL:', error);
+                } finally {
+                    this.parsingUrl = false;
+                }
+            },
+
+            // Populate form fields from parsed URL
+            populateFormFromUrl(url) {
+                const params = new URLSearchParams(url.search);
+
+                // Extract config (the original subscription URLs)
+                const config = params.get('config');
+                if (config) {
+                    this.input = config;
+                }
+
+                // Extract selectedRules
+                const selectedRules = params.get('selectedRules');
+                if (selectedRules) {
+                    try {
+                        const parsed = JSON.parse(selectedRules);
+                        if (Array.isArray(parsed)) {
+                            this.selectedRules = parsed;
+                            this.selectedPredefinedRule = 'custom';
+                        }
+                    } catch (e) {
+                        console.warn('Failed to parse selectedRules:', e);
+                    }
+                }
+
+                // Extract customRules
+                const customRules = params.get('customRules');
+                if (customRules) {
+                    try {
+                        const parsed = JSON.parse(customRules);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            // Dispatch custom event for CustomRules component to listen
+                            window.dispatchEvent(new CustomEvent('restore-custom-rules', {
+                                detail: { rules: parsed }
+                            }));
+                        }
+                    } catch (e) {
+                        console.warn('Failed to parse customRules:', e);
+                    }
+                }
+
+                // Extract other parameters
+                this.groupByCountry = params.get('group_by_country') === 'true';
+                this.enableClashUI = params.get('enable_clash_ui') === 'true';
+
+                const externalController = params.get('external_controller');
+                if (externalController) {
+                    this.externalController = externalController;
+                }
+
+                const externalUiDownloadUrl = params.get('external_ui_download_url');
+                if (externalUiDownloadUrl) {
+                    this.externalUiDownloadUrl = externalUiDownloadUrl;
+                }
+
+                const ua = params.get('ua');
+                if (ua) {
+                    this.customUA = ua;
+                }
+
+                const configId = params.get('configId');
+                if (configId) {
+                    this.currentConfigId = configId;
+                    this.updateConfigIdInUrl(configId);
+                }
+
+                // Expand advanced options if any advanced settings are present
+                if (selectedRules || customRules || this.groupByCountry || this.enableClashUI ||
+                    externalController || externalUiDownloadUrl || ua || configId) {
+                    this.showAdvanced = true;
                 }
             }
         }

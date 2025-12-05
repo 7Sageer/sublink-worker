@@ -248,7 +248,7 @@ export const CustomRules = (props) => {
                   this.jsonContent = JSON.stringify(value, null, 2);
                 }
               });
-              
+
               // Watch for changes in JSON content to update rules
               this.$watch('jsonContent', (value) => {
                 if (this.mode === 'json') {
@@ -265,6 +265,15 @@ export const CustomRules = (props) => {
                   } catch (e) {
                     this.jsonError = e.message;
                   }
+                }
+              });
+
+              // Listen for custom event to restore rules from URL parsing
+              window.addEventListener('restore-custom-rules', (event) => {
+                if (event.detail && Array.isArray(event.detail.rules)) {
+                  this.rules = event.detail.rules;
+                  this.jsonContent = JSON.stringify(event.detail.rules, null, 2);
+                  this.mode = 'json'; // Switch to JSON mode to show imported rules
                 }
               });
             },
