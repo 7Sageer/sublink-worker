@@ -155,6 +155,7 @@ export const translations = {
     // UpdateChecker
     newVersionAvailable: '发现新版本',
     viewRelease: '查看更新',
+    updateGuide: '更新指南',
     later: '稍后'
   },
   'en-US': {
@@ -308,6 +309,7 @@ export const translations = {
     // UpdateChecker
     newVersionAvailable: 'New Version Available',
     viewRelease: 'View Release',
+    updateGuide: 'Update Guide',
     later: 'Later'
   },
   'fa': {
@@ -455,6 +457,7 @@ export const translations = {
     // UpdateChecker
     newVersionAvailable: 'نسخه جدید موجود است',
     viewRelease: 'مشاهده انتشار',
+    updateGuide: 'راهنمای به‌روزرسانی',
     later: 'بعداً'
   },
   'ru': {
@@ -602,6 +605,7 @@ export const translations = {
     // UpdateChecker
     newVersionAvailable: 'Доступна новая версия',
     viewRelease: 'Посмотреть релиз',
+    updateGuide: 'Руководство по обновлению',
     later: 'Позже'
   }
 };

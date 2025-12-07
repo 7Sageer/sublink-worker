@@ -143,6 +143,7 @@ export const Layout = (props) => {
                 newVersionAvailable: getUpdateI18n('newVersionAvailable'),
                 currentVersion: getUpdateI18n('currentVersion'),
                 viewRelease: getUpdateI18n('viewRelease'),
+                updateGuide: getUpdateI18n('updateGuide'),
                 later: getUpdateI18n('later')
               },
               init() {
@@ -214,30 +215,35 @@ export const Layout = (props) => {
                 newVersionAvailable: '发现新版本',
                 currentVersion: '当前版本',
                 viewRelease: '查看更新',
+                updateGuide: '更新指南',
                 later: '稍后提醒'
               },
               'zh-TW': {
                 newVersionAvailable: '發現新版本',
                 currentVersion: '當前版本',
                 viewRelease: '查看更新',
+                updateGuide: '更新指南',
                 later: '稍後提醒'
               },
               'en-US': {
                 newVersionAvailable: 'New Version Available',
                 currentVersion: 'Current',
                 viewRelease: 'View Release',
+                updateGuide: 'Update Guide',
                 later: 'Later'
               },
               'fa': {
                 newVersionAvailable: 'نسخه جدید موجود است',
                 currentVersion: 'نسخه فعلی',
                 viewRelease: 'مشاهده نسخه',
+                updateGuide: 'راهنمای به‌روزرسانی',
                 later: 'بعداً'
               },
               'ru': {
                 newVersionAvailable: 'Доступна новая версия',
                 currentVersion: 'Текущая',
                 viewRelease: 'Посмотреть',
+                updateGuide: 'Руководство по обновлению',
                 later: 'Позже'
               }
             };
