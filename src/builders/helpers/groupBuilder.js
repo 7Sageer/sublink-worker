@@ -56,3 +56,47 @@ export function buildSelectorMembers({ proxyList = [], translator, groupByCountr
         ];
     return withDirectReject(base);
 }
+//add here
+export function adjustProxyOrderForGroup({
+  members = [],
+  groupName = "",
+  translator,
+}) {
+  if (!translator) {
+    return members;
+  }
+
+  // 🛑 广告拦截 - 默认 REJECT
+  if (groupName === translator("outboundNames.Ad Block")) {
+    const reordered = members.filter((m) => m !== "REJECT");
+    return ["REJECT", ...reordered];
+  }
+
+  // 🔒 国内服务 - 默认 DIRECT
+  if (groupName === translator("outboundNames.Location:CN")) {
+    const reordered = members.filter((m) => m !== "DIRECT");
+    return ["DIRECT", ...reordered];
+  }
+
+  // 🏠 私有网络 - 默认 DIRECT
+  if (groupName === translator("outboundNames.Private")) {
+    const reordered = members.filter((m) => m !== "DIRECT");
+    return ["DIRECT", ...reordered];
+  }
+
+  // 🌐 非中国 - 默认自动选择
+  if (groupName === translator("outboundNames.Non-China")) {
+    const autoSelect = translator("outboundNames.Auto Select");
+    const reordered = members.filter((m) => m !== autoSelect);
+    return [autoSelect, ...reordered];
+  }
+
+  // 🐟 漏网之鱼 - 默认自动选择
+  if (groupName === translator("outboundNames.Fall Back")) {
+    const autoSelect = translator("outboundNames.Auto Select");
+    const reordered = members.filter((m) => m !== autoSelect);
+    return [autoSelect, ...reordered];
+  }
+
+  return members;
+}
