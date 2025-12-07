@@ -97,7 +97,7 @@ This project is for learning and exchange purposes only. Please do not use it fo
   <p>If you would like to sponsor this project, please contact the developer <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
 </div>
 
-## ⭐ Star History
+## ⭐ Star History .
 
 Thanks to everyone who has starred this project! 🌟
 
