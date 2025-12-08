@@ -1,6 +1,8 @@
 import yaml from 'js-yaml';
 import { deepCopy } from '../../utils.js';
 import { convertYamlProxyToObject } from '../convertYamlProxyToObject.js';
+import { convertSurgeProxyToObject } from '../convertSurgeProxyToObject.js';
+import { convertSurgeIniToJson } from '../../utils/surgeConfigParser.js';
 
 /**
  * Non-proxy outbound types in Sing-Box that should be filtered out
@@ -66,8 +68,48 @@ export function parseClashYaml(content) {
 }
 
 /**
+ * Try to parse content as Surge INI format
+ * @param {string} content - The content to parse
+ * @returns {object|null} - Parsed result or null if not Surge format
+ */
+export function parseSurgeIni(content) {
+    // Quick heuristic: Surge configs have [Proxy] or [General] sections
+    const hasSurgeSection = /\[Proxy\]/i.test(content) ||
+        (/\[General\]/i.test(content) && /\[Rule\]/i.test(content));
+    if (!hasSurgeSection) {
+        return null;
+    }
+
+    try {
+        const parsed = convertSurgeIniToJson(content);
+        if (parsed && Array.isArray(parsed.proxies) && parsed.proxies.length > 0) {
+            const proxies = parsed.proxies
+                .map(line => convertSurgeProxyToObject(line))
+                .filter(p => p != null);
+            if (proxies.length > 0) {
+                const configOverrides = deepCopy(parsed);
+                // Remove fields that are handled separately or incompatible
+                delete configOverrides.proxies;
+                // Surge stores proxy-groups as raw strings like "Proxy = select, Node1, Node2"
+                // These are incompatible with Clash/Sing-Box which expect object arrays
+                delete configOverrides['proxy-groups'];
+                return {
+                    type: 'surgeConfig',
+                    proxies,
+                    config: Object.keys(configOverrides).length > 0 ? configOverrides : null
+                };
+            }
+        }
+    } catch (e) {
+        // Not valid Surge INI
+        console.warn('Surge INI parsing failed:', e?.message || e);
+    }
+    return null;
+}
+
+/**
  * Parse subscription content and extract proxies
- * Tries multiple formats in order: Sing-Box JSON -> Clash YAML -> Line-by-line
+ * Tries multiple formats in order: Sing-Box JSON -> Clash YAML -> Surge INI -> Line-by-line
  * 
  * @param {string} content - The decoded subscription content
  * @returns {object|string[]} - Parsed config object or array of lines
@@ -94,6 +136,13 @@ export function parseSubscriptionContent(content) {
         return clashResult;
     }
 
+    // Try Surge INI
+    const surgeResult = parseSurgeIni(trimmed);
+    if (surgeResult) {
+        return surgeResult;
+    }
+
     // Fallback: split by lines (for URI lists)
     return trimmed.split('\n').filter(line => line.trim() !== '');
 }
+

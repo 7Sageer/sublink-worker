@@ -81,8 +81,8 @@ export class BaseConfigBuilder {
 
             for (const processedUrl of processedUrls) {
                 const result = await ProxyParser.parse(processedUrl, this.userAgent);
-                // Handle both yamlConfig and singboxConfig types (they have the same structure)
-                if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig')) {
+                // Handle yamlConfig, singboxConfig, and surgeConfig types (they have the same structure)
+                if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
                     if (result.config) {
                         this.applyConfigOverrides(result.config);
                     }
