@@ -1,21 +1,29 @@
 {
-  "name": "sublink-plus",
-  "version": "0.0.1",
+  "name": "sublink-worker",
+  "version": "2.1.1",
   "private": true,
+  "type": "module",
   "scripts": {
+    "build": "node scripts/build-vercel.mjs",
     "deploy": "npm run setup-kv && wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "test": "vitest",
-    "setup-kv": "node scripts/setup-kv.js"
+    "setup-kv": "node scripts/setup-kv.cjs",
+    "build:node": "node_modules/.bin/esbuild src/platforms/node-server.js --bundle --platform=node --target=node18 --format=cjs --outfile=dist/node-server.cjs",
+    "dev:node": "npm run build:node && node dist/node-server.cjs"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.0",
-    "vitest": "^3.0.0 <3.1.0",
-    "wrangler": "^3.60.3"
+    "@cloudflare/vitest-pool-workers": "^0.10.11",
+    "esbuild": "^0.27.0",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.51.0"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "esbuild-register": "^3.6.0",
+    "hono": "^4.10.7",
+    "ioredis": "^5.8.2",
+    "js-yaml": "^4.1.1"
   },
   "engines": {
     "node": ">=18"

@@ -2,12 +2,12 @@ const PATH_LENGTH = 7;
 
 // 自定义的字符串前缀检查函数
 export function checkStartsWith(str, prefix) {
-  if (str === undefined || str === null || prefix === undefined || prefix === null) {
-    return false;
-  }
-  str = String(str);
-  prefix = String(prefix);
-  return str.slice(0, prefix.length) === prefix;
+	if (str === undefined || str === null || prefix === undefined || prefix === null) {
+		return false;
+	}
+	str = String(str);
+	prefix = String(prefix);
+	return str.slice(0, prefix.length) === prefix;
 }
 
 
@@ -152,23 +152,80 @@ export function tryDecodeSubscriptionLines(input, { decodeUriComponent = false }
 
 	return trimmed;
 }
-export function DeepCopy(obj) {
+
+export function groupProxiesByCountry(proxies, { getName } = {}) {
+	const extractor = typeof getName === 'function'
+		? getName
+		: (proxy) => {
+			if (proxy == null) return undefined;
+			if (typeof proxy === 'string') {
+				return proxy;
+			}
+			if (typeof proxy === 'object') {
+				return proxy.name ?? proxy.tag ?? proxy.id ?? proxy.ps;
+			}
+			return undefined;
+		};
+
+	const normalizeName = (value) => {
+		if (typeof value !== 'string') {
+			return undefined;
+		}
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return undefined;
+		}
+		const eqIndex = trimmed.indexOf('=');
+		if (eqIndex > -1) {
+			const beforeEq = trimmed.slice(0, eqIndex).trim();
+			if (beforeEq) {
+				return beforeEq;
+			}
+		}
+		return trimmed;
+	};
+
+	const grouped = {};
+	if (!Array.isArray(proxies) || proxies.length === 0) {
+		return grouped;
+	}
+
+	proxies.forEach(proxy => {
+		const rawName = extractor(proxy);
+		const proxyName = normalizeName(rawName);
+		if (!proxyName) {
+			return;
+		}
+		const countryInfo = parseCountryFromNodeName(proxyName);
+		if (!countryInfo) {
+			return;
+		}
+		const { name } = countryInfo;
+		if (!grouped[name]) {
+			grouped[name] = { ...countryInfo, proxies: [] };
+		}
+		grouped[name].proxies.push(proxyName);
+	});
+
+	return grouped;
+}
+export function deepCopy(obj) {
 	if (obj === null || typeof obj !== 'object') {
 		return obj;
 	}
 	if (Array.isArray(obj)) {
-		return obj.map(item => DeepCopy(item));
+		return obj.map(item => deepCopy(item));
 	}
 	const newObj = {};
 	for (const key in obj) {
 		if (Object.prototype.hasOwnProperty.call(obj, key)) {
-			newObj[key] = DeepCopy(obj[key]);
+			newObj[key] = deepCopy(obj[key]);
 		}
 	}
 	return newObj;
 }
 
-export function GenerateWebPath(length = PATH_LENGTH) {
+export function generateWebPath(length = PATH_LENGTH) {
 	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 	let result = ''
 	for (let i = 0; i < length; i++) {
@@ -180,62 +237,62 @@ export function GenerateWebPath(length = PATH_LENGTH) {
 export function parseServerInfo(serverInfo) {
 	let host, port;
 	if (serverInfo.startsWith('[')) {
-	  const closeBracketIndex = serverInfo.indexOf(']');
-	  host = serverInfo.slice(1, closeBracketIndex);
-	  port = serverInfo.slice(closeBracketIndex + 2); // +2 to skip ']:'
+		const closeBracketIndex = serverInfo.indexOf(']');
+		host = serverInfo.slice(1, closeBracketIndex);
+		port = serverInfo.slice(closeBracketIndex + 2); // +2 to skip ']:'
 	} else {
-	  const lastColonIndex = serverInfo.lastIndexOf(':');
-	  host = serverInfo.slice(0, lastColonIndex);
-	  port = serverInfo.slice(lastColonIndex + 1);
+		const lastColonIndex = serverInfo.lastIndexOf(':');
+		host = serverInfo.slice(0, lastColonIndex);
+		port = serverInfo.slice(lastColonIndex + 1);
 	}
 	return { host, port: parseInt(port) };
-  }
-  
-  export function parseUrlParams(url) {
+}
+
+export function parseUrlParams(url) {
 	const [, rest] = url.split('://');
 	const [addressPart, ...remainingParts] = rest.split('?');
 	const paramsPart = remainingParts.join('?');
-  
+
 	const [paramsOnly, ...fragmentParts] = paramsPart.split('#');
 	const searchParams = new URLSearchParams(paramsOnly);
 	const params = Object.fromEntries(searchParams.entries());
 
 	let name = fragmentParts.length > 0 ? fragmentParts.join('#') : '';
 	try {
-	    name = decodeURIComponent(name);
+		name = decodeURIComponent(name);
 	} catch (error) { };
-	
+
 	return { addressPart, params, name };
-  }
-  
-  export function createTlsConfig(params) {
+}
+
+export function createTlsConfig(params) {
 	let tls = { enabled: false };
 	if (params.security != 'none') {
-	  tls = {
-		enabled: true,
-		server_name: params.sni || params.host,
-		insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
-		// utls: {
-		//   enabled: true,
-		//   fingerprint: "chrome"
-		// },
-	  };
-	  if (params.security === 'reality') {
-		tls.reality = {
-		  enabled: true,
-		  public_key: params.pbk,
-		  short_id: params.sid,
+		tls = {
+			enabled: true,
+			server_name: params.sni || params.host,
+			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+			// utls: {
+			//   enabled: true,
+			//   fingerprint: "chrome"
+			// },
 		};
-	  }
+		if (params.security === 'reality') {
+			tls.reality = {
+				enabled: true,
+				public_key: params.pbk,
+				short_id: params.sid,
+			};
+		}
 	}
 	return tls;
-  }
+}
 
 export function createTransportConfig(params) {
 	return {
 		type: params.type,
 		path: params.path ?? undefined,
-		...(params.host && {'headers': {'host': params.host}}),
+		...(params.host && { 'headers': { 'host': params.host } }),
 		...(params.type === 'grpc' && {
 			service_name: params.serviceName ?? undefined,
 		})
@@ -270,19 +327,19 @@ export function parseArray(value) {
 }
 
 export function parseCountryFromNodeName(nodeName) {
-        const countryData = {
-            'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
-            'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
-            'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
-            'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
-            'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
-            'US': { name: 'United States', emoji: '🇺🇸', aliases: ['美国', 'United States', 'US'] },
-            'GB': { name: 'United Kingdom', emoji: '🇬🇧', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
-            'DE': { name: 'Germany', emoji: '🇩🇪', aliases: ['德国', 'Germany'] },
-            'FR': { name: 'France', emoji: '🇫🇷', aliases: ['法国', 'France'] },
-            'RU': { name: 'Russia', emoji: '🇷🇺', aliases: ['俄罗斯', 'Russia'] },
-            'CA': { name: 'Canada', emoji: '🇨🇦', aliases: ['加拿大', 'Canada'] },
-            'AU': { name: 'Australia', emoji: '🇦🇺', aliases: ['澳大利亚', 'Australia'] },
+	const countryData = {
+		'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
+		'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
+		'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
+		'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
+		'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
+		'US': { name: 'United States', emoji: '🇺🇸', aliases: ['美国', 'United States', 'US'] },
+		'GB': { name: 'United Kingdom', emoji: '🇬🇧', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
+		'DE': { name: 'Germany', emoji: '🇩🇪', aliases: ['德国', 'Germany'] },
+		'FR': { name: 'France', emoji: '🇫🇷', aliases: ['法国', 'France'] },
+		'RU': { name: 'Russia', emoji: '🇷🇺', aliases: ['俄罗斯', 'Russia'] },
+		'CA': { name: 'Canada', emoji: '🇨🇦', aliases: ['加拿大', 'Canada'] },
+		'AU': { name: 'Australia', emoji: '🇦🇺', aliases: ['澳大利亚', 'Australia'] },
 		'IN': { name: 'India', emoji: '🇮🇳', aliases: ['印度', 'India'] },
 		'BR': { name: 'Brazil', emoji: '🇧🇷', aliases: ['巴西', 'Brazil'] },
 		'ZA': { name: 'South Africa', emoji: '🇿🇦', aliases: ['南非', 'South Africa'] },

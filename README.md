@@ -1,100 +1,73 @@
 <div align="center">
+  <img src="public/favicon.png" alt="Sublink Worker" width="120" height="120"/>
+
   <h1><b>Sublink Worker</b></h1>
-  <h5><i>Best Practice for Serverless Self-Deployed Subscription Conversion Tool</i></h5>
-  
+  <h5><i>One Worker, All Subscriptions</i></h5>
+
+  <p><b>A lightweight subscription converter and manager for proxy protocols, deployable on Cloudflare Workers, Vercel, Node.js, or Docker.</b></p>
+
   <a href="https://trendshift.io/repositories/12291" target="_blank">
     <img src="https://trendshift.io/api/badge/repositories/12291" alt="7Sageer%2Fsublink-worker | Trendshift" width="250" height="55"/>
   </a>
-  
-  <!-- <p>
-    <a href="https://sublink-worker.sageer.me">https://sublink-worker.sageer.me</a>
-  </p> -->
+
   <br>
 
+<p style="display: flex; align-items: center; gap: 10px;">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/7Sageer/sublink-worker">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" style="height: 32px;"/>
+  </a>
+  <a href="https://vercel.com/new/clone?repository-url=https://github.com/7Sageer/sublink-worker&env=KV_REST_API_URL,KV_REST_API_TOKEN&envDescription=Vercel%20KV%20credentials%20for%20data%20storage&envLink=https://vercel.com/docs/storage/vercel-kv">
+    <img src="https://vercel.com/button" alt="Deploy to Vercel" style="height: 32px;"/>
+  </a>
+</p>
+
+  <h3>📚 Documentation</h3>
   <p>
-    <a href="https://dash.cloudflare.com/?to=/:account/workers-and-pages/create">
-      <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers"/>
-    </a>
+    <a href="https://app.sublink.works"><b>⚡ Live Demo</b></a> ·
+    <a href="https://sublink.works/en/"><b>Documentation</b></a> 
+    <a href="https://sublink.works"><b>中文文档</b></a>·
   </p>
-  
-  <p><a href="/docs/README_CN.md">中文文档</a></p>
+  <p>
+    <a href="https://sublink.works/guide/quick-start/">Quick Start</a> ·
+    <a href="https://sublink.works/api/">API Reference</a> ·
+    <a href="https://sublink.works/guide/faq/">FAQ</a>
+  </p>
 </div>
 
 ## 🚀 Quick Start
 
-### Quick Deployment
-- Fork this project, click the `Deploy to Cloudflare` button above
-- Select your repository in the `Import Repository` section (you need to link your GitHub account)
-- Change the `Deploy Command` as follows, then select `Save and Deploy`
-``` bash
-npm run deploy
-```
+### One-Click Deployment
+- Choose a "deploy" button above to click
+- That's it! See the [Document](https://sublink.works/guide/quick-start/) for more information.
+
+### Alternative Runtimes
+- **Node.js**: `npm run build:node && node dist/node-server.cjs`
+- **Vercel**: `vercel deploy` (configure KV in project settings)
+- **Docker**: `docker pull ghcr.io/7sageer/sublink-worker:latest`
+- **Docker Compose**: `docker compose up -d` (includes Redis)
 
 ## ✨ Features
 
 ### Supported Protocols
-- ShadowSocks
-- VMess
-- VLESS
-- Hysteria2
-- Trojan
-- TUIC
-
-### Core Features
-- Support for importing Base64 http/https subscription links and various protocol sharing URLs
-- Pure JavaScript + Cloudflare Worker implementation, one-click deployment, ready to use
-- Support for fixed/random short link generation (based on KV)
-- Light/Dark theme toggle
-- Flexible API, supporting script operations
-- Support for Chinese, English, and Persian languages
+ShadowSocks • VMess • VLESS • Hysteria2 • Trojan • TUIC
 
 ### Client Support
-- Sing-Box
-- Clash
-- Xray/V2Ray
+Sing-Box • Clash • Xray/V2Ray • Surge
 
-### Web Interface Features
-- User-friendly operation interface
-- Various predefined rule sets
-- Customizable policy groups for geo-site, geo-ip, ip-cidr, and domain-suffix
+### Input Support
+- Base64 subscriptions
+- HTTP/HTTPS subscriptions
+- Full configs (Sing-Box JSON, Clash YAML, Surge INI)
 
-## 📖 API Documentation
+### Core Capabilities
+- Import subscriptions from multiple sources
+- Generate fixed/random short links (KV-based)
+- Light/Dark theme toggle
+- Flexible API for script automation
+- Multi-language support (Chinese, English, Persian, Russian)
+- Web interface with predefined rule sets and customizable policy groups
 
-For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
-
-### Main Endpoints
-- `/singbox` - Generate Sing-Box configuration
-- `/clash` - Generate Clash configuration
-- `/xray` - Generate Xray configuration
-- `/shorten` - Generate short links
-
-## 📝 Recent Updates
-
-### 2025-11-08
-
-- feat(config): Added support for proxy configuration grouped by country, updated related translations
-
-## 🔧 Project Structure
-
-```
-.
-├── index.js                 # Main server logic, handles request routing
-├── BaseConfigBuilder.js     # Build base configuration
-├── SingboxConfigBuilder.js  # Build Sing-Box configuration
-├── ClashConfigBuilder.js    # Build Clash configuration
-├── ProxyParsers.js          # Parse URLs of various proxy protocols
-├── utils.js                 # Provide various utility functions
-├── htmlBuilder.js           # Generate Web interface
-├── style.js                 # Generate CSS for Web interface
-├── config.js                # Store configuration information
-└── docs/
-    ├── APIDoc.md            # API documentation
-    ├── UpdateLogs.md        # Update logs
-    ├── FAQ.md               # Frequently asked questions
-    └── BaseConfig.md        # Basic configuration feature introduction
-```
-
-## 🤝 Contribution
+## 🤝 Contributing
 
 Issues and Pull Requests are welcome to improve this project.
 
@@ -124,7 +97,6 @@ This project is for learning and exchange purposes only. Please do not use it fo
     </td>
   </tr>
 </table>
-  <p><b>NodeSupport has sponsored this project, thank you for your support!</b></p>
   <p>If you would like to sponsor this project, please contact the developer <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
 </div>
 

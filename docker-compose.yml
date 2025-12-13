@@ -1,0 +1,22 @@
+services:
+  worker:
+    image: ${SUBLINK_WORKER_IMAGE:-ghcr.io/7sageer/sublink-worker:latest}
+    pull_policy: always
+    ports:
+      - "8787:8787"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_KEY_PREFIX: sublink
+      CONFIG_TTL_SECONDS: 2592000
+    depends_on:
+      - redis
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    restart: unless-stopped
+volumes:
+  redis-data:
