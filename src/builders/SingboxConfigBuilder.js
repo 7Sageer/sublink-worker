@@ -32,7 +32,32 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
-        return proxy;
+        // Create a shallow copy to avoid mutating the original
+        const sanitized = { ...proxy };
+
+        // Remove Clash-specific fields that are not valid in sing-box outbound configuration
+        // In sing-box, UDP is controlled by 'network' field (defaults to both tcp and udp)
+        // The 'udp: true/false' field is a Clash/Clash Meta specific setting
+        delete sanitized.udp;
+
+        // Remove 'alpn' from root level - it should only exist inside 'tls' object for sing-box
+        // For protocols like vless/vmess, alpn belongs inside the tls configuration
+        if (sanitized.alpn && sanitized.tls) {
+            // Move alpn into tls if tls exists and doesn't have alpn
+            if (!sanitized.tls.alpn) {
+                sanitized.tls = { ...sanitized.tls, alpn: sanitized.alpn };
+            }
+            delete sanitized.alpn;
+        } else if (sanitized.alpn && !sanitized.tls) {
+            // No TLS, remove alpn entirely
+            delete sanitized.alpn;
+        }
+
+        // Remove packet_encoding for now - it's version-specific in sing-box
+        // xudp is default in newer versions
+        delete sanitized.packet_encoding;
+
+        return sanitized;
     }
 
     addProxyToConfig(proxy) {

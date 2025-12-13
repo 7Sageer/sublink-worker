@@ -140,9 +140,65 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         const target = typeof name === 'string' ? name.trim() : name;
         if (!target) return false;
         return (this.config['proxy-groups'] || []).some(group => {
-            const existing = this.getProxyName(group)?.trim();
+            // Handle both Surge string format and Clash object format
+            let existing;
+            if (typeof group === 'string') {
+                existing = this.getProxyName(group)?.trim();
+            } else if (group && typeof group === 'object') {
+                existing = (group.name || '').trim();
+            }
             return existing === target;
         });
+    }
+
+    /**
+     * Get group name from either string or object format
+     * @param {string|object} group - Surge string or Clash object format group
+     * @returns {string|undefined}
+     */
+    getGroupName(group) {
+        if (typeof group === 'string') {
+            return this.getProxyName(group);
+        } else if (group && typeof group === 'object') {
+            return group.name;
+        }
+        return undefined;
+    }
+
+    /**
+     * Convert Clash object-format proxy-group to Surge string format
+     * @param {object} group - Clash format group {name, type, proxies, url?, interval?}
+     * @returns {string} - Surge format string like "Name = type, proxy1, proxy2, url=..., interval=..."
+     */
+    convertObjectGroupToSurgeString(group) {
+        if (!group || !group.name || !group.type) {
+            return null;
+        }
+
+        const name = group.name;
+        const type = group.type === 'url-test' ? 'url-test' : 'select';
+        const proxies = Array.isArray(group.proxies) ? group.proxies : [];
+
+        let result = `${name} = ${type}`;
+        if (proxies.length > 0) {
+            result += `, ${proxies.join(', ')}`;
+        }
+
+        // Add url-test specific fields
+        if (type === 'url-test') {
+            if (group.url) {
+                result += `, url=${group.url}`;
+            } else {
+                result += ', url=http://www.gstatic.com/generate_204';
+            }
+            if (group.interval) {
+                result += `, interval=${group.interval}`;
+            } else {
+                result += ', interval=300';
+            }
+        }
+
+        return result;
     }
 
     createProxyGroup(name, type, options = [], extraConfig = '') {
@@ -239,7 +295,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         });
 
         const existing = new Set((this.config['proxy-groups'] || [])
-            .map(g => this.getProxyName(g)?.trim())
+            .map(g => this.getGroupName(g)?.trim())
             .filter(Boolean));
 
         const manualProxyNames = proxies.map(p => this.getProxyName(p)).filter(Boolean);
@@ -269,7 +325,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             }
         });
 
-        const nodeSelectGroupIndex = this.config['proxy-groups'].findIndex(g => this.getProxyName(g) === this.t('outboundNames.Node Select'));
+        const nodeSelectGroupIndex = this.config['proxy-groups'].findIndex(g => this.getGroupName(g) === this.t('outboundNames.Node Select'));
         if (nodeSelectGroupIndex > -1) {
             const newOptions = buildNodeSelectMembers({
                 proxyList: [],
@@ -316,7 +372,16 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         finalConfig.push('\n[Proxy Group]');
         if (this.config['proxy-groups']) {
-            finalConfig.push(...this.config['proxy-groups']);
+            // Convert object-format groups to Surge string format
+            const groupStrings = this.config['proxy-groups'].map(group => {
+                if (typeof group === 'string') {
+                    return group;
+                } else if (group && typeof group === 'object') {
+                    return this.convertObjectGroupToSurgeString(group);
+                }
+                return null;
+            }).filter(g => g != null);
+            finalConfig.push(...groupStrings);
         }
 
         finalConfig.push('\n[Rule]');

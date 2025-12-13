@@ -1,6 +1,5 @@
-import { ProxyParser, convertYamlProxyToObject } from '../parsers/index.js';
+import { ProxyParser } from '../parsers/index.js';
 import { deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
-import yaml from 'js-yaml';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 
@@ -27,52 +26,46 @@ export class BaseConfigBuilder {
         const input = this.inputString || '';
         const parsedItems = [];
 
-        // Quick heuristic: if looks like plain YAML text (and not URLs), try YAML first without decoding
-        const looksLikeYaml = /\bproxies\s*:/i.test(input) && /\btype\s*:/i.test(input);
-        if (looksLikeYaml) {
-            try {
-                const obj = yaml.load(input.trim());
-                if (obj && typeof obj === 'object' && Array.isArray(obj.proxies)) {
-                    const overrides = deepCopy(obj);
-                    delete overrides.proxies;
-                    if (Object.keys(overrides).length > 0) {
-                        this.applyConfigOverrides(overrides);
+        // Import the content parser for direct input parsing
+        const { parseSubscriptionContent } = await import('../parsers/subscription/subscriptionContentParser.js');
+
+        // Try to parse the entire input as a config format (Sing-Box JSON or Clash YAML)
+        const directResult = parseSubscriptionContent(input);
+        if (directResult && typeof directResult === 'object' && directResult.type) {
+            // It's a parsed config (singboxConfig or yamlConfig)
+            if (directResult.config) {
+                this.applyConfigOverrides(directResult.config);
+            }
+            if (Array.isArray(directResult.proxies)) {
+                for (const proxy of directResult.proxies) {
+                    if (proxy && proxy.tag) {
+                        parsedItems.push(proxy);
                     }
-                    for (const p of obj.proxies) {
-                        const proxy = convertYamlProxyToObject(p);
-                        if (proxy) parsedItems.push(proxy);
-                    }
-                    if (parsedItems.length > 0) return parsedItems;
                 }
-            } catch (e) {
-                console.warn('YAML parse failed in builder (heuristic path):', e?.message || e);
+                if (parsedItems.length > 0) return parsedItems;
             }
         }
 
-        // If not clear YAML, only try whole-document decode if input looks base64-like
+        // If direct parsing didn't work, check for Base64 encoded content
         const isBase64Like = /^[A-Za-z0-9+/=\r\n]+$/.test(input) && input.replace(/[\r\n]/g, '').length % 4 === 0;
-        if (!looksLikeYaml && isBase64Like) {
+        if (isBase64Like) {
             try {
                 const sanitized = input.replace(/\s+/g, '');
                 const decodedWhole = decodeBase64(sanitized);
                 if (typeof decodedWhole === 'string') {
-                    const maybeYaml = decodedWhole.trim();
-                    try {
-                        const obj = yaml.load(maybeYaml);
-                        if (obj && typeof obj === 'object' && Array.isArray(obj.proxies)) {
-                            const overrides = deepCopy(obj);
-                            delete overrides.proxies;
-                            if (Object.keys(overrides).length > 0) {
-                                this.applyConfigOverrides(overrides);
-                            }
-                            for (const p of obj.proxies) {
-                                const proxy = convertYamlProxyToObject(p);
-                                if (proxy) parsedItems.push(proxy);
+                    const decodedResult = parseSubscriptionContent(decodedWhole);
+                    if (decodedResult && typeof decodedResult === 'object' && decodedResult.type) {
+                        if (decodedResult.config) {
+                            this.applyConfigOverrides(decodedResult.config);
+                        }
+                        if (Array.isArray(decodedResult.proxies)) {
+                            for (const proxy of decodedResult.proxies) {
+                                if (proxy && proxy.tag) {
+                                    parsedItems.push(proxy);
+                                }
                             }
                             if (parsedItems.length > 0) return parsedItems;
                         }
-                    } catch (e) {
-                        // not YAML; fall through
                     }
                 }
             } catch (_) { }
@@ -88,7 +81,8 @@ export class BaseConfigBuilder {
 
             for (const processedUrl of processedUrls) {
                 const result = await ProxyParser.parse(processedUrl, this.userAgent);
-                if (result && typeof result === 'object' && result.type === 'yamlConfig') {
+                // Handle yamlConfig, singboxConfig, and surgeConfig types (they have the same structure)
+                if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
                     if (result.config) {
                         this.applyConfigOverrides(result.config);
                     }

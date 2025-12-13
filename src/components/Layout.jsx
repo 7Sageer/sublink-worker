@@ -132,6 +132,124 @@ export const Layout = (props) => {
               }
             }
           }
+
+          // Version update checker Alpine.js component
+          function updateChecker(currentVersion, apiUrl) {
+            return {
+              currentVersion: currentVersion,
+              latestVersion: '',
+              showUpdateToast: false,
+              i18n: {
+                newVersionAvailable: getUpdateI18n('newVersionAvailable'),
+                currentVersion: getUpdateI18n('currentVersion'),
+                viewRelease: getUpdateI18n('viewRelease'),
+                updateGuide: getUpdateI18n('updateGuide'),
+                later: getUpdateI18n('later')
+              },
+              init() {
+                // Check for updates after a short delay to not block initial render
+                setTimeout(() => this.checkForUpdates(), 3000);
+              },
+              async checkForUpdates() {
+                try {
+                  // Check if user dismissed this version before
+                  const dismissedVersion = localStorage.getItem('sublink_dismissed_version');
+                  const lastCheck = localStorage.getItem('sublink_last_version_check');
+                  const now = Date.now();
+                  
+                  // Only check once per hour to avoid rate limiting
+                  if (lastCheck && (now - parseInt(lastCheck)) < 3600000) {
+                    const cachedVersion = localStorage.getItem('sublink_latest_version');
+                    if (cachedVersion && cachedVersion !== dismissedVersion && this.compareVersions(cachedVersion, this.currentVersion) > 0) {
+                      this.latestVersion = cachedVersion;
+                      this.showUpdateToast = true;
+                    }
+                    return;
+                  }
+
+                  const response = await fetch(apiUrl, {
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                  });
+                  
+                  if (!response.ok) return;
+                  
+                  const data = await response.json();
+                  const latestVersion = (data.tag_name || '').replace(/^v/, '');
+                  
+                  // Cache the result
+                  localStorage.setItem('sublink_latest_version', latestVersion);
+                  localStorage.setItem('sublink_last_version_check', now.toString());
+                  
+                  // Compare versions
+                  if (latestVersion && latestVersion !== dismissedVersion && this.compareVersions(latestVersion, this.currentVersion) > 0) {
+                    this.latestVersion = latestVersion;
+                    this.showUpdateToast = true;
+                  }
+                } catch (error) {
+                  console.debug('Version check failed:', error.message);
+                }
+              },
+              compareVersions(v1, v2) {
+                const parts1 = v1.split('.').map(Number);
+                const parts2 = v2.split('.').map(Number);
+                for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+                  const p1 = parts1[i] || 0;
+                  const p2 = parts2[i] || 0;
+                  if (p1 > p2) return 1;
+                  if (p1 < p2) return -1;
+                }
+                return 0;
+              },
+              dismissUpdate() {
+                this.showUpdateToast = false;
+                localStorage.setItem('sublink_dismissed_version', this.latestVersion);
+              }
+            }
+          }
+
+          // i18n helper for update checker
+          function getUpdateI18n(key) {
+            const lang = navigator.language || 'en-US';
+            const translations = {
+              'zh-CN': {
+                newVersionAvailable: '发现新版本',
+                currentVersion: '当前版本',
+                viewRelease: '查看更新',
+                updateGuide: '更新指南',
+                later: '稍后提醒'
+              },
+              'zh-TW': {
+                newVersionAvailable: '發現新版本',
+                currentVersion: '當前版本',
+                viewRelease: '查看更新',
+                updateGuide: '更新指南',
+                later: '稍後提醒'
+              },
+              'en-US': {
+                newVersionAvailable: 'New Version Available',
+                currentVersion: 'Current',
+                viewRelease: 'View Release',
+                updateGuide: 'Update Guide',
+                later: 'Later'
+              },
+              'fa': {
+                newVersionAvailable: 'نسخه جدید موجود است',
+                currentVersion: 'نسخه فعلی',
+                viewRelease: 'مشاهده نسخه',
+                updateGuide: 'راهنمای به‌روزرسانی',
+                later: 'بعداً'
+              },
+              'ru': {
+                newVersionAvailable: 'Доступна новая версия',
+                currentVersion: 'Текущая',
+                viewRelease: 'Посмотреть',
+                updateGuide: 'Руководство по обновлению',
+                later: 'Позже'
+              }
+            };
+            const langKey = Object.keys(translations).find(k => lang.startsWith(k.split('-')[0])) || 'en-US';
+            return translations[langKey][key] || translations['en-US'][key];
+          }
         </script>
       </head>
       <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">

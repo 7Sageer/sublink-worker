@@ -3,10 +3,10 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger on version tags like v2.0.1
+      - "v*.*.*" # Trigger on version tags like v2.0.1
 
 permissions:
-  contents: write  # Required to create releases
+  contents: write # Required to create releases
 
 jobs:
   release:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for changelog generation
+          fetch-depth: 0 # Fetch all history for changelog generation
 
       - name: Extract version from tag
         id: version
@@ -30,7 +30,7 @@ jobs:
 
             ### 📚 Documentation
             - [Complete Changelog](https://sublink.works/updates/)
-            - [Deployment Guide](https://sublink.works/guide/)
+            - [Deployment Guide](https://sublink.works/guide/quick-start/)
             - [API Documentation](https://sublink.works/api/)
 
             ### 🚀 Quick Start
@@ -48,7 +48,7 @@ jobs:
             ---
             **Note:** This release was automatically created by GitHub Actions.
             For detailed changes, see the [changelog](https://sublink.works/updates/).
-          generate_release_notes: true  # Auto-generate notes from commits
+          generate_release_notes: true # Auto-generate notes from commits
           draft: false
           prerelease: false
         env:

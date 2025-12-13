@@ -26,8 +26,8 @@ export const translations = {
     pageTitle: `${APP_NAME} - 订阅链接转换工具`,
     ogTitle: `${APP_NAME} - 订阅链接转换工具`,
     ogDescription: '一个强大的订阅链接转换工具，支持多种客户端格式',
-    shareUrls: '分享链接',
-    urlPlaceholder: '在此输入分享链接（可直接粘贴之前生成的链接快速解析配置）...',
+    shareUrls: '输入源',
+    urlPlaceholder: '支持粘贴：分享链接、Clash 配置、Sing-Box 配置、Surge 配置...',
     advancedOptions: '高级选项',
     baseConfigSettings: '基础配置设置',
     baseConfigTooltip: '在此处自定义您的基础配置',
@@ -151,7 +151,12 @@ export const translations = {
     error: '错误：',
     validJSON: '有效的JSON',
     rules: '条规则',
-    rule: '规则'
+    rule: '规则',
+    // UpdateChecker
+    newVersionAvailable: '发现新版本',
+    viewRelease: '查看更新',
+    updateGuide: '更新指南',
+    later: '稍后'
   },
   'en-US': {
     enableClashUI: 'Enable Clash API',
@@ -176,8 +181,8 @@ export const translations = {
     pageTitle: `${APP_NAME} - Subscription Link Converter`,
     ogTitle: `${APP_NAME} - Subscription Link Converter`,
     ogDescription: 'A powerful subscription link converter supporting multiple client formats',
-    shareUrls: 'Share URLs',
-    urlPlaceholder: 'Enter your share links here (paste previously generated links for quick config parsing)...',
+    shareUrls: 'Input Source',
+    urlPlaceholder: 'Paste share links, Clash config, Sing-Box config, or Surge config...',
     advancedOptions: 'Advanced Options',
     baseConfigSettings: 'Base Config Settings',
     baseConfigTooltip: 'Customize your base configuration here',
@@ -300,7 +305,12 @@ export const translations = {
     error: 'Error: ',
     validJSON: 'Valid JSON',
     rules: 'rules',
-    rule: 'Rule'
+    rule: 'Rule',
+    // UpdateChecker
+    newVersionAvailable: 'New Version Available',
+    viewRelease: 'View Release',
+    updateGuide: 'Update Guide',
+    later: 'Later'
   },
   'fa': {
     missingInput: 'پارامتر ورودی وجود ندارد',
@@ -319,8 +329,8 @@ export const translations = {
     pageTitle: `${APP_NAME} - مبدل لینک اشتراک`,
     ogTitle: `${APP_NAME} - مبدل لینک اشتراک`,
     ogDescription: 'یک مبدل قدرتمند لینک اشتراک با پشتیبانی از فرمت‌های مختلف',
-    shareUrls: 'اشتراک‌گذاری لینک‌ها',
-    urlPlaceholder: 'لینک‌های اشتراک خود را اینجا وارد کنید (برای تجزیه سریع پیکربندی، لینک‌های تولید شده قبلی را جایگذاری کنید)...',
+    shareUrls: 'منبع ورودی',
+    urlPlaceholder: 'لینک‌های اشتراک، پیکربندی Clash، Sing-Box یا Surge را جایگذاری کنید...',
     advancedOptions: 'گزینه‌های پیشرفته',
     baseConfigSettings: 'تنظیمات پیکربندی پایه',
     baseConfigTooltip: 'پیکربندی پایه خود را اینجا سفارشی کنید',
@@ -443,7 +453,12 @@ export const translations = {
     error: 'خطا: ',
     validJSON: 'JSON معتبر',
     rules: 'قوانین',
-    rule: 'قانون'
+    rule: 'قانون',
+    // UpdateChecker
+    newVersionAvailable: 'نسخه جدید موجود است',
+    viewRelease: 'مشاهده انتشار',
+    updateGuide: 'راهنمای به‌روزرسانی',
+    later: 'بعداً'
   },
   'ru': {
     missingInput: 'Отсутствует входной параметр',
@@ -462,8 +477,8 @@ export const translations = {
     pageTitle: `${APP_NAME} - инструмент для преобразования ссылок подписки`,
     ogTitle: `${APP_NAME} - инструмент для преобразования ссылок подписки`,
     ogDescription: 'Мощный инструмент для преобразования ссылок подписки, поддерживающий различные форматы клиентов',
-    shareUrls: 'Поделиться ссылками',
-    urlPlaceholder: 'Введите здесь ваши ссылки (вставьте ранее созданные ссылки для быстрого разбора конфигурации)...',
+    shareUrls: 'Источник ввода',
+    urlPlaceholder: 'Вставьте ссылки, конфигурацию Clash, Sing-Box или Surge...',
     advancedOptions: 'Расширенные настройки',
     baseConfigSettings: 'Базовые настройки конфигурации',
     baseConfigTooltip: 'Настройте базовую конфигурацию здесь',
@@ -586,7 +601,12 @@ export const translations = {
     error: 'Ошибка: ',
     validJSON: 'Действительный JSON',
     rules: 'правила',
-    rule: 'Правило'
+    rule: 'Правило',
+    // UpdateChecker
+    newVersionAvailable: 'Доступна новая версия',
+    viewRelease: 'Посмотреть релиз',
+    updateGuide: 'Руководство по обновлению',
+    later: 'Позже'
   }
 };
 

@@ -4,6 +4,8 @@
   <h1><b>Sublink Worker</b></h1>
   <h5><i>One Worker, All Subscriptions</i></h5>
 
+  <p><b>A lightweight subscription converter and manager for proxy protocols, deployable on Cloudflare Workers, Vercel, Node.js, or Docker.</b></p>
+
   <a href="https://trendshift.io/repositories/12291" target="_blank">
     <img src="https://trendshift.io/api/badge/repositories/12291" alt="7Sageer%2Fsublink-worker | Trendshift" width="250" height="55"/>
   </a>
@@ -22,9 +24,8 @@
   <h3>📚 Documentation</h3>
   <p>
     <a href="https://app.sublink.works"><b>⚡ Live Demo</b></a> ·
-    <a href="https://sublink.works"><b>🌐 Official Documentation</b></a> ·
-    <a href="https://sublink.works/en/"><b>English</b></a> ·
-    <a href="https://sublink.works"><b>中文</b></a>
+    <a href="https://sublink.works/en/"><b>Documentation</b></a> 
+    <a href="https://sublink.works"><b>中文文档</b></a>·
   </p>
   <p>
     <a href="https://sublink.works/guide/quick-start/">Quick Start</a> ·
@@ -36,10 +37,8 @@
 ## 🚀 Quick Start
 
 ### One-Click Deployment
-1. Fork this project
-2. Click the **Deploy to Cloudflare Workers** button above
-3. Select your repository in the Import Repository section (link your GitHub account)
-4. Change the Deploy Command to `npm run deploy`, then click Save and Deploy
+- Choose a "deploy" button above to click
+- That's it! See the [Document](https://sublink.works/guide/quick-start/) for more information.
 
 ### Alternative Runtimes
 - **Node.js**: `npm run build:node && node dist/node-server.cjs`
@@ -55,12 +54,17 @@ ShadowSocks • VMess • VLESS • Hysteria2 • Trojan • TUIC
 ### Client Support
 Sing-Box • Clash • Xray/V2Ray • Surge
 
+### Input Support
+- Base64 subscriptions
+- HTTP/HTTPS subscriptions
+- Full configs (Sing-Box JSON, Clash YAML, Surge INI)
+
 ### Core Capabilities
-- Import Base64 subscriptions and protocol sharing URLs
+- Import subscriptions from multiple sources
 - Generate fixed/random short links (KV-based)
 - Light/Dark theme toggle
 - Flexible API for script automation
-- Multi-language support (Chinese, English, Persian)
+- Multi-language support (Chinese, English, Persian, Russian)
 - Web interface with predefined rule sets and customizable policy groups
 
 ## 🤝 Contributing
@@ -93,7 +97,6 @@ This project is for learning and exchange purposes only. Please do not use it fo
     </td>
   </tr>
 </table>
-  <p><b>NodeSupport has sponsored this project, thank you for your support!</b></p>
   <p>If you would like to sponsor this project, please contact the developer <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
 </div>
 

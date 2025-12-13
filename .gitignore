@@ -174,3 +174,5 @@ dist
 .editorconfig
 .prettierrc
 .vercel
+
+CLAUDE.local.md
