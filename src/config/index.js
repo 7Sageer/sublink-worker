@@ -33,6 +33,6 @@ export {
 } from './ruleGenerators.js';
 
 // Platform Configs
-export { SING_BOX_CONFIG } from './singboxConfig.js';
+export { SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from './singboxConfig.js';
 export { CLASH_CONFIG } from './clashConfig.js';
 export { SURGE_CONFIG } from './surgeConfig.js';
