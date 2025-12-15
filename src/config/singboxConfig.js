@@ -98,21 +98,19 @@ export const SING_BOX_CONFIG_V1_11 = {
 		servers: [
 			{
 				tag: "dns_proxy",
-				address: "tcp://1.1.1.1",
+				address: "tls://1.1.1.1",
 				detour: "🚀 节点选择"
 			},
 			{
 				tag: "dns_direct",
 				address: "https://dns.alidns.com/dns-query",
+				detour: "DIRECT",
 				address_resolver: "dns_resolver"
 			},
 			{
 				tag: "dns_resolver",
-				address: "223.5.5.5"
-			},
-			{
-				tag: "dns_refused",
-				address: "rcode://refused"
+				address: "223.5.5.5",
+				detour: "DIRECT"
 			},
 			{
 				tag: "dns_fakeip",
@@ -140,7 +138,8 @@ export const SING_BOX_CONFIG_V1_11 = {
 					"CNAME"
 				],
 				invert: true,
-				server: "dns_refused"
+				server: "dns_direct",
+				disable_cache: true
 			}
 		],
 		final: "dns_direct",
