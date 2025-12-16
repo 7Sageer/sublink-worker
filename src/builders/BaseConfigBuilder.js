@@ -13,6 +13,7 @@ export class BaseConfigBuilder {
         this.userAgent = userAgent;
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
+        this.providerUrls = [];  // URLs to use as providers (auto-sync)
     }
 
     async build() {
@@ -80,6 +81,59 @@ export class BaseConfigBuilder {
             }
 
             for (const processedUrl of processedUrls) {
+                const trimmedUrl = typeof processedUrl === 'string' ? processedUrl.trim() : '';
+
+                // Check if it's an HTTP(S) URL - may use as provider if format matches
+                if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+                    const { fetchSubscriptionWithFormat } = await import('../parsers/subscription/httpSubscriptionFetcher.js');
+
+                    try {
+                        const fetchResult = await fetchSubscriptionWithFormat(trimmedUrl, this.userAgent);
+                        if (fetchResult) {
+                            const { content, format, url: originalUrl } = fetchResult;
+
+                            // If format is compatible with target client, use as provider
+                            if (this.isCompatibleProviderFormat(format)) {
+                                this.providerUrls.push(originalUrl);
+                                continue;  // Skip parsing, will be used as provider
+                            }
+
+                            // Otherwise parse the content as usual
+                            const result = parseSubscriptionContent(content);
+                            if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
+                                if (result.config) {
+                                    this.applyConfigOverrides(result.config);
+                                }
+                                if (Array.isArray(result.proxies)) {
+                                    result.proxies.forEach(proxy => {
+                                        if (proxy && typeof proxy === 'object' && proxy.tag) {
+                                            parsedItems.push(proxy);
+                                        }
+                                    });
+                                }
+                                continue;
+                            }
+                            // Handle array of URIs or other formats
+                            if (Array.isArray(result)) {
+                                for (const item of result) {
+                                    if (item && typeof item === 'object' && item.tag) {
+                                        parsedItems.push(item);
+                                    } else if (typeof item === 'string') {
+                                        const subResult = await ProxyParser.parse(item, this.userAgent);
+                                        if (subResult) {
+                                            parsedItems.push(subResult);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error processing HTTP subscription:', error);
+                    }
+                    continue;
+                }
+
+                // Non-HTTP URLs (protocol URIs like ss://, vmess://, etc.)
                 const result = await ProxyParser.parse(processedUrl, this.userAgent);
                 // Handle yamlConfig, singboxConfig, and surgeConfig types (they have the same structure)
                 if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
@@ -113,6 +167,16 @@ export class BaseConfigBuilder {
         }
 
         return parsedItems;
+    }
+
+    /**
+     * Check if subscription format is compatible for use as a provider
+     * Override in child classes to enable provider support
+     * @param {'clash'|'singbox'|'unknown'} format - Detected subscription format
+     * @returns {boolean} - True if format can be used as provider
+     */
+    isCompatibleProviderFormat(format) {
+        return false;  // Default: no provider support
     }
 
     applyConfigOverrides(overrides) {

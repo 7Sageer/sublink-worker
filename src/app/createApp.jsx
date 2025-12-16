@@ -108,7 +108,8 @@ export function createApp(bindings = {}) {
                 groupByCountry,
                 enableClashUI,
                 externalController,
-                externalUiDownloadUrl
+                externalUiDownloadUrl,
+                singboxConfigVersion
             );
             await builder.build();
             return c.json(builder.config);
