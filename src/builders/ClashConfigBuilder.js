@@ -21,6 +21,48 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         this.externalUiDownloadUrl = externalUiDownloadUrl;
     }
 
+    /**
+     * Check if subscription format is compatible for use as Clash proxy-provider
+     * @param {'clash'|'singbox'|'unknown'} format - Detected subscription format
+     * @returns {boolean} - True if format is Clash YAML
+     */
+    isCompatibleProviderFormat(format) {
+        return format === 'clash';
+    }
+
+    /**
+     * Generate proxy-providers configuration from collected URLs
+     * @returns {object} - proxy-providers object
+     */
+    generateProxyProviders() {
+        const providers = {};
+        this.providerUrls.forEach((url, index) => {
+            const name = `provider${index + 1}`;
+            providers[name] = {
+                type: 'http',
+                url: url,
+                path: `./proxy_providers/${name}.yaml`,
+                interval: 3600,
+                'health-check': {
+                    enable: true,
+                    url: 'https://www.gstatic.com/generate_204',
+                    interval: 300,
+                    timeout: 5000,
+                    lazy: true
+                }
+            };
+        });
+        return providers;
+    }
+
+    /**
+     * Get list of provider names
+     * @returns {string[]} - Array of provider names
+     */
+    getProviderNames() {
+        return this.providerUrls.map((_, index) => `provider${index + 1}`);
+    }
+
     getProxies() {
         return this.config.proxies || [];
     }
@@ -225,14 +267,23 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const autoName = this.t('outboundNames.Auto Select');
         if (this.hasProxyGroup(autoName)) return;
-        this.config['proxy-groups'].push({
+
+        const group = {
             name: autoName,
             type: 'url-test',
             proxies: deepCopy(uniqueNames(proxyList)),
             url: 'https://www.gstatic.com/generate_204',
             interval: 300,
             lazy: false
-        });
+        };
+
+        // Add 'use' field if we have proxy-providers
+        const providerNames = this.getProviderNames();
+        if (providerNames.length > 0) {
+            group.use = providerNames;
+        }
+
+        this.config['proxy-groups'].push(group);
     }
 
     addNodeSelectGroup(proxyList) {
@@ -246,11 +297,20 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             manualGroupName: this.manualGroupName,
             countryGroupNames: this.countryGroupNames
         });
-        this.config['proxy-groups'].unshift({
+
+        const group = {
             type: "select",
             name: nodeName,
             proxies: list
-        });
+        };
+
+        // Add 'use' field if we have proxy-providers
+        const providerNames = this.getProviderNames();
+        if (providerNames.length > 0) {
+            group.use = providerNames;
+        }
+
+        this.config['proxy-groups'].unshift(group);
     }
 
     buildSelectGroupMembers(proxyList = []) {
@@ -378,6 +438,14 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             ...ip_rule_providers
         };
         const ruleResults = emitClashRules(rules, this.t);
+
+        // Add proxy-providers if we have any
+        if (this.providerUrls.length > 0) {
+            this.config['proxy-providers'] = {
+                ...this.config['proxy-providers'],
+                ...this.generateProxyProviders()
+            };
+        }
 
         sanitizeClashProxyGroups(this.config);
 
