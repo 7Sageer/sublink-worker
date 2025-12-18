@@ -44,10 +44,10 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
      */
     generateOutboundProviders() {
         return this.providerUrls.map((url, index) => ({
-            tag: `provider${index + 1}`,
+            tag: `_auto_provider_${index + 1}`,
             type: 'http',
             download_url: url,
-            path: `./providers/provider${index + 1}.json`,
+            path: `./providers/_auto_provider_${index + 1}.json`,
             download_interval: '24h',
             health_check: {
                 enabled: true,
@@ -62,7 +62,22 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
      * @returns {string[]} - Array of provider tags
      */
     getProviderTags() {
-        return this.providerUrls.map((_, index) => `provider${index + 1}`);
+        return this.providerUrls.map((_, index) => `_auto_provider_${index + 1}`);
+    }
+
+    /**
+     * Get all provider tags (user-defined + auto-generated)
+     * @returns {string[]} - Array of provider tags
+     */
+    getAllProviderTags() {
+        if (this.singboxVersion === '1.11') {
+            return [];
+        }
+        const existingTags = Array.isArray(this.config.outbound_providers)
+            ? this.config.outbound_providers.map(p => p?.tag).filter(Boolean)
+            : [];
+        const autoTags = this.getProviderTags();
+        return [...new Set([...existingTags, ...autoTags])];
     }
 
     getProxies() {
@@ -135,7 +150,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         };
 
         // Add 'providers' field if we have outbound_providers
-        const providerTags = this.getProviderTags();
+        const providerTags = this.getAllProviderTags();
         if (providerTags.length > 0) {
             group.providers = providerTags;
         }
@@ -162,7 +177,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         };
 
         // Add 'providers' field if we have outbound_providers
-        const providerTags = this.getProviderTags();
+        const providerTags = this.getAllProviderTags();
         if (providerTags.length > 0) {
             group.providers = providerTags;
         }
@@ -290,7 +305,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         // Add outbound_providers if we have any
         if (this.providerUrls.length > 0) {
-            this.config.outbound_providers = this.generateOutboundProviders();
+            const existingProviders = Array.isArray(this.config.outbound_providers) ? this.config.outbound_providers : [];
+            const newProviders = this.generateOutboundProviders();
+            this.config.outbound_providers = [...existingProviders, ...newProviders];
         }
 
         rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {

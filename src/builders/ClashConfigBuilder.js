@@ -37,7 +37,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     generateProxyProviders() {
         const providers = {};
         this.providerUrls.forEach((url, index) => {
-            const name = `provider${index + 1}`;
+            const name = `_auto_provider_${index + 1}`;
             providers[name] = {
                 type: 'http',
                 url: url,
@@ -60,7 +60,19 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
      * @returns {string[]} - Array of provider names
      */
     getProviderNames() {
-        return this.providerUrls.map((_, index) => `provider${index + 1}`);
+        return this.providerUrls.map((_, index) => `_auto_provider_${index + 1}`);
+    }
+
+    /**
+     * Get all provider names (user-defined + auto-generated)
+     * @returns {string[]} - Array of provider names
+     */
+    getAllProviderNames() {
+        const existingProviders = this.config?.['proxy-providers'] && typeof this.config['proxy-providers'] === 'object'
+            ? Object.keys(this.config['proxy-providers'])
+            : [];
+        const autoProviders = this.getProviderNames();
+        return [...new Set([...existingProviders, ...autoProviders])];
     }
 
     getProxies() {
@@ -278,7 +290,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         };
 
         // Add 'use' field if we have proxy-providers
-        const providerNames = this.getProviderNames();
+        const providerNames = this.getAllProviderNames();
         if (providerNames.length > 0) {
             group.use = providerNames;
         }
@@ -305,7 +317,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         };
 
         // Add 'use' field if we have proxy-providers
-        const providerNames = this.getProviderNames();
+        const providerNames = this.getAllProviderNames();
         if (providerNames.length > 0) {
             group.use = providerNames;
         }

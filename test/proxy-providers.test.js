@@ -14,6 +14,7 @@ vi.mock('../src/parsers/subscription/httpSubscriptionFetcher.js', async (importO
 import { fetchSubscriptionWithFormat } from '../src/parsers/subscription/httpSubscriptionFetcher.js';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
+import { CLASH_CONFIG, SING_BOX_CONFIG } from '../src/config/index.js';
 
 // Mock Clash subscription content
 const mockClashYaml = `
@@ -68,13 +69,13 @@ describe('Auto Proxy Providers Detection', () => {
             // Should have proxy-providers
             expect(config['proxy-providers']).toBeDefined();
             expect(Object.keys(config['proxy-providers'])).toHaveLength(1);
-            expect(config['proxy-providers'].provider1).toBeDefined();
-            expect(config['proxy-providers'].provider1.url).toBe('https://example.com/clash-sub?token=xxx');
-            expect(config['proxy-providers'].provider1.type).toBe('http');
+            expect(config['proxy-providers']._auto_provider_1).toBeDefined();
+            expect(config['proxy-providers']._auto_provider_1.url).toBe('https://example.com/clash-sub?token=xxx');
+            expect(config['proxy-providers']._auto_provider_1.type).toBe('http');
 
             // proxy-groups should have 'use' field
             const nodeSelect = config['proxy-groups'].find(g => g.name === '🚀 节点选择');
-            expect(nodeSelect.use).toContain('provider1');
+            expect(nodeSelect.use).toContain('_auto_provider_1');
         });
 
         it('should parse and convert Sing-Box URL (incompatible format)', async () => {
@@ -134,7 +135,7 @@ describe('Auto Proxy Providers Detection', () => {
 
             // outbounds should have 'providers' field
             const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
-            expect(nodeSelect.providers).toContain('provider1');
+            expect(nodeSelect.providers).toContain('_auto_provider_1');
         });
 
         it('should parse and convert Clash URL (incompatible format)', async () => {
@@ -224,8 +225,85 @@ describe('Auto Proxy Providers Detection', () => {
             // Should have two proxy-providers
             expect(config['proxy-providers']).toBeDefined();
             expect(Object.keys(config['proxy-providers'])).toHaveLength(2);
-            expect(config['proxy-providers'].provider1).toBeDefined();
-            expect(config['proxy-providers'].provider2).toBeDefined();
+            expect(config['proxy-providers']._auto_provider_1).toBeDefined();
+            expect(config['proxy-providers']._auto_provider_2).toBeDefined();
+        });
+    });
+
+    describe('Config Merge Behaviors', () => {
+        it('should not override user-defined Clash providers when auto providers exist', async () => {
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: mockClashYaml,
+                format: 'clash',
+                url: 'https://auto.example.com/clash-sub'
+            });
+
+            const baseConfig = JSON.parse(JSON.stringify(CLASH_CONFIG));
+            baseConfig['proxy-providers'] = {
+                provider1: {
+                    type: 'http',
+                    url: 'https://user.example.com/sub',
+                    path: './user.yaml',
+                    interval: 3600
+                }
+            };
+
+            const builder = new ClashConfigBuilder(
+                'https://auto.example.com/clash-sub',
+                [],
+                [],
+                baseConfig,
+                'zh-CN',
+                'test-agent'
+            );
+            const yamlText = await builder.build();
+            const config = yaml.load(yamlText);
+
+            expect(config['proxy-providers']).toBeDefined();
+            expect(config['proxy-providers'].provider1?.url).toBe('https://user.example.com/sub');
+            expect(config['proxy-providers']._auto_provider_1?.url).toBe('https://auto.example.com/clash-sub');
+
+            const nodeSelect = config['proxy-groups'].find(g => g.name === '🚀 节点选择');
+            expect(nodeSelect.use).toContain('provider1');
+            expect(nodeSelect.use).toContain('_auto_provider_1');
+        });
+
+        it('should merge user-defined Sing-Box outbound_providers with auto providers', async () => {
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: mockSingboxJson,
+                format: 'singbox',
+                url: 'https://auto.example.com/singbox-sub'
+            });
+
+            const baseConfig = JSON.parse(JSON.stringify(SING_BOX_CONFIG));
+            baseConfig.outbound_providers = [
+                {
+                    tag: 'user-provider',
+                    type: 'http',
+                    download_url: 'https://user.example.com/sub',
+                    path: './providers/user.json',
+                    download_interval: '24h'
+                }
+            ];
+
+            const builder = new SingboxConfigBuilder(
+                'https://auto.example.com/singbox-sub',
+                [],
+                [],
+                baseConfig,
+                'zh-CN',
+                'test-agent'
+            );
+            const config = await builder.build();
+
+            expect(config.outbound_providers).toBeDefined();
+            expect(config.outbound_providers).toHaveLength(2);
+            expect(config.outbound_providers.map(p => p.tag)).toContain('user-provider');
+            expect(config.outbound_providers.map(p => p.tag)).toContain('_auto_provider_1');
+
+            const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
+            expect(nodeSelect.providers).toContain('user-provider');
+            expect(nodeSelect.providers).toContain('_auto_provider_1');
         });
     });
 });

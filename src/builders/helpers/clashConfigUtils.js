@@ -61,15 +61,23 @@ export function sanitizeClashProxyGroups(config) {
 
     config['proxy-groups'] = groups.map(group => {
         if (!group || !Array.isArray(group.proxies)) return group;
-        const filtered = group.proxies
+        const normalizedProxies = group.proxies
             .map(x => typeof x === 'string' ? x.trim() : x)
-            .filter(x => typeof x === 'string' && validNames.has(normalize(x)));
+            .filter(x => typeof x === 'string');
         const seen = new Set();
-        const deduped = filtered.filter(value => {
+        const deduped = normalizedProxies.filter(value => {
             if (seen.has(value)) return false;
             seen.add(value);
             return true;
         });
-        return { ...group, proxies: deduped };
+
+        // If group uses providers, we cannot validate provider node names at build time.
+        // Skip filtering to avoid incorrectly removing valid provider nodes.
+        if (Array.isArray(group.use) && group.use.length > 0) {
+            return { ...group, proxies: deduped };
+        }
+
+        const filtered = deduped.filter(x => validNames.has(normalize(x)));
+        return { ...group, proxies: filtered };
     });
 }
