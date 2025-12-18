@@ -54,7 +54,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 if (proxy.transport?.type === 'ws') {
                     surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
                     if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.Host}`;
+                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
                     }
                 } else if (proxy.transport?.type === 'grpc') {
                     surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
@@ -74,7 +74,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 if (proxy.transport?.type === 'ws') {
                     surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
                     if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.Host}`;
+                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
                     }
                 } else if (proxy.transport?.type === 'grpc') {
                     surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
