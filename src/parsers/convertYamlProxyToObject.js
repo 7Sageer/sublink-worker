@@ -17,7 +17,10 @@ export function convertYamlProxyToObject(p) {
                 method: p.cipher || p.method,
                 password: p.password,
                 network: 'tcp',
-                tcp_fast_open: !!p['fast-open']
+                tcp_fast_open: !!p['fast-open'],
+                udp: typeof p.udp !== 'undefined' ? !!p.udp : undefined,
+                plugin: p.plugin,
+                plugin_opts: p['plugin-opts']
             };
         case 'vmess': {
             const tlsEnabled = !!p.tls;

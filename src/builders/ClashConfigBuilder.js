@@ -92,7 +92,10 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     server: proxy.server,
                     port: proxy.server_port,
                     cipher: proxy.method,
-                    password: proxy.password
+                    password: proxy.password,
+                    ...(typeof proxy.udp !== 'undefined' ? { udp: proxy.udp } : {}),
+                    ...(proxy.plugin ? { plugin: proxy.plugin } : {}),
+                    ...(proxy.plugin_opts ? { 'plugin-opts': proxy.plugin_opts } : {})
                 };
             case 'vmess':
                 return {
