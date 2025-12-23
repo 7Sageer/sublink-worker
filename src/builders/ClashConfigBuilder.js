@@ -5,6 +5,7 @@ import { deepCopy, groupProxiesByCountry } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigUtils.js';
+import { normalizeGroupName, findGroupIndexByName } from './helpers/groupNameUtils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
@@ -273,9 +274,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     hasProxyGroup(name) {
-        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-        const target = normalize(name);
-        return (this.config['proxy-groups'] || []).some(group => group && normalize(group.name) === target);
+        const target = normalizeGroupName(name);
+        return (this.config['proxy-groups'] || []).some(group => group && normalizeGroupName(group.name) === target);
     }
 
     addAutoSelectGroup(proxyList) {
@@ -387,13 +387,12 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             getName: proxy => this.getProxyName(proxy)
         });
 
-        const normalize = (s) => typeof s === 'string' ? s.trim() : s;
-        const existingNames = new Set((this.config['proxy-groups'] || []).map(g => normalize(g?.name)).filter(Boolean));
+        const existingNames = new Set((this.config['proxy-groups'] || []).map(g => normalizeGroupName(g?.name)).filter(Boolean));
 
         const manualProxyNames = proxies.map(p => p?.name).filter(Boolean);
         const manualGroupName = manualProxyNames.length > 0 ? this.t('outboundNames.Manual Switch') : null;
         if (manualGroupName) {
-            const manualNorm = normalize(manualGroupName);
+            const manualNorm = normalizeGroupName(manualGroupName);
             if (!existingNames.has(manualNorm)) {
                 this.config['proxy-groups'].push({
                     name: manualGroupName,
@@ -410,7 +409,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         countries.forEach(country => {
             const { emoji, name, proxies } = countryGroups[country];
             const groupName = `${emoji} ${name}`;
-            const norm = normalize(groupName);
+            const norm = normalizeGroupName(groupName);
             if (!existingNames.has(norm)) {
                 this.config['proxy-groups'].push({
                     name: groupName,
@@ -440,6 +439,109 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         this.manualGroupName = manualGroupName;
     }
 
+    /**
+     * Merge user-defined proxy groups with system-generated ones
+     * Handles same-name groups by merging proxies/use fields and preserving user settings
+     * @param {Array} userGroups - User-defined proxy groups from input config
+     */
+    mergeUserProxyGroups(userGroups) {
+        if (!Array.isArray(userGroups)) return;
+
+        const proxyList = this.getProxyList();
+        const allProviderNames = new Set(this.getAllProviderNames());
+
+        // Build valid reference set (proxies, groups, special names)
+        const groupNames = new Set(
+            (this.config['proxy-groups'] || [])
+                .map(g => normalizeGroupName(g?.name))
+                .filter(Boolean)
+        );
+        const validRefs = new Set(['DIRECT', 'REJECT']);
+        proxyList.forEach(n => validRefs.add(n));
+        groupNames.forEach(n => validRefs.add(n));
+
+        userGroups.forEach(userGroup => {
+            if (!userGroup?.name) return;
+
+            const existingIndex = findGroupIndexByName(
+                this.config['proxy-groups'],
+                userGroup.name
+            );
+
+            if (existingIndex >= 0) {
+                // Merge with existing system group
+                const existing = this.config['proxy-groups'][existingIndex];
+
+                // Merge 'use' field (provider references)
+                if (Array.isArray(userGroup.use) && userGroup.use.length > 0) {
+                    const validUserProviders = userGroup.use.filter(p => allProviderNames.has(p));
+                    existing.use = [...new Set([
+                        ...(existing.use || []),
+                        ...validUserProviders
+                    ])];
+                }
+
+                // Merge 'proxies' field - validate references first
+                if (Array.isArray(userGroup.proxies)) {
+                    const validUserProxies = userGroup.proxies.filter(p => validRefs.has(p));
+                    existing.proxies = [...new Set([
+                        ...(existing.proxies || []),
+                        ...validUserProxies
+                    ])];
+                }
+
+                // Preserve user's custom settings (url, interval)
+                if (userGroup.url) existing.url = userGroup.url;
+                if (typeof userGroup.interval === 'number') existing.interval = userGroup.interval;
+                if (typeof userGroup.lazy === 'boolean') existing.lazy = userGroup.lazy;
+            } else {
+                // New user-defined group - validate and add
+                const newGroup = { ...userGroup };
+
+                // Validate proxies references
+                if (Array.isArray(newGroup.proxies)) {
+                    newGroup.proxies = newGroup.proxies.filter(p => validRefs.has(p));
+                }
+
+                // Validate use (provider) references
+                if (Array.isArray(newGroup.use)) {
+                    newGroup.use = newGroup.use.filter(p => allProviderNames.has(p));
+                }
+
+                // Add group if:
+                // 1. Has valid proxies or use, OR
+                // 2. Is url-test/fallback type (will be filled by validateProxyGroups)
+                const isAutoFillableType = newGroup.type === 'url-test' || newGroup.type === 'fallback';
+                if ((newGroup.proxies?.length > 0) || (newGroup.use?.length > 0) || isAutoFillableType) {
+                    this.config['proxy-groups'].push(newGroup);
+                }
+            }
+        });
+    }
+
+    /**
+     * Validate proxy groups before final output
+     * Ensures url-test/fallback groups have proxies, fills empty ones with all nodes
+     */
+    validateProxyGroups() {
+        const proxyList = this.getProxyList();
+        const providerNames = this.getAllProviderNames();
+
+        (this.config['proxy-groups'] || []).forEach(group => {
+            // For url-test/fallback groups, ensure they have proxies or providers
+            if ((group.type === 'url-test' || group.type === 'fallback') &&
+                (!group.proxies || group.proxies.length === 0) &&
+                (!group.use || group.use.length === 0)) {
+                // Fill with all available proxies
+                group.proxies = [...proxyList];
+                // Also use all providers if available
+                if (providerNames.length > 0) {
+                    group.use = [...providerNames];
+                }
+            }
+        });
+    }
+
     // 生成规则
     generateRules() {
         return generateRules(this.selectedRules, this.customRules);
@@ -461,6 +563,9 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 ...this.generateProxyProviders()
             };
         }
+
+        // Validate proxy groups: fill empty url-test/fallback groups with all proxies
+        this.validateProxyGroups();
 
         sanitizeClashProxyGroups(this.config);
 

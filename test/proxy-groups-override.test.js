@@ -264,4 +264,136 @@ FINAL,DIRECT
             expect(configText).not.toContain('[object Object]');
         });
     });
+
+    describe('Issue #277 - Proxy Group Merge and Validation', () => {
+        it('should merge user proxy-group with same name as system group (⚡ 自动选择)', async () => {
+            // User defines a custom ⚡ 自动选择 with custom settings
+            const inputWithDuplicateName = `
+proxies:
+  - name: HK-Node
+    type: ss
+    server: hk.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+proxy-groups:
+  - name: ⚡ 自动选择
+    type: url-test
+    proxies:
+      - HK-Node
+    url: http://custom.test/204
+    interval: 600
+`;
+            const builder = new ClashConfigBuilder(inputWithDuplicateName, 'minimal', [], null, 'zh-CN', 'test-agent');
+            const yamlText = await builder.build();
+            const config = yaml.load(yamlText);
+
+            // Should only have ONE "⚡ 自动选择" group (no duplicates)
+            const autoGroups = config['proxy-groups'].filter(g =>
+                g.name && g.name.includes('自动选择')
+            );
+            expect(autoGroups).toHaveLength(1);
+
+            // Should have merged proxies and preserved user's custom settings
+            expect(autoGroups[0].proxies).toContain('HK-Node');
+            expect(autoGroups[0].interval).toBe(600);
+            expect(autoGroups[0].url).toBe('http://custom.test/204');
+        });
+
+        it('should fill empty url-test proxies with all available nodes', async () => {
+            const inputWithEmptyProxies = `
+proxies:
+  - name: Node-A
+    type: ss
+    server: a.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+  - name: Node-B
+    type: ss
+    server: b.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+proxy-groups:
+  - name: Empty Test Group
+    type: url-test
+    proxies: []
+`;
+            const builder = new ClashConfigBuilder(inputWithEmptyProxies, 'minimal', [], null, 'zh-CN', 'test-agent');
+            const yamlText = await builder.build();
+            const config = yaml.load(yamlText);
+
+            const emptyGroup = config['proxy-groups'].find(g => g.name === 'Empty Test Group');
+            expect(emptyGroup).toBeDefined();
+            // Empty group should be filled with all available proxies
+            expect(emptyGroup.proxies.length).toBeGreaterThan(0);
+            expect(emptyGroup.proxies).toContain('Node-A');
+            expect(emptyGroup.proxies).toContain('Node-B');
+        });
+
+        it('should filter out invalid proxy references from user groups', async () => {
+            const inputWithInvalidRefs = `
+proxies:
+  - name: Valid-Node
+    type: ss
+    server: valid.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+proxy-groups:
+  - name: Custom Group
+    type: select
+    proxies:
+      - DIRECT
+      - REJECT
+      - Valid-Node
+      - NonExistent-Node
+      - AnotherMissing
+`;
+            const builder = new ClashConfigBuilder(inputWithInvalidRefs, 'minimal', [], null, 'zh-CN', 'test-agent');
+            const yamlText = await builder.build();
+            const config = yaml.load(yamlText);
+
+            const customGroup = config['proxy-groups'].find(g => g.name === 'Custom Group');
+            expect(customGroup).toBeDefined();
+            // Valid references should be kept
+            expect(customGroup.proxies).toContain('DIRECT');
+            expect(customGroup.proxies).toContain('REJECT');
+            expect(customGroup.proxies).toContain('Valid-Node');
+            // Invalid references should be filtered out
+            expect(customGroup.proxies).not.toContain('NonExistent-Node');
+            expect(customGroup.proxies).not.toContain('AnotherMissing');
+        });
+
+        it('SingboxConfigBuilder should merge user outbounds with same tag', async () => {
+            // User defines a custom selector with same tag as system group
+            const singboxInput = JSON.stringify({
+                outbounds: [
+                    {
+                        type: 'shadowsocks',
+                        tag: 'HK-Node',
+                        server: 'hk.example.com',
+                        server_port: 443,
+                        method: 'aes-128-gcm',
+                        password: 'test'
+                    },
+                    { type: 'direct', tag: 'DIRECT' },
+                    { type: 'block', tag: 'REJECT' }
+                ]
+            });
+
+            const builder = new SingboxConfigBuilder(singboxInput, 'minimal', [], null, 'zh-CN', 'test-agent');
+            const config = await builder.build();
+
+            // Verify proxy node exists
+            const proxyNode = (config.outbounds || []).find(o => o && o.tag === 'HK-Node');
+            expect(proxyNode).toBeDefined();
+
+            // System-generated urltest group should have the proxy
+            const autoSelect = (config.outbounds || []).find(o => o && o.type === 'urltest');
+            expect(autoSelect).toBeDefined();
+            expect(autoSelect.outbounds).toContain('HK-Node');
+        });
+    });
 });
