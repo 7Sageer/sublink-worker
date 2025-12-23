@@ -15,14 +15,14 @@ function buildHttpHeaders(vmessConfig) {
                 normalized[key] = normalizedValue;
             }
         });
-        if (hostHeader && !normalized.Host) {
-            normalized.Host = hostHeader;
+        if (hostHeader && !normalized.host) {
+            normalized.host = hostHeader;
         }
         if (Object.keys(normalized).length > 0) {
             return normalized;
         }
     }
-    return hostHeader ? { Host: hostHeader } : undefined;
+    return hostHeader ? { host: hostHeader } : undefined;
 }
 
 export function parseVmess(url) {
@@ -53,7 +53,7 @@ export function parseVmess(url) {
         transport = {
             type: 'ws',
             path: vmessConfig.path,
-            headers: { 'Host': vmessConfig.host ? vmessConfig.host : vmessConfig.sni }
+            headers: { 'host': vmessConfig.host ? vmessConfig.host : vmessConfig.sni }
         };
     } else if ((networkType === 'tcp' && transportType === 'http') || networkType === 'http') {
         const method = vmessConfig.method || 'GET';

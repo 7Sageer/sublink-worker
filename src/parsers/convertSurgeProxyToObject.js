@@ -94,7 +94,7 @@ export function convertSurgeProxyToObject(line) {
             return {
                 type: 'ws',
                 path: wsPath,
-                headers: params['ws-headers'] ? { Host: params['ws-headers'] } : undefined
+                headers: params['ws-headers'] ? { host: params['ws-headers'] } : undefined
             };
         }
         return undefined;
