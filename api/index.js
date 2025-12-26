@@ -38,7 +38,7 @@ export const config = {
 export default async function handler(req, res) {
     try {
         const app = await appPromise;
-        const request = toRequest(req);
+        const request = await toRequest(req);
         const response = await app.fetch(request);
         await sendResponse(res, response);
     } catch (error) {
@@ -50,7 +50,21 @@ export default async function handler(req, res) {
     }
 }
 
-function toRequest(req) {
+const HOP_BY_HOP_HEADERS = new Set([
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailers',
+    'transfer-encoding',
+    'upgrade',
+    'content-length'
+]);
+
+const MAX_BODY_BYTES = 5 * 1024 * 1024;
+
+async function toRequest(req) {
     const protocol = req.headers['x-forwarded-proto'] || 'http';
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
     const url = `${protocol}://${host}${req.url ?? ''}`;
@@ -59,6 +73,7 @@ function toRequest(req) {
 
     for (const [key, value] of Object.entries(req.headers)) {
         if (value === undefined) continue;
+        if (HOP_BY_HOP_HEADERS.has(key.toLowerCase())) continue;
         if (Array.isArray(value)) {
             for (const entry of value) {
                 headers.append(key, entry);
@@ -72,13 +87,60 @@ function toRequest(req) {
         return new Request(url, { method, headers });
     }
 
-    const body = Readable.toWeb(req);
+    const body = await resolveBody(req);
     return new Request(url, {
         method,
         headers,
-        body,
-        duplex: 'half'
+        body
     });
+}
+
+async function resolveBody(req) {
+    if (req.body !== undefined) {
+        return normalizeBody(req.body);
+    }
+
+    if (req.readableEnded || req.complete) {
+        return undefined;
+    }
+
+    const chunks = [];
+    let totalBytes = 0;
+    for await (const chunk of req) {
+        const bufferChunk = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        totalBytes += bufferChunk.length;
+        if (totalBytes > MAX_BODY_BYTES) {
+            throw new Error(`Request body too large (>${MAX_BODY_BYTES} bytes)`);
+        }
+        chunks.push(bufferChunk);
+    }
+
+    if (!chunks.length) {
+        return undefined;
+    }
+    return Buffer.concat(chunks, totalBytes);
+}
+
+function normalizeBody(body) {
+    if (body === null || body === undefined) {
+        return undefined;
+    }
+    if (typeof body === 'string') {
+        return body;
+    }
+    if (Buffer.isBuffer(body)) {
+        return body;
+    }
+    if (body instanceof ArrayBuffer) {
+        return new Uint8Array(body);
+    }
+    if (ArrayBuffer.isView(body)) {
+        return new Uint8Array(body.buffer, body.byteOffset, body.byteLength);
+    }
+    if (typeof body === 'object') {
+        return JSON.stringify(body);
+    }
+    return String(body);
 }
 
 async function sendResponse(res, response) {
