@@ -197,6 +197,10 @@ export class BaseConfigBuilder {
             if (value === undefined) {
                 delete this.config[key];
                 this.appliedOverrideKeys.add(key);
+            } else if (key === 'dns' && typeof value === 'object' && !Array.isArray(value)) {
+                // Special handling for dns object - merge array fields instead of overwriting
+                this.config[key] = this.mergeDnsConfig(this.config[key], value);
+                this.appliedOverrideKeys.add(key);
             } else {
                 this.config[key] = deepCopy(value);
                 this.appliedOverrideKeys.add(key);
@@ -208,6 +212,41 @@ export class BaseConfigBuilder {
             this.pendingUserProxyGroups = this.pendingUserProxyGroups || [];
             this.pendingUserProxyGroups.push(...overrides['proxy-groups']);
         }
+    }
+
+    /**
+     * Merge DNS configuration with intelligent array merging
+     * Arrays like nameserver, fallback, fake-ip-filter are merged instead of overwritten
+     * @param {object} existing - Existing DNS config
+     * @param {object} incoming - Incoming DNS config to merge
+     * @returns {object} - Merged DNS config
+     */
+    mergeDnsConfig(existing, incoming) {
+        if (!existing || typeof existing !== 'object') {
+            return deepCopy(incoming);
+        }
+
+        const result = deepCopy(existing);
+        // Array fields that should be merged instead of overwritten
+        const mergeableArrayKeys = new Set(['nameserver', 'fallback', 'fake-ip-filter']);
+
+        Object.entries(incoming).forEach(([key, value]) => {
+            if (mergeableArrayKeys.has(key) && Array.isArray(value)) {
+                if (Array.isArray(result[key])) {
+                    // Merge arrays and deduplicate
+                    result[key] = [...new Set([...result[key], ...value])];
+                } else {
+                    result[key] = deepCopy(value);
+                }
+            } else if (key === 'nameserver-policy' && typeof value === 'object' && !Array.isArray(value)) {
+                // Merge nameserver-policy object
+                result[key] = { ...(result[key] || {}), ...deepCopy(value) };
+            } else {
+                result[key] = deepCopy(value);
+            }
+        });
+
+        return result;
     }
 
     hasConfigOverride(key) {

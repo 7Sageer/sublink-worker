@@ -396,4 +396,128 @@ proxy-groups:
             expect(autoSelect.outbounds).toContain('HK-Node');
         });
     });
+
+    describe('DNS Config Merging', () => {
+        it('ClashConfigBuilder should merge DNS nameserver arrays from multiple sources', async () => {
+            // First subscription with DNS config
+            const input1 = `
+proxies:
+  - name: Node-A
+    type: ss
+    server: a.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+dns:
+  enable: true
+  nameserver:
+    - 8.8.8.8
+    - 8.8.4.4
+  fallback:
+    - 1.0.0.1
+`;
+            const builder = new ClashConfigBuilder(input1, 'minimal', [], null, 'zh-CN', 'test-agent');
+
+            // Simulate applying second subscription's DNS config
+            builder.mergeDnsConfig = builder.mergeDnsConfig.bind(builder);
+            const existingDns = { enable: true, nameserver: ['8.8.8.8', '8.8.4.4'], fallback: ['1.0.0.1'] };
+            const incomingDns = { nameserver: ['1.1.1.1', '8.8.8.8'], fallback: ['9.9.9.9'] };
+
+            const merged = builder.mergeDnsConfig(existingDns, incomingDns);
+
+            // Should merge and deduplicate nameserver
+            expect(merged.nameserver).toContain('8.8.8.8');
+            expect(merged.nameserver).toContain('8.8.4.4');
+            expect(merged.nameserver).toContain('1.1.1.1');
+            expect(merged.nameserver.filter(n => n === '8.8.8.8')).toHaveLength(1); // No duplicates
+
+            // Should merge fallback
+            expect(merged.fallback).toContain('1.0.0.1');
+            expect(merged.fallback).toContain('9.9.9.9');
+
+            // Should preserve other fields
+            expect(merged.enable).toBe(true);
+        });
+
+        it('ClashConfigBuilder should merge fake-ip-filter arrays', async () => {
+            const input = `
+proxies:
+  - name: Node-A
+    type: ss
+    server: a.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+`;
+            const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');
+
+            const existingDns = {
+                'fake-ip-filter': ['*.lan', '*.local']
+            };
+            const incomingDns = {
+                'fake-ip-filter': ['*.local', '*.internal', 'localhost']
+            };
+
+            const merged = builder.mergeDnsConfig(existingDns, incomingDns);
+
+            // Should merge and deduplicate
+            expect(merged['fake-ip-filter']).toContain('*.lan');
+            expect(merged['fake-ip-filter']).toContain('*.local');
+            expect(merged['fake-ip-filter']).toContain('*.internal');
+            expect(merged['fake-ip-filter']).toContain('localhost');
+            expect(merged['fake-ip-filter'].filter(f => f === '*.local')).toHaveLength(1);
+        });
+
+        it('ClashConfigBuilder should merge nameserver-policy objects', async () => {
+            const input = `
+proxies:
+  - name: Node-A
+    type: ss
+    server: a.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+`;
+            const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');
+
+            const existingDns = {
+                'nameserver-policy': {
+                    '+.google.com': '8.8.8.8'
+                }
+            };
+            const incomingDns = {
+                'nameserver-policy': {
+                    '+.github.com': '1.1.1.1',
+                    '+.google.com': '8.8.4.4'  // Override existing
+                }
+            };
+
+            const merged = builder.mergeDnsConfig(existingDns, incomingDns);
+
+            // Should merge policies
+            expect(merged['nameserver-policy']['+.github.com']).toBe('1.1.1.1');
+            // Later value should override
+            expect(merged['nameserver-policy']['+.google.com']).toBe('8.8.4.4');
+        });
+
+        it('mergeDnsConfig should handle null/undefined existing config', async () => {
+            const input = `
+proxies:
+  - name: Node-A
+    type: ss
+    server: a.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+`;
+            const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');
+
+            const incomingDns = { nameserver: ['1.1.1.1'], enable: true };
+
+            const merged = builder.mergeDnsConfig(null, incomingDns);
+
+            expect(merged.nameserver).toEqual(['1.1.1.1']);
+            expect(merged.enable).toBe(true);
+        });
+    });
 });
