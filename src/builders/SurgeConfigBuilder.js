@@ -24,6 +24,24 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         return this.config.proxies || [];
     }
 
+    /**
+     * Get only valid proxies (filter out comment lines for unsupported types)
+     * @returns {string[]} Array of valid proxy strings (excluding comments)
+     */
+    getValidProxies() {
+        return this.getProxies().filter(proxy =>
+            typeof proxy === 'string' && !proxy.trimStart().startsWith('#')
+        );
+    }
+
+    /**
+     * Override getProxyList to exclude unsupported proxy comments from groups
+     * Fixes issue #299: comment strings were incorrectly added to proxy groups
+     */
+    getProxyList() {
+        return this.getValidProxies().map(proxy => this.getProxyName(proxy));
+    }
+
     getProxyName(proxy) {
         return proxy.split('=')[0].trim();
     }
@@ -289,7 +307,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     addCountryGroups() {
-        const proxies = this.getProxies();
+        const proxies = this.getValidProxies();
         const countryGroups = groupProxiesByCountry(proxies, {
             getName: proxy => this.getProxyName(proxy)
         });
