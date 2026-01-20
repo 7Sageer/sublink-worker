@@ -239,13 +239,14 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         });
     }
 
-    buildAggregatedOptions(proxyList = []) {
+    buildAggregatedOptions(proxyList = [], targetGroupName = '') {
         return buildSelectorMembers({
             proxyList,
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            targetGroupName
         });
     }
 
@@ -274,8 +275,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== this.t('outboundNames.Node Select')) {
-                const options = this.buildAggregatedOptions(proxyList);
                 const name = this.t(`outboundNames.${outbound}`);
+                const options = this.buildAggregatedOptions(proxyList, name);
                 if (this.hasProxyGroup(name)) {
                     return;
                 }
@@ -289,7 +290,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const options = this.buildAggregatedOptions(proxyList);
+                const options = this.buildAggregatedOptions(proxyList, rule.name);
                 if (this.hasProxyGroup(rule.name)) return;
                 this.config['proxy-groups'].push(
                     this.createProxyGroup(rule.name, 'select', options)
