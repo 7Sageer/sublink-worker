@@ -235,6 +235,9 @@ export function generateWebPath(length = PATH_LENGTH) {
 }
 
 export function parseServerInfo(serverInfo) {
+	if (!serverInfo || typeof serverInfo !== 'string') {
+		return { host: null, port: null };
+	}
 	let host, port;
 	if (serverInfo.startsWith('[')) {
 		const closeBracketIndex = serverInfo.indexOf(']');
