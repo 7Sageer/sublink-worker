@@ -39,20 +39,54 @@ export function buildNodeSelectMembers({ proxyList = [], translator, groupByCoun
     return withDirectReject(base);
 }
 
-export function buildSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [] }) {
+export function buildSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], targetGroupName = '' }) {
     if (!translator) {
         throw new Error('buildSelectorMembers requires a translator function');
     }
+
+    const nodeSelectName = translator('outboundNames.Node Select');
+    const autoSelectName = translator('outboundNames.Auto Select');
+
+    // Define groups that should default to DIRECT
+    // Using translation keys/values to match what's passed in
+    const directDefaultGroups = [
+        translator('outboundNames.Bilibili'),
+        translator('outboundNames.Location:CN'),
+        translator('outboundNames.Private')
+    ];
+
+    // Define groups that should default to REJECT
+    const rejectDefaultGroups = [
+        translator('outboundNames.Ad Block')
+    ];
+
+    const isDirectDefault = directDefaultGroups.includes(targetGroupName);
+    const isRejectDefault = rejectDefaultGroups.includes(targetGroupName);
+
     const base = groupByCountry
         ? [
-            translator('outboundNames.Node Select'),
-            translator('outboundNames.Auto Select'),
+            nodeSelectName,
+            autoSelectName,
             ...(manualGroupName ? [manualGroupName] : []),
             ...countryGroupNames
         ]
         : [
-            translator('outboundNames.Node Select'),
+            nodeSelectName,
             ...proxyList
         ];
+
+    let members = base;
+
+    if (isDirectDefault) {
+        // Remove DIRECT from list if exists (to avoid dupe) and prepend it
+        // The list is just strings at this point, but wrapped via withDirectReject usually adds validRefs.
+        // We'll construct the array manually to control order.
+        members = ['DIRECT', ...base, 'REJECT'];
+        return uniqueNames(members);
+    } else if (isRejectDefault) {
+        members = ['REJECT', 'DIRECT', ...base];
+        return uniqueNames(members);
+    }
+
     return withDirectReject(base);
 }

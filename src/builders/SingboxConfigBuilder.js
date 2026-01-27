@@ -185,21 +185,22 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.config.outbounds.unshift(group);
     }
 
-    buildSelectorMembers(proxyList = []) {
+    buildSelectorMembers(proxyList = [], targetGroupName = '') {
         return buildSelectorMemberList({
             proxyList,
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            targetGroupName
         });
     }
 
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== this.t('outboundNames.Node Select')) {
-                const selectorMembers = this.buildSelectorMembers(proxyList);
                 const tag = this.t(`outboundNames.${outbound}`);
+                const selectorMembers = this.buildSelectorMembers(proxyList, tag);
                 if (this.hasOutboundTag(tag)) {
                     return;
                 }
@@ -215,7 +216,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const selectorMembers = this.buildSelectorMembers(proxyList);
+                const selectorMembers = this.buildSelectorMembers(proxyList, rule.name);
                 if (this.hasOutboundTag(rule.name)) return;
                 this.config.outbounds.push({
                     type: "selector",
