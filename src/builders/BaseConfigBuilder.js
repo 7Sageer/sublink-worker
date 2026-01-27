@@ -2,7 +2,7 @@ import { ProxyParser } from '../parsers/index.js';
 import { deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
-import { normalizeLegacyProxyToIR, convertIRToLegacyProxy } from '../ir/index.js';
+import { IR_VERSION, normalizeLegacyProxyToIR, convertIRToLegacyProxy } from '../ir/index.js';
 
 export class BaseConfigBuilder {
     constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
@@ -173,6 +173,8 @@ export class BaseConfigBuilder {
     normalizeCustomItems(items) {
         if (!Array.isArray(items) || items.length === 0) return items;
 
+        const wantsIR = this.usesIR === true || this.inputNodeFormat === 'ir';
+
         const normalized = [];
         for (const item of items) {
             if (!item || typeof item !== 'object') {
@@ -180,9 +182,14 @@ export class BaseConfigBuilder {
                 continue;
             }
 
-            const ir = normalizeLegacyProxyToIR(item);
+            const ir = item?.version === IR_VERSION ? item : normalizeLegacyProxyToIR(item);
             if (!ir) {
                 normalized.push(item);
+                continue;
+            }
+
+            if (wantsIR) {
+                normalized.push(ir);
                 continue;
             }
 
@@ -336,11 +343,12 @@ export class BaseConfigBuilder {
     addCustomItems(customItems) {
         const validItems = customItems.filter(item => item != null);
         validItems.forEach(item => {
-            if (item?.tag) {
-                const convertedProxy = this.convertProxy(item);
-                if (convertedProxy) {
-                    this.addProxyToConfig(convertedProxy);
-                }
+            const hasTag = !!item?.tag || (item?.version === IR_VERSION && Array.isArray(item.tags) && item.tags.length > 0);
+            if (!hasTag) return;
+
+            const convertedProxy = this.convertProxy(item);
+            if (convertedProxy) {
+                this.addProxyToConfig(convertedProxy);
             }
         });
     }

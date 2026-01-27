@@ -1,12 +1,14 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { generateRules } from '../config/index.js';
-import { downgradeByCaps, normalizeLegacyProxyToIR } from '../ir/index.js';
+import { IR_VERSION, downgradeByCaps, normalizeLegacyProxyToIR } from '../ir/index.js';
 import { mapIRToXray } from '../ir/maps/xray.js';
 
 const RESERVED_OUTBOUND_TAGS = new Set(['DIRECT', 'REJECT']);
 const RESERVED_OUTBOUND_PROTOCOLS = new Set(['freedom', 'blackhole']);
 
 export class XrayConfigBuilder extends BaseConfigBuilder {
+    usesIR = true;
+
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false) {
         const defaultBase = {
             log: { loglevel: 'warning' },
@@ -43,7 +45,7 @@ export class XrayConfigBuilder extends BaseConfigBuilder {
     addCountryGroups() { }
 
     convertProxy(proxy) {
-        const ir = normalizeLegacyProxyToIR(proxy);
+        const ir = proxy?.version === IR_VERSION ? proxy : normalizeLegacyProxyToIR(proxy);
         if (!ir) return null;
         const downgraded = downgradeByCaps(ir, 'xray');
         return mapIRToXray(downgraded);

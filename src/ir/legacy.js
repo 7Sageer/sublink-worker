@@ -31,8 +31,10 @@ export function convertIRToLegacyProxy(ir) {
         server_port: ir.port,
         ...(ir.udp !== undefined ? { udp: ir.udp } : {}),
         ...(ir.network ? { network: ir.network } : {}),
+        ...(ir.tcp_fast_open !== undefined ? { tcp_fast_open: ir.tcp_fast_open } : {}),
         ...(ir.transport ? { transport: ir.transport } : {}),
         ...(ir.tls ? { tls: normalizeTlsToLegacy(ir.tls) } : {}),
+        ...(Array.isArray(ir.tls?.alpn) ? { alpn: [...ir.tls.alpn] } : {}),
         ...(ir.ext ? { ext: { ...ir.ext } } : {})
     };
 
@@ -105,4 +107,3 @@ export function convertIRToLegacyProxy(ir) {
             return common;
     }
 }
-

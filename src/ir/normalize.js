@@ -1,6 +1,13 @@
 import { InvalidPayloadError } from '../services/errors.js';
 import { IR_VERSION, isPlainObject, normalizeKind, sanitizeTags } from './contract.js';
 
+function normalizeAlpn(value) {
+    if (value == null) return undefined;
+    const arr = Array.isArray(value) ? value : [value];
+    const out = arr.map(v => `${v}`.trim()).filter(Boolean);
+    return out.length > 0 ? out : undefined;
+}
+
 function normalizeTls(tls) {
     if (!isPlainObject(tls)) return undefined;
     const copy = { ...tls };
@@ -56,7 +63,14 @@ export function normalizeLegacyProxyToIR(proxy, opts = {}) {
             udp: proxy.udp,
             network: proxy.network,
             transport: proxy.transport,
-            tls: normalizeTls(proxy.tls),
+            tls: (() => {
+                const tls = normalizeTls(proxy.tls);
+                const alpn = normalizeAlpn(proxy.alpn);
+                if (!tls) return tls;
+                if (alpn && !Array.isArray(tls.alpn)) tls.alpn = alpn;
+                return tls;
+            })(),
+            ...(proxy.tcp_fast_open !== undefined ? { tcp_fast_open: proxy.tcp_fast_open } : {}),
             ext: proxy.ext ? { ...proxy.ext } : undefined
         };
 
@@ -163,4 +177,3 @@ export function normalizeLegacyProxyToIR(proxy, opts = {}) {
         return null;
     }
 }
-
