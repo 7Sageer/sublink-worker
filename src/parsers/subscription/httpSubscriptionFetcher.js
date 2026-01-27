@@ -7,22 +7,29 @@ import { parseSubscriptionContent } from './subscriptionContentParser.js';
  * @returns {string} - Decoded content
  */
 function decodeContent(text) {
-    let decodedText;
-    try {
-        decodedText = decodeBase64(text.trim());
-        if (decodedText.includes('%')) {
+    const raw = text ?? '';
+    const trimmed = typeof raw === 'string' ? raw.trim() : `${raw}`.trim();
+
+    // Only attempt Base64 decoding when content is plausibly Base64.
+    // Our `decodeBase64()` helper is permissive and does not reliably throw on invalid input,
+    // so we must gate it to avoid corrupting plain-text YAML/JSON subscriptions.
+    const isBase64Like =
+        /^[A-Za-z0-9+/=\r\n]+$/.test(trimmed) &&
+        trimmed.replace(/[\r\n]/g, '').length % 4 === 0;
+
+    let decodedText = trimmed;
+    if (isBase64Like) {
+        decodedText = decodeBase64(trimmed);
+    }
+
+    if (decodedText.includes('%')) {
+        try {
             decodedText = decodeURIComponent(decodedText);
-        }
-    } catch (e) {
-        decodedText = text;
-        if (decodedText.includes('%')) {
-            try {
-                decodedText = decodeURIComponent(decodedText);
-            } catch (urlError) {
-                console.warn('Failed to URL decode the text:', urlError);
-            }
+        } catch (urlError) {
+            console.warn('Failed to URL decode the text:', urlError);
         }
     }
+
     return decodedText;
 }
 

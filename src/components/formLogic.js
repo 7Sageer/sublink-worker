@@ -277,6 +277,7 @@ export const formLogicFn = (t) => {
 
                     this.generatedLinks = {
                         xray: origin + '/xray?' + queryString,
+                        xrayConfig: origin + '/xray-config?' + queryString,
                         singbox: origin + '/singbox?' + queryString,
                         clash: origin + '/clash?' + queryString,
                         surge: origin + '/surge?' + queryString
@@ -345,6 +346,7 @@ export const formLogicFn = (t) => {
                             // Map types to their corresponding path prefixes
                             const prefixMap = {
                                 xray: 'x',
+                                xrayConfig: 'g',
                                 singbox: 'b',
                                 clash: 'c',
                                 surge: 's'
@@ -394,13 +396,13 @@ export const formLogicFn = (t) => {
                 try {
                     const url = new URL(text);
                     // Check if it matches our short link pattern: /[bcxs]/[code]
-                    const pathMatch = url.pathname.match(/^\/([bcxs])\/([a-zA-Z0-9_-]+)$/);
+                    const pathMatch = url.pathname.match(/^\/([bcxsg])\/([a-zA-Z0-9_-]+)$/);
                     if (pathMatch) {
                         return true;
                     }
 
                     // Check if it's a full subscription URL with query params
-                    const fullMatch = url.pathname.match(/^\/(singbox|clash|xray|surge)$/);
+                    const fullMatch = url.pathname.match(/^\/(singbox|clash|xray|xray-config|surge)$/);
                     if (fullMatch && url.search) {
                         return true;
                     }
@@ -428,7 +430,7 @@ export const formLogicFn = (t) => {
                     }
 
                     // Check if it's a short link
-                    const shortMatch = urlToParse.pathname.match(/^\/([bcxs])\/([a-zA-Z0-9_-]+)$/);
+                    const shortMatch = urlToParse.pathname.match(/^\/([bcxsg])\/([a-zA-Z0-9_-]+)$/);
 
                     if (shortMatch) {
                         // It's a short link, resolve it first

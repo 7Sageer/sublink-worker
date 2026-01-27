@@ -3,8 +3,12 @@ import { groupProxiesByCountry } from '../utils.js';
 import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
+import { IR_VERSION, downgradeByCaps, normalizeLegacyProxyToIR } from '../ir/index.js';
+import { mapIRToSurgeProxyLine } from '../ir/maps/surge.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
+    usesIR = true;
+
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry) {
         const resolvedBaseConfig = baseConfig ?? SURGE_CONFIG;
         super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
@@ -47,91 +51,13 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
-        let surgeProxy;
-        switch (proxy.type) {
-            case 'shadowsocks':
-                surgeProxy = `${proxy.tag} = ss, ${proxy.server}, ${proxy.server_port}, encrypt-method=${proxy.method}, password=${proxy.password}`;
-                break;
-            case 'vmess':
-                surgeProxy = `${proxy.tag} = vmess, ${proxy.server}, ${proxy.server_port}, username=${proxy.uuid}`;
-                if (proxy.alter_id == 0) {
-                    surgeProxy += ', vmess-aead=true';
-                }
-                if (proxy.tls?.enabled) {
-                    surgeProxy += ', tls=true';
-                    if (proxy.tls.server_name) {
-                        surgeProxy += `, sni=${proxy.tls.server_name}`;
-                    }
-                    if (proxy.tls.insecure) {
-                        surgeProxy += ', skip-cert-verify=true';
-                    }
-                    if (proxy.tls.alpn) {
-                        surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                    }
-                }
-                if (proxy.transport?.type === 'ws') {
-                    surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
-                    if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
-                    }
-                } else if (proxy.transport?.type === 'grpc') {
-                    surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
-                }
-                break;
-            case 'trojan':
-                surgeProxy = `${proxy.tag} = trojan, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
-                if (proxy.tls?.server_name) {
-                    surgeProxy += `, sni=${proxy.tls.server_name}`;
-                }
-                if (proxy.tls?.insecure) {
-                    surgeProxy += ', skip-cert-verify=true';
-                }
-                if (proxy.tls?.alpn) {
-                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                }
-                if (proxy.transport?.type === 'ws') {
-                    surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
-                    if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
-                    }
-                } else if (proxy.transport?.type === 'grpc') {
-                    surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
-                }
-                break;
-            case 'hysteria2':
-                surgeProxy = `${proxy.tag} = hysteria2, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
-                if (proxy.tls?.server_name) {
-                    surgeProxy += `, sni=${proxy.tls.server_name}`;
-                }
-                if (proxy.tls?.insecure) {
-                    surgeProxy += ', skip-cert-verify=true';
-                }
-                if (proxy.tls?.alpn) {
-                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                }
-                break;
-            case 'tuic':
-                surgeProxy = `${proxy.tag} = tuic, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}, uuid=${proxy.uuid}`;
-                if (proxy.tls?.server_name) {
-                    surgeProxy += `, sni=${proxy.tls.server_name}`;
-                }
-                if (proxy.tls?.alpn) {
-                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                }
-                if (proxy.tls?.insecure) {
-                    surgeProxy += ', skip-cert-verify=true';
-                }
-                if (proxy.congestion_control) {
-                    surgeProxy += `, congestion-controller=${proxy.congestion_control}`;
-                }
-                if (proxy.udp_relay_mode) {
-                    surgeProxy += `, udp-relay-mode=${proxy.udp_relay_mode}`;
-                }
-                break;
-            default:
-                surgeProxy = `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
+        const ir = proxy?.version === IR_VERSION ? proxy : normalizeLegacyProxyToIR(proxy);
+        if (!ir) {
+            const tag = proxy?.tag || proxy?.name || 'Unknown';
+            return `# ${tag} - Invalid node`;
         }
-        return surgeProxy;
+        const downgraded = downgradeByCaps(ir, 'surge');
+        return mapIRToSurgeProxyLine(downgraded);
     }
 
     addProxyToConfig(proxy) {

@@ -5,8 +5,12 @@ import { deepCopy, groupProxiesByCountry } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
+import { IR_VERSION, downgradeByCaps, normalizeLegacyProxyToIR } from '../ir/index.js';
+import { mapIRToSingboxOutbound } from '../ir/maps/singbox.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
+    usesIR = true;
+
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12') {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
         super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
@@ -90,32 +94,10 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
-        // Create a shallow copy to avoid mutating the original
-        const sanitized = { ...proxy };
-
-        // Remove Clash-specific fields that are not valid in sing-box outbound configuration
-        // In sing-box, UDP is controlled by 'network' field (defaults to both tcp and udp)
-        // The 'udp: true/false' field is a Clash/Clash Meta specific setting
-        delete sanitized.udp;
-
-        // Remove 'alpn' from root level - it should only exist inside 'tls' object for sing-box
-        // For protocols like vless/vmess, alpn belongs inside the tls configuration
-        if (sanitized.alpn && sanitized.tls) {
-            // Move alpn into tls if tls exists and doesn't have alpn
-            if (!sanitized.tls.alpn) {
-                sanitized.tls = { ...sanitized.tls, alpn: sanitized.alpn };
-            }
-            delete sanitized.alpn;
-        } else if (sanitized.alpn && !sanitized.tls) {
-            // No TLS, remove alpn entirely
-            delete sanitized.alpn;
-        }
-
-        // Remove packet_encoding for now - it's version-specific in sing-box
-        // xudp is default in newer versions
-        delete sanitized.packet_encoding;
-
-        return sanitized;
+        const ir = proxy?.version === IR_VERSION ? proxy : normalizeLegacyProxyToIR(proxy);
+        if (!ir) return null;
+        const downgraded = downgradeByCaps(ir, 'singbox');
+        return mapIRToSingboxOutbound(downgraded);
     }
 
     addProxyToConfig(proxy) {

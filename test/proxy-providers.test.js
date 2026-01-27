@@ -1,17 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import yaml from 'js-yaml';
-
-// Mock the httpSubscriptionFetcher module
-vi.mock('../src/parsers/subscription/httpSubscriptionFetcher.js', async (importOriginal) => {
-    const original = await importOriginal();
-    return {
-        ...original,
-        fetchSubscriptionWithFormat: vi.fn()
-    };
-});
-
-// Import after mocking
-import { fetchSubscriptionWithFormat } from '../src/parsers/subscription/httpSubscriptionFetcher.js';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 import { CLASH_CONFIG, SING_BOX_CONFIG } from '../src/config/index.js';
@@ -42,18 +30,18 @@ const mockSingboxJson = JSON.stringify({
 });
 
 describe('Auto Proxy Providers Detection', () => {
+    beforeEach(() => {
+        vi.stubGlobal('fetch', vi.fn());
+    });
+
     afterEach(() => {
         vi.clearAllMocks();
+        vi.unstubAllGlobals();
     });
 
     describe('Clash Builder', () => {
         it('should use Clash URL as proxy-provider when format is Clash YAML', async () => {
-            // Mock fetchSubscriptionWithFormat to return Clash format
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockClashYaml,
-                format: 'clash',
-                url: 'https://example.com/clash-sub?token=xxx'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockClashYaml, { status: 200 }));
 
             const builder = new ClashConfigBuilder(
                 'https://example.com/clash-sub?token=xxx',
@@ -79,12 +67,7 @@ describe('Auto Proxy Providers Detection', () => {
         });
 
         it('should parse and convert Sing-Box URL (incompatible format)', async () => {
-            // Mock fetchSubscriptionWithFormat to return Sing-Box format
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockSingboxJson,
-                format: 'singbox',
-                url: 'https://example.com/singbox-sub'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockSingboxJson, { status: 200 }));
 
             const builder = new ClashConfigBuilder(
                 'https://example.com/singbox-sub',
@@ -109,12 +92,7 @@ describe('Auto Proxy Providers Detection', () => {
 
     describe('Sing-Box Builder', () => {
         it('should use Sing-Box URL as outbound_provider when format is Sing-Box JSON', async () => {
-            // Mock fetchSubscriptionWithFormat to return Sing-Box format
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockSingboxJson,
-                format: 'singbox',
-                url: 'https://example.com/singbox-sub?token=xxx'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockSingboxJson, { status: 200 }));
 
             const builder = new SingboxConfigBuilder(
                 'https://example.com/singbox-sub?token=xxx',
@@ -139,12 +117,7 @@ describe('Auto Proxy Providers Detection', () => {
         });
 
         it('should parse and convert Clash URL (incompatible format)', async () => {
-            // Mock fetchSubscriptionWithFormat to return Clash format
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockClashYaml,
-                format: 'clash',
-                url: 'https://example.com/clash-sub'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockClashYaml, { status: 200 }));
 
             const builder = new SingboxConfigBuilder(
                 'https://example.com/clash-sub',
@@ -166,12 +139,7 @@ describe('Auto Proxy Providers Detection', () => {
         });
 
         it('should NOT use outbound_providers for Sing-Box 1.11 (not supported)', async () => {
-            // Mock fetchSubscriptionWithFormat to return Sing-Box format
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockSingboxJson,
-                format: 'singbox',
-                url: 'https://example.com/singbox-sub'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockSingboxJson, { status: 200 }));
 
             // Use version 1.11 - providers NOT supported
             const builder = new SingboxConfigBuilder(
@@ -201,15 +169,7 @@ describe('Auto Proxy Providers Detection', () => {
 
     describe('Multiple URLs', () => {
         it('should handle multiple Clash URLs as multiple providers', async () => {
-            let callCount = 0;
-            fetchSubscriptionWithFormat.mockImplementation((url) => {
-                callCount++;
-                return Promise.resolve({
-                    content: mockClashYaml,
-                    format: 'clash',
-                    url: url
-                });
-            });
+            globalThis.fetch.mockImplementation(() => Promise.resolve(new Response(mockClashYaml, { status: 200 })));
 
             const builder = new ClashConfigBuilder(
                 'https://example.com/sub1\nhttps://example.com/sub2',
@@ -232,11 +192,7 @@ describe('Auto Proxy Providers Detection', () => {
 
     describe('Config Merge Behaviors', () => {
         it('should not override user-defined Clash providers when auto providers exist', async () => {
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockClashYaml,
-                format: 'clash',
-                url: 'https://auto.example.com/clash-sub'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockClashYaml, { status: 200 }));
 
             const baseConfig = JSON.parse(JSON.stringify(CLASH_CONFIG));
             baseConfig['proxy-providers'] = {
@@ -269,11 +225,7 @@ describe('Auto Proxy Providers Detection', () => {
         });
 
         it('should merge user-defined Sing-Box outbound_providers with auto providers', async () => {
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockSingboxJson,
-                format: 'singbox',
-                url: 'https://auto.example.com/singbox-sub'
-            });
+            globalThis.fetch.mockResolvedValue(new Response(mockSingboxJson, { status: 200 }));
 
             const baseConfig = JSON.parse(JSON.stringify(SING_BOX_CONFIG));
             baseConfig.outbound_providers = [
