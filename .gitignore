@@ -176,3 +176,6 @@ dist
 .vercel
 
 CLAUDE.local.md
+.kilocode/
+AGENTS.md
+openspec/

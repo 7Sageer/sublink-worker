@@ -8,6 +8,7 @@ import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 const LINK_FIELDS = [
   { key: 'xray', labelKey: 'xrayLink' },
+  { key: 'xrayConfig', labelKey: 'xrayConfigLink' },
   { key: 'singbox', labelKey: 'singboxLink' },
   { key: 'clash', labelKey: 'clashLink' },
   { key: 'surge', labelKey: 'surgeLink' }
