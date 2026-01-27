@@ -1,5 +1,7 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { generateRules } from '../config/index.js';
+import { downgradeByCaps, normalizeLegacyProxyToIR } from '../ir/index.js';
+import { mapIRToXray } from '../ir/maps/xray.js';
 
 const RESERVED_OUTBOUND_TAGS = new Set(['DIRECT', 'REJECT']);
 const RESERVED_OUTBOUND_PROTOCOLS = new Set(['freedom', 'blackhole']);
@@ -41,109 +43,10 @@ export class XrayConfigBuilder extends BaseConfigBuilder {
     addCountryGroups() { }
 
     convertProxy(proxy) {
-        const tag = proxy?.tag;
-        const server = proxy?.server;
-        const port = proxy?.server_port;
-        if (!tag || !server || !port) return null;
-
-        switch (proxy.type) {
-            case 'vless':
-                return this.convertVless(proxy);
-            case 'vmess':
-                return this.convertVmess(proxy);
-            case 'trojan':
-                return this.convertTrojan(proxy);
-            case 'shadowsocks':
-                return this.convertShadowsocks(proxy);
-            default:
-                // Skip unsupported proxy types for Xray output (e.g. hysteria2/tuic/anytls/http)
-                return null;
-        }
-    }
-
-    convertVless(proxy) {
-        if (!proxy.uuid) return null;
-        return {
-            tag: proxy.tag,
-            protocol: 'vless',
-            settings: {
-                vnext: [
-                    {
-                        address: proxy.server,
-                        port: proxy.server_port,
-                        users: [
-                            {
-                                id: proxy.uuid,
-                                encryption: 'none',
-                                ...(proxy.flow ? { flow: proxy.flow } : {})
-                            }
-                        ]
-                    }
-                ]
-            },
-            streamSettings: buildStreamSettings(proxy)
-        };
-    }
-
-    convertVmess(proxy) {
-        if (!proxy.uuid) return null;
-        return {
-            tag: proxy.tag,
-            protocol: 'vmess',
-            settings: {
-                vnext: [
-                    {
-                        address: proxy.server,
-                        port: proxy.server_port,
-                        users: [
-                            {
-                                id: proxy.uuid,
-                                alterId: proxy.alter_id ?? 0,
-                                security: proxy.security ?? 'auto'
-                            }
-                        ]
-                    }
-                ]
-            },
-            streamSettings: buildStreamSettings(proxy)
-        };
-    }
-
-    convertTrojan(proxy) {
-        if (!proxy.password) return null;
-        return {
-            tag: proxy.tag,
-            protocol: 'trojan',
-            settings: {
-                servers: [
-                    {
-                        address: proxy.server,
-                        port: proxy.server_port,
-                        password: proxy.password,
-                        ...(proxy.flow ? { flow: proxy.flow } : {})
-                    }
-                ]
-            },
-            streamSettings: buildStreamSettings(proxy)
-        };
-    }
-
-    convertShadowsocks(proxy) {
-        if (!proxy.password || !proxy.method) return null;
-        return {
-            tag: proxy.tag,
-            protocol: 'shadowsocks',
-            settings: {
-                servers: [
-                    {
-                        address: proxy.server,
-                        port: proxy.server_port,
-                        method: proxy.method,
-                        password: proxy.password
-                    }
-                ]
-            }
-        };
+        const ir = normalizeLegacyProxyToIR(proxy);
+        if (!ir) return null;
+        const downgraded = downgradeByCaps(ir, 'xray');
+        return mapIRToXray(downgraded);
     }
 
     addProxyToConfig(outbound) {
@@ -209,56 +112,3 @@ export class XrayConfigBuilder extends BaseConfigBuilder {
         return cfg;
     }
 }
-
-function buildStreamSettings(proxy) {
-    const transport = proxy.transport;
-    const tls = proxy.tls;
-
-    const network = transport?.type || proxy.network || 'tcp';
-    const streamSettings = { network };
-
-    if (tls?.enabled) {
-        if (tls.reality?.enabled || tls.reality) {
-            streamSettings.security = 'reality';
-            streamSettings.realitySettings = {
-                publicKey: tls.reality.public_key ?? tls.reality.publicKey,
-                shortId: tls.reality.short_id ?? tls.reality.shortId,
-                serverName: tls.server_name || tls.sni,
-                ...(tls.utls?.fingerprint ? { fingerprint: tls.utls.fingerprint } : {}),
-            };
-        } else {
-            streamSettings.security = 'tls';
-            streamSettings.tlsSettings = {
-                serverName: tls.server_name || tls.sni,
-                allowInsecure: !!tls.insecure,
-                ...(Array.isArray(tls.alpn) ? { alpn: tls.alpn } : {}),
-                ...(tls.utls?.fingerprint ? { fingerprint: tls.utls.fingerprint } : {}),
-            };
-        }
-    }
-
-    if (network === 'ws') {
-        streamSettings.wsSettings = {
-            path: transport?.path,
-            headers: transport?.headers
-        };
-    } else if (network === 'grpc') {
-        streamSettings.grpcSettings = {
-            serviceName: transport?.service_name
-        };
-    } else if (network === 'http') {
-        streamSettings.httpSettings = {
-            host: transport?.headers?.host ? [transport.headers.host] : undefined,
-            path: Array.isArray(transport?.path) ? transport.path : (transport?.path ? [transport.path] : undefined),
-            method: transport?.method
-        };
-    } else if (network === 'h2') {
-        streamSettings.httpSettings = {
-            host: Array.isArray(transport?.host) ? transport.host : (transport?.host ? [transport.host] : undefined),
-            path: transport?.path ? [transport.path] : undefined
-        };
-    }
-
-    return streamSettings;
-}
-
