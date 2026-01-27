@@ -2,6 +2,7 @@ import { ProxyParser } from '../parsers/index.js';
 import { deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
+import { normalizeLegacyProxyToIR, convertIRToLegacyProxy } from '../ir/index.js';
 
 export class BaseConfigBuilder {
     constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
@@ -166,7 +167,30 @@ export class BaseConfigBuilder {
             }
         }
 
-        return parsedItems;
+        return this.normalizeCustomItems(parsedItems);
+    }
+
+    normalizeCustomItems(items) {
+        if (!Array.isArray(items) || items.length === 0) return items;
+
+        const normalized = [];
+        for (const item of items) {
+            if (!item || typeof item !== 'object') {
+                normalized.push(item);
+                continue;
+            }
+
+            const ir = normalizeLegacyProxyToIR(item);
+            if (!ir) {
+                normalized.push(item);
+                continue;
+            }
+
+            const legacy = convertIRToLegacyProxy(ir);
+            normalized.push(legacy || item);
+        }
+
+        return normalized;
     }
 
     /**
