@@ -7,9 +7,9 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12') {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
 
         this.selectedRules = selectedRules;
         this.customRules = customRules;
@@ -139,6 +139,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     addAutoSelectGroup(proxyList) {
+        if (!this.includeAutoSelect) return;
         this.config.outbounds = this.config.outbounds || [];
         const tag = this.t('outboundNames.Auto Select');
         if (this.hasOutboundTag(tag)) return;
@@ -167,7 +168,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            includeAutoSelect: this.includeAutoSelect
         });
 
         const group = {
@@ -191,7 +193,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            includeAutoSelect: this.includeAutoSelect
         });
     }
 
@@ -287,7 +290,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 translator: this.t,
                 groupByCountry: true,
                 manualGroupName,
-                countryGroupNames
+                countryGroupNames,
+                includeAutoSelect: this.includeAutoSelect
             });
             nodeSelectGroup.outbounds = rebuilt;
         }

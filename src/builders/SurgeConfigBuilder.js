@@ -5,9 +5,9 @@ import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true) {
         const resolvedBaseConfig = baseConfig ?? SURGE_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;
@@ -235,7 +235,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             translator: this.t,
             groupByCountry: false,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            includeAutoSelect: this.includeAutoSelect
         });
     }
 
@@ -245,11 +246,13 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            includeAutoSelect: this.includeAutoSelect
         });
     }
 
     addAutoSelectGroup(proxyList) {
+        if (!this.includeAutoSelect) return;
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const name = this.t('outboundNames.Auto Select');
         if (this.hasProxyGroup(name)) return;
@@ -350,7 +353,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 translator: this.t,
                 groupByCountry: true,
                 manualGroupName,
-                countryGroupNames
+                countryGroupNames,
+                includeAutoSelect: this.includeAutoSelect
             });
             const newGroup = this.createProxyGroup(this.t('outboundNames.Node Select'), 'select', newOptions);
             this.config['proxy-groups'][nodeSelectGroupIndex] = newGroup;

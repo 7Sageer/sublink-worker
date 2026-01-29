@@ -174,6 +174,14 @@ export const Form = (props) => {
               </label>
 
               <label class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
+                <span class="font-medium text-gray-700 dark:text-gray-300">{t('includeAutoSelect')}</span>
+                <div class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" x-model="includeAutoSelect" class="sr-only peer" />
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                </div>
+              </label>
+
+              <label class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
                 <span class="font-medium text-gray-700 dark:text-gray-300">{t('enableClashUI')}</span>
                 <div class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" x-model="enableClashUI" class="sr-only peer" />

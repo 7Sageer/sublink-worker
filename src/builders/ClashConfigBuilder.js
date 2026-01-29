@@ -8,11 +8,11 @@ import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigU
 import { normalizeGroupName, findGroupIndexByName } from './helpers/groupNameUtils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, includeAutoSelect = true) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
-        super(inputString, baseConfig, lang, userAgent, groupByCountry);
+        super(inputString, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.countryGroupNames = [];
@@ -279,6 +279,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     addAutoSelectGroup(proxyList) {
+        if (!this.includeAutoSelect) return;
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const autoName = this.t('outboundNames.Auto Select');
         if (this.hasProxyGroup(autoName)) return;
@@ -310,7 +311,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            includeAutoSelect: this.includeAutoSelect
         });
 
         const group = {
@@ -334,7 +336,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             translator: this.t,
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
-            countryGroupNames: this.countryGroupNames
+            countryGroupNames: this.countryGroupNames,
+            includeAutoSelect: this.includeAutoSelect
         });
     }
 
@@ -431,7 +434,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 translator: this.t,
                 groupByCountry: true,
                 manualGroupName,
-                countryGroupNames
+                countryGroupNames,
+                includeAutoSelect: this.includeAutoSelect
             });
             nodeSelectGroup.proxies = rebuilt;
         }

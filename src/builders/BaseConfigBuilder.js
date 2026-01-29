@@ -4,7 +4,7 @@ import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true) {
         this.inputString = inputString;
         this.config = deepCopy(baseConfig);
         this.customRules = [];
@@ -13,6 +13,7 @@ export class BaseConfigBuilder {
         this.userAgent = userAgent;
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
+        this.includeAutoSelect = includeAutoSelect;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
     }
 

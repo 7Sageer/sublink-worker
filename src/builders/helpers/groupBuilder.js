@@ -21,32 +21,32 @@ export function withDirectReject(options = []) {
     ]);
 }
 
-export function buildNodeSelectMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [] }) {
+export function buildNodeSelectMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], includeAutoSelect = true }) {
     if (!translator) {
         throw new Error('buildNodeSelectMembers requires a translator function');
     }
     const autoName = translator('outboundNames.Auto Select');
     const base = groupByCountry
         ? [
-            autoName,
+            ...(includeAutoSelect ? [autoName] : []),
             ...(manualGroupName ? [manualGroupName] : []),
             ...countryGroupNames
         ]
         : [
-            autoName,
+            ...(includeAutoSelect ? [autoName] : []),
             ...proxyList
         ];
     return withDirectReject(base);
 }
 
-export function buildSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [] }) {
+export function buildSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], includeAutoSelect = true }) {
     if (!translator) {
         throw new Error('buildSelectorMembers requires a translator function');
     }
     const base = groupByCountry
         ? [
             translator('outboundNames.Node Select'),
-            translator('outboundNames.Auto Select'),
+            ...(includeAutoSelect ? [translator('outboundNames.Auto Select')] : []),
             ...(manualGroupName ? [manualGroupName] : []),
             ...countryGroupNames
         ]
