@@ -133,7 +133,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 }
 
 // Generate rule sets for Clash using .mrs format
-export function generateClashRuleSets(selectedRules = [], customRules = []) {
+export function generateClashRuleSets(selectedRules = [], customRules = [], useMrs = true) {
 	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
 		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
 	}
@@ -141,6 +141,10 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 	if (!selectedRules || selectedRules.length === 0) {
 		selectedRules = PREDEFINED_RULE_SETS.minimal;
 	}
+
+	// Determine format based on client compatibility
+	const format = useMrs ? 'mrs' : 'yaml';
+	const ext = useMrs ? '.mrs' : '.yaml';
 
 	const selectedRulesSet = new Set(selectedRules);
 
@@ -160,10 +164,10 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 	Array.from(siteRuleSets).forEach(rule => {
 		site_rule_providers[rule] = {
 			type: 'http',
-			format: 'mrs',
+			format: format,
 			behavior: 'domain',
-			url: `${CLASH_SITE_RULE_SET_BASE_URL}${CLASH_SITE_RULE_SETS[rule]}`,
-			path: `./ruleset/${CLASH_SITE_RULE_SETS[rule]}`,
+			url: `${CLASH_SITE_RULE_SET_BASE_URL}${rule}${ext}`,
+			path: `./ruleset/${rule}${ext}`,
 			interval: 86400
 		};
 	});
@@ -171,10 +175,10 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 	Array.from(ipRuleSets).forEach(rule => {
 		ip_rule_providers[rule] = {
 			type: 'http',
-			format: 'mrs',
+			format: format,
 			behavior: 'ipcidr',
-			url: `${CLASH_IP_RULE_SET_BASE_URL}${CLASH_IP_RULE_SETS[rule]}`,
-			path: `./ruleset/${CLASH_IP_RULE_SETS[rule]}`,
+			url: `${CLASH_IP_RULE_SET_BASE_URL}${rule}${ext}`,
+			path: `./ruleset/${rule}${ext}`,
 			interval: 86400
 		};
 	});
@@ -183,10 +187,10 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 	if (!selectedRules.includes('Non-China')) {
 		site_rule_providers['geolocation-!cn'] = {
 			type: 'http',
-			format: 'mrs',
+			format: format,
 			behavior: 'domain',
-			url: `${CLASH_SITE_RULE_SET_BASE_URL}geolocation-!cn.mrs`,
-			path: './ruleset/geolocation-!cn.mrs',
+			url: `${CLASH_SITE_RULE_SET_BASE_URL}geolocation-!cn${ext}`,
+			path: `./ruleset/geolocation-!cn${ext}`,
 			interval: 86400
 		};
 	}
@@ -199,10 +203,10 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 					const site_trimmed = site.trim();
 					site_rule_providers[site_trimmed] = {
 						type: 'http',
-						format: 'mrs',
+						format: format,
 						behavior: 'domain',
-						url: `${CLASH_SITE_RULE_SET_BASE_URL}${site_trimmed}.mrs`,
-						path: `./ruleset/${site_trimmed}.mrs`,
+						url: `${CLASH_SITE_RULE_SET_BASE_URL}${site_trimmed}${ext}`,
+						path: `./ruleset/${site_trimmed}${ext}`,
 						interval: 86400
 					};
 				});
@@ -212,10 +216,10 @@ export function generateClashRuleSets(selectedRules = [], customRules = []) {
 					const ip_trimmed = ip.trim();
 					ip_rule_providers[ip_trimmed] = {
 						type: 'http',
-						format: 'mrs',
+						format: format,
 						behavior: 'ipcidr',
-						url: `${CLASH_IP_RULE_SET_BASE_URL}${ip_trimmed}.mrs`,
-						path: `./ruleset/${ip_trimmed}.mrs`,
+						url: `${CLASH_IP_RULE_SET_BASE_URL}${ip_trimmed}${ext}`,
+						path: `./ruleset/${ip_trimmed}${ext}`,
 						interval: 86400
 					};
 				});
