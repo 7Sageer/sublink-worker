@@ -16,7 +16,7 @@ import { ShortLinkService } from '../services/shortLinkService.js';
 import { ConfigStorageService } from '../services/configStorageService.js';
 import { ServiceError, MissingDependencyError } from '../services/errors.js';
 import { normalizeRuntime } from '../runtime/runtimeConfig.js';
-import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from '../config/index.js';
+import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11, generateSubconverterConfig } from '../config/index.js';
 
 const DEFAULT_USER_AGENT = 'curl/7.74.0';
 
@@ -202,6 +202,31 @@ export function createApp(bindings = {}) {
 
             c.header('subscription-userinfo', 'upload=0; download=0; total=10737418240; expire=2546249531');
             return c.text(builder.formatConfig());
+        } catch (error) {
+            return handleError(c, error, runtime.logger);
+        }
+    });
+
+    app.get('/subconverter', (c) => {
+        try {
+            const rawSelectedRules = c.req.query('selectedRules');
+            const selectedRules = rawSelectedRules
+                ? parseSelectedRules(rawSelectedRules)
+                : PREDEFINED_RULE_SETS.balanced;
+            const customRules = parseJsonArray(c.req.query('customRules'));
+            const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const lang = c.get('lang');
+
+            const config = generateSubconverterConfig({
+                selectedRules,
+                customRules,
+                lang,
+                includeAutoSelect
+            });
+
+            return c.text(config, 200, {
+                'Content-Type': 'text/plain; charset=utf-8'
+            });
         } catch (error) {
             return handleError(c, error, runtime.logger);
         }
