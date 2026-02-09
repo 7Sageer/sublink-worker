@@ -133,7 +133,7 @@ export const formLogicFn = (t) => {
                 // Use preset name directly if a predefined rule set is selected
                 if (this.selectedPredefinedRule && this.selectedPredefinedRule !== 'custom') {
                     params.append('selectedRules', this.selectedPredefinedRule);
-                } else if (this.selectedRules.length > 0) {
+                } else if (this.selectedPredefinedRule === 'custom') {
                     params.append('selectedRules', JSON.stringify(this.selectedRules));
                 }
 
