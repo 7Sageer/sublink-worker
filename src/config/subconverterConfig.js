@@ -5,46 +5,13 @@
 
 import { createTranslator } from '../i18n/index.js';
 import { generateRules } from './ruleGenerators.js';
+import { COUNTRY_DATA } from '../utils.js';
 
 // Rule names that should default to REJECT
 const REJECT_RULES = new Set(['Ad Block']);
 
 // Rule names that should default to DIRECT
 const DIRECT_RULES = new Set(['Private', 'Location:CN']);
-
-// Country data for regex-based grouping (mirrors parseCountryFromNodeName in utils.js)
-const COUNTRY_DATA = [
-	{ emoji: '🇭🇰', name: 'Hong Kong', aliases: ['香港', 'Hong Kong', 'HK'] },
-	{ emoji: '🇹🇼', name: 'Taiwan', aliases: ['台湾', 'Taiwan', 'TW'] },
-	{ emoji: '🇯🇵', name: 'Japan', aliases: ['日本', 'Japan', 'JP'] },
-	{ emoji: '🇰🇷', name: 'Korea', aliases: ['韩国', 'Korea', 'KR'] },
-	{ emoji: '🇸🇬', name: 'Singapore', aliases: ['新加坡', 'Singapore', 'SG'] },
-	{ emoji: '🇺🇸', name: 'United States', aliases: ['美国', 'United States', 'US'] },
-	{ emoji: '🇬🇧', name: 'United Kingdom', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
-	{ emoji: '🇩🇪', name: 'Germany', aliases: ['德国', 'Germany'] },
-	{ emoji: '🇫🇷', name: 'France', aliases: ['法国', 'France'] },
-	{ emoji: '🇷🇺', name: 'Russia', aliases: ['俄罗斯', 'Russia'] },
-	{ emoji: '🇨🇦', name: 'Canada', aliases: ['加拿大', 'Canada'] },
-	{ emoji: '🇦🇺', name: 'Australia', aliases: ['澳大利亚', 'Australia'] },
-	{ emoji: '🇮🇳', name: 'India', aliases: ['印度', 'India'] },
-	{ emoji: '🇧🇷', name: 'Brazil', aliases: ['巴西', 'Brazil'] },
-	{ emoji: '🇿🇦', name: 'South Africa', aliases: ['南非', 'South Africa'] },
-	{ emoji: '🇦🇷', name: 'Argentina', aliases: ['阿根廷', 'Argentina'] },
-	{ emoji: '🇹🇷', name: 'Turkey', aliases: ['土耳其', 'Turkey'] },
-	{ emoji: '🇳🇱', name: 'Netherlands', aliases: ['荷兰', 'Netherlands'] },
-	{ emoji: '🇨🇭', name: 'Switzerland', aliases: ['瑞士', 'Switzerland'] },
-	{ emoji: '🇸🇪', name: 'Sweden', aliases: ['瑞典', 'Sweden'] },
-	{ emoji: '🇮🇹', name: 'Italy', aliases: ['意大利', 'Italy'] },
-	{ emoji: '🇪🇸', name: 'Spain', aliases: ['西班牙', 'Spain'] },
-	{ emoji: '🇮🇪', name: 'Ireland', aliases: ['爱尔兰', 'Ireland'] },
-	{ emoji: '🇲🇾', name: 'Malaysia', aliases: ['马来西亚', 'Malaysia'] },
-	{ emoji: '🇹🇭', name: 'Thailand', aliases: ['泰国', 'Thailand'] },
-	{ emoji: '🇻🇳', name: 'Vietnam', aliases: ['越南', 'Vietnam'] },
-	{ emoji: '🇵🇭', name: 'Philippines', aliases: ['菲律宾', 'Philippines'] },
-	{ emoji: '🇮🇩', name: 'Indonesia', aliases: ['印度尼西亚', 'Indonesia'] },
-	{ emoji: '🇳🇿', name: 'New Zealand', aliases: ['新西兰', 'New Zealand'] },
-	{ emoji: '🇦🇪', name: 'United Arab Emirates', aliases: ['阿联酋', 'United Arab Emirates'] },
-];
 
 const SPEED_TEST_URL = 'http://www.gstatic.com/generate_204';
 
@@ -134,7 +101,7 @@ export function generateSubconverterConfig({ selectedRules = [], lang = 'zh-CN',
 	const countryGroupLines = [];
 
 	if (groupByCountry) {
-		COUNTRY_DATA.forEach(country => {
+		Object.values(COUNTRY_DATA).forEach(country => {
 			const groupName = `${country.emoji} ${country.name}`;
 			countryGroupNames.push(groupName);
 			const regex = country.aliases.map(a => escapeRegex(a)).join('|');
