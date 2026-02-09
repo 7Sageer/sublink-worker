@@ -32,6 +32,9 @@ export {
 	generateClashRuleSets
 } from './ruleGenerators.js';
 
+// Subconverter Config
+export { generateSubconverterConfig } from './subconverterConfig.js';
+
 // Platform Configs
 export { SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from './singboxConfig.js';
 export { CLASH_CONFIG } from './clashConfig.js';

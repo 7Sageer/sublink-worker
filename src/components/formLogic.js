@@ -15,6 +15,7 @@ export const formLogicFn = (t) => {
             },
             selectedRules: [],
             selectedPredefinedRule: 'balanced',
+            subconverterCopied: false,
             groupByCountry: false,
             includeAutoSelect: true,
             enableClashUI: false,
@@ -123,6 +124,43 @@ export const formLogicFn = (t) => {
                 if (rules && rules[this.selectedPredefinedRule]) {
                     this.selectedRules = rules[this.selectedPredefinedRule];
                 }
+            },
+
+            getSubconverterUrl() {
+                const origin = window.location.origin;
+                const params = new URLSearchParams();
+
+                // Use preset name directly if a predefined rule set is selected
+                if (this.selectedPredefinedRule && this.selectedPredefinedRule !== 'custom') {
+                    params.append('selectedRules', this.selectedPredefinedRule);
+                } else if (this.selectedRules.length > 0) {
+                    params.append('selectedRules', JSON.stringify(this.selectedRules));
+                }
+
+                if (!this.includeAutoSelect) {
+                    params.append('include_auto_select', 'false');
+                }
+
+                if (this.groupByCountry) {
+                    params.append('group_by_country', 'true');
+                }
+
+                // Include lang parameter so subconverter gets correct group names
+                const appLang = window.APP_LANG || 'zh-CN';
+                if (appLang !== 'zh-CN') {
+                    params.append('lang', appLang);
+                }
+
+                const queryString = params.toString();
+                return origin + '/subconverter' + (queryString ? '?' + queryString : '');
+            },
+
+            copySubconverterUrl() {
+                const url = this.getSubconverterUrl();
+                navigator.clipboard.writeText(url).then(() => {
+                    this.subconverterCopied = true;
+                    setTimeout(() => this.subconverterCopied = false, 2000);
+                }).catch(() => {});
             },
 
             resetConfigValidation() {

@@ -1,10 +1,10 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
+import { PREDEFINED_RULE_SETS, UNIFIED_RULES } from '../config/index.js';
 import { CustomRules } from './CustomRules.jsx';
 import { TextareaWithActions } from './TextareaWithActions.jsx';
 import { ValidatedTextarea } from './ValidatedTextarea.jsx';
 import { formLogicFn } from './formLogic.js';
-import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 const LINK_FIELDS = [
   { key: 'xray', labelKey: 'xrayLink' },
@@ -14,7 +14,7 @@ const LINK_FIELDS = [
 ];
 
 export const Form = (props) => {
-  const { t } = props;
+  const { t, lang } = props;
 
   const translations = {
     processing: t('processing'),
@@ -40,6 +40,7 @@ export const Form = (props) => {
   const scriptContent = `
     window.APP_TRANSLATIONS = ${JSON.stringify(translations)};
     window.PREDEFINED_RULE_SETS = ${JSON.stringify(PREDEFINED_RULE_SETS)};
+    window.APP_LANG = ${JSON.stringify(lang || 'zh-CN')};
     (${formLogicFn.toString()})();
   `;
 
@@ -152,6 +153,7 @@ export const Form = (props) => {
       </label>
     ))}
   </div>
+
           </div>
 
   {/* Custom Rules Component */ }
@@ -212,6 +214,29 @@ export const Form = (props) => {
               </div>
           </div>
           </div>
+
+  {/* Subconverter External Config */}
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+      <i class="fas fa-file-export text-gray-400"></i>
+      {t('subconverterConfigTitle')}
+    </h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('subconverterConfigDesc')}</p>
+    <div class="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+      <p class="font-mono text-sm text-gray-600 dark:text-gray-400 break-all" x-text="getSubconverterUrl()"></p>
+    </div>
+    <div class="mt-3 flex justify-end">
+      <button
+        type="button"
+        x-on:click="copySubconverterUrl()"
+        class="px-4 py-2 rounded-lg transition-colors font-medium text-sm flex items-center gap-2"
+        x-bind:class="subconverterCopied ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+      >
+        <i class="fas" x-bind:class="subconverterCopied ? 'fa-check' : 'fa-copy'"></i>
+        <span x-text={`subconverterCopied ? '${t('copiedSubconverterUrl')}' : '${t('copySubconverterUrl')}'`}></span>
+      </button>
+    </div>
+  </div>
 
   {/* Base Config */ }
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
