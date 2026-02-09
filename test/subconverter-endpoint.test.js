@@ -186,10 +186,10 @@ describe('GET /subconverter', () => {
             const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
             const text = await res.text();
 
-            // Should contain country url-test groups with regex
-            expect(text).toMatch(/custom_proxy_group=🇭🇰 Hong Kong`url-test`\(香港\|Hong Kong\|HK\)/);
-            expect(text).toMatch(/custom_proxy_group=🇯🇵 Japan`url-test`\(日本\|Japan\|JP\)/);
-            expect(text).toMatch(/custom_proxy_group=🇺🇸 United States`url-test`\(美国\|United States\|US\)/);
+            // Should contain country url-test groups with (?i) flag and \b boundaries for ASCII aliases
+            expect(text).toMatch(/custom_proxy_group=🇭🇰 Hong Kong`url-test`\(\?i\)\(香港\|\\bHong Kong\\b\|\\bHK\\b\)/);
+            expect(text).toMatch(/custom_proxy_group=🇯🇵 Japan`url-test`\(\?i\)\(日本\|\\bJapan\\b\|\\bJP\\b\)/);
+            expect(text).toMatch(/custom_proxy_group=🇺🇸 United States`url-test`\(\?i\)\(美国\|\\bUnited States\\b\|\\bUS\\b\)/);
         });
 
         it('generates Manual Switch group with all nodes', async () => {
@@ -251,7 +251,7 @@ describe('GET /subconverter', () => {
             const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
             const text = await res.text();
 
-            const countryGroupCount = (text.match(/custom_proxy_group=.+`url-test`\(.+\)`http/g) || []).length;
+            const countryGroupCount = (text.match(/custom_proxy_group=.+`url-test`\(\?i\)\(.+\)`http/g) || []).length;
             expect(countryGroupCount).toBe(30);
         });
 
@@ -264,6 +264,44 @@ describe('GET /subconverter', () => {
             expect(text).toContain('Node Select');
             // Country groups should still appear
             expect(text).toContain('🇯🇵 Japan');
+        });
+    });
+
+    describe('invalid selectedRules', () => {
+        it('returns 400 for invalid preset name', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=balancde');
+            expect(res.status).toBe(400);
+            const text = await res.text();
+            expect(text).toContain('Invalid selectedRules');
+            expect(text).toContain('balancde');
+        });
+
+        it('returns 400 for non-JSON non-preset string', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=foobar');
+            expect(res.status).toBe(400);
+            const text = await res.text();
+            expect(text).toContain('Invalid selectedRules');
+        });
+
+        it('returns 400 for JSON object (not array)', async () => {
+            const app = createTestApp();
+            const obj = JSON.stringify({ rule: 'Google' });
+            const res = await app.request(`http://localhost/subconverter?selectedRules=${encodeURIComponent(obj)}`);
+            expect(res.status).toBe(400);
+            const text = await res.text();
+            expect(text).toContain('must be a preset name');
+        });
+
+        it('defaults to balanced when selectedRules is not provided', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter');
+            expect(res.status).toBe(200);
+            const text = await res.text();
+            // balanced preset includes Google and Youtube
+            expect(text).toContain('GEOSITE,google');
+            expect(text).toContain('GEOSITE,youtube');
         });
     });
 });

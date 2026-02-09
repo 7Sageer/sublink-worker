@@ -14,7 +14,7 @@ const LINK_FIELDS = [
 ];
 
 export const Form = (props) => {
-  const { t } = props;
+  const { t, lang } = props;
 
   const translations = {
     processing: t('processing'),
@@ -40,6 +40,7 @@ export const Form = (props) => {
   const scriptContent = `
     window.APP_TRANSLATIONS = ${JSON.stringify(translations)};
     window.PREDEFINED_RULE_SETS = ${JSON.stringify(PREDEFINED_RULE_SETS)};
+    window.APP_LANG = ${JSON.stringify(lang || 'zh-CN')};
     (${formLogicFn.toString()})();
   `;
 

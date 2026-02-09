@@ -104,8 +104,12 @@ export function generateSubconverterConfig({ selectedRules = [], lang = 'zh-CN',
 		Object.values(COUNTRY_DATA).forEach(country => {
 			const groupName = `${country.emoji} ${country.name}`;
 			countryGroupNames.push(groupName);
-			const regex = country.aliases.map(a => escapeRegex(a)).join('|');
-			countryGroupLines.push(`custom_proxy_group=${groupName}\`url-test\`(${regex})\`${SPEED_TEST_URL}\`300,,50`);
+			const regex = country.aliases.map(a => {
+				const escaped = escapeRegex(a);
+				// Add word boundary for ASCII aliases to prevent substring matching (e.g. US matching AUS/RUS)
+				return /^[A-Za-z\s]+$/.test(a) ? `\\b${escaped}\\b` : escaped;
+			}).join('|');
+			countryGroupLines.push(`custom_proxy_group=${groupName}\`url-test\`(?i)(${regex})\`${SPEED_TEST_URL}\`300,,50`);
 		});
 	}
 

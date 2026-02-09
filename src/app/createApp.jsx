@@ -57,7 +57,7 @@ export function createApp(bindings = {}) {
                                         {subtitle}
                                     </p>
                                 </div>
-                                <Form t={t} />
+                                <Form t={t} lang={lang} />
                             </div>
                         </div>
                     </main>
@@ -210,9 +210,25 @@ export function createApp(bindings = {}) {
     app.get('/subconverter', (c) => {
         try {
             const rawSelectedRules = c.req.query('selectedRules');
-            const selectedRules = rawSelectedRules
-                ? parseSelectedRules(rawSelectedRules)
-                : PREDEFINED_RULE_SETS.balanced;
+            let selectedRules;
+
+            if (!rawSelectedRules) {
+                selectedRules = PREDEFINED_RULE_SETS.balanced;
+            } else if (PREDEFINED_RULE_SETS[rawSelectedRules]) {
+                selectedRules = PREDEFINED_RULE_SETS[rawSelectedRules];
+            } else {
+                try {
+                    const parsed = JSON.parse(rawSelectedRules);
+                    if (Array.isArray(parsed)) {
+                        selectedRules = parsed;
+                    } else {
+                        return c.text('Invalid selectedRules: must be a preset name (minimal, balanced, comprehensive) or a JSON array', 400);
+                    }
+                } catch {
+                    return c.text(`Invalid selectedRules: "${rawSelectedRules}" is not a valid preset name or JSON array. Valid presets: minimal, balanced, comprehensive`, 400);
+                }
+            }
+
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const lang = c.get('lang');

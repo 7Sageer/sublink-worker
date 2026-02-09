@@ -145,6 +145,12 @@ export const formLogicFn = (t) => {
                     params.append('group_by_country', 'true');
                 }
 
+                // Include lang parameter so subconverter gets correct group names
+                const appLang = window.APP_LANG || 'zh-CN';
+                if (appLang !== 'zh-CN') {
+                    params.append('lang', appLang);
+                }
+
                 const queryString = params.toString();
                 return origin + '/subconverter' + (queryString ? '?' + queryString : '');
             },
