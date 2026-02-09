@@ -67,15 +67,14 @@ function buildCountryGroupRefs(countryGroupNames) {
  * Generate subconverter external config (INI format)
  * @param {object} options
  * @param {string[]|string} options.selectedRules - Selected rule names or preset name
- * @param {object[]} options.customRules - Custom rule definitions
  * @param {string} options.lang - Language for group name translation
  * @param {boolean} options.includeAutoSelect - Whether to include auto select group
  * @param {boolean} options.groupByCountry - Whether to group proxies by country
  * @returns {string} INI format config string
  */
-export function generateSubconverterConfig({ selectedRules = [], customRules = [], lang = 'zh-CN', includeAutoSelect = true, groupByCountry = false } = {}) {
+export function generateSubconverterConfig({ selectedRules = [], lang = 'zh-CN', includeAutoSelect = true, groupByCountry = false } = {}) {
 	const t = createTranslator(lang);
-	const rules = generateRules(selectedRules, customRules);
+	const rules = generateRules(selectedRules);
 
 	const lines = ['[custom]'];
 

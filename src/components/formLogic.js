@@ -137,13 +137,6 @@ export const formLogicFn = (t) => {
                     params.append('selectedRules', JSON.stringify(this.selectedRules));
                 }
 
-                // Include custom rules if present
-                const customRulesInput = document.querySelector('input[name="customRules"]');
-                const customRules = customRulesInput && customRulesInput.value ? JSON.parse(customRulesInput.value) : [];
-                if (customRules.length > 0) {
-                    params.append('customRules', JSON.stringify(customRules));
-                }
-
                 if (!this.includeAutoSelect) {
                     params.append('include_auto_select', 'false');
                 }

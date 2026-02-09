@@ -180,28 +180,6 @@ describe('GET /subconverter', () => {
         expect(text).toContain('Fall Back');
     });
 
-    it('handles custom rules with domain_suffix and ip_cidr', async () => {
-        const app = createTestApp();
-        const customRules = JSON.stringify([{
-            name: 'MyRule',
-            site: '',
-            ip: '',
-            domain_suffix: 'example.com,test.org',
-            domain_keyword: 'mykey',
-            ip_cidr: '10.0.0.0/8'
-        }]);
-        const res = await app.request(`http://localhost/subconverter?selectedRules=minimal&customRules=${encodeURIComponent(customRules)}`);
-        const text = await res.text();
-
-        expect(text).toContain('[]DOMAIN-SUFFIX,example.com');
-        expect(text).toContain('[]DOMAIN-SUFFIX,test.org');
-        expect(text).toContain('[]DOMAIN-KEYWORD,mykey');
-        expect(text).toContain('[]IP-CIDR,10.0.0.0/8');
-
-        // Custom rule should also have a proxy group
-        expect(text).toContain('custom_proxy_group=MyRule');
-    });
-
     describe('group_by_country=true', () => {
         it('generates country groups with regex patterns', async () => {
             const app = createTestApp();
