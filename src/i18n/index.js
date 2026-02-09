@@ -1,5 +1,5 @@
-import { checkStartsWith } from "../utils.js";
 import { APP_NAME } from '../constants.js';
+import { checkStartsWith } from "../utils.js";
 
 // 定义语言包
 export const translations = {
@@ -48,6 +48,10 @@ export const translations = {
     shortenLinks: '生成短链接',
     ruleSelection: '规则选择',
     ruleSelectionTooltip: '选择您需要的规则集',
+    copySubconverterUrl: '复制配置地址',
+    copiedSubconverterUrl: '已复制！',
+    subconverterConfigTitle: 'Subconverter 外部配置',
+    subconverterConfigDesc: '根据上方选择的规则和设置，生成 Subconverter 外部配置地址，可直接用于 Subconverter 的 config 参数。',
     custom: '自定义',
     minimal: '最小化',
     balanced: '均衡',
@@ -204,6 +208,10 @@ export const translations = {
     shortenLinks: 'Generate Short Links',
     ruleSelection: 'Rule Selection',
     ruleSelectionTooltip: 'Select your desired rule sets',
+    copySubconverterUrl: 'Copy Config URL',
+    copiedSubconverterUrl: 'Copied!',
+    subconverterConfigTitle: 'Subconverter External Config',
+    subconverterConfigDesc: 'Generate a Subconverter external config URL based on the rules and settings above, for use as the config parameter in Subconverter.',
     custom: 'Custom',
     minimal: 'Minimal',
     balanced: 'Balanced',
@@ -353,6 +361,10 @@ export const translations = {
     shortenLinks: 'ایجاد لینک‌های کوتاه',
     ruleSelection: 'انتخاب قوانین',
     ruleSelectionTooltip: 'مجموعه قوانین مورد نظر خود را انتخاب کنید',
+    copySubconverterUrl: 'کپی آدرس پیکربندی',
+    copiedSubconverterUrl: 'کپی شد!',
+    subconverterConfigTitle: 'پیکربندی خارجی Subconverter',
+    subconverterConfigDesc: 'آدرس پیکربندی خارجی Subconverter را بر اساس قوانین و تنظیمات بالا ایجاد کنید.',
     custom: 'سفارشی',
     minimal: 'حداقل',
     balanced: 'متعادل',
@@ -502,6 +514,10 @@ export const translations = {
     shortenLinks: 'Создать короткие ссылки',
     ruleSelection: 'Выбор правил',
     ruleSelectionTooltip: 'Выберите нужные наборы правил',
+    copySubconverterUrl: 'Скопировать URL',
+    copiedSubconverterUrl: 'Скопировано!',
+    subconverterConfigTitle: 'Внешняя конфигурация Subconverter',
+    subconverterConfigDesc: 'Создайте URL внешней конфигурации Subconverter на основе выбранных правил и настроек выше.',
     custom: 'Пользовательский',
     minimal: 'Минимальный',
     balanced: 'Сбалансированный',

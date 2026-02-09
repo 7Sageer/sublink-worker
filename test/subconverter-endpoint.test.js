@@ -201,4 +201,91 @@ describe('GET /subconverter', () => {
         // Custom rule should also have a proxy group
         expect(text).toContain('custom_proxy_group=MyRule');
     });
+
+    describe('group_by_country=true', () => {
+        it('generates country groups with regex patterns', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
+            const text = await res.text();
+
+            // Should contain country url-test groups with regex
+            expect(text).toMatch(/custom_proxy_group=🇭🇰 Hong Kong`url-test`\(香港\|Hong Kong\|HK\)/);
+            expect(text).toMatch(/custom_proxy_group=🇯🇵 Japan`url-test`\(日本\|Japan\|JP\)/);
+            expect(text).toMatch(/custom_proxy_group=🇺🇸 United States`url-test`\(美国\|United States\|US\)/);
+        });
+
+        it('generates Manual Switch group with all nodes', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
+            const text = await res.text();
+
+            // Manual Switch group should select all nodes
+            expect(text).toMatch(/custom_proxy_group=.*手动切换.*`select`\.\*/);
+        });
+
+        it('Node Select references country groups instead of .*', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
+            const text = await res.text();
+
+            const nodeSelectLine = text.split('\n').find(l => l.includes('节点选择') && l.includes('`select`'));
+            expect(nodeSelectLine).toBeDefined();
+
+            // Should reference country groups
+            expect(nodeSelectLine).toContain('[]🇭🇰 Hong Kong');
+            expect(nodeSelectLine).toContain('[]🇯🇵 Japan');
+
+            // Should NOT end with .*  (individual node matching)
+            expect(nodeSelectLine).not.toMatch(/\.\*$/);
+            expect(nodeSelectLine).not.toMatch(/`\.\*`/);
+        });
+
+        it('outbound groups reference country groups when groupByCountry', async () => {
+            const app = createTestApp();
+            const rules = JSON.stringify(['Google']);
+            const res = await app.request(`http://localhost/subconverter?selectedRules=${encodeURIComponent(rules)}&group_by_country=true`);
+            const text = await res.text();
+
+            const googleLine = text.split('\n').find(l => l.includes('谷歌服务') && l.includes('`select`'));
+            expect(googleLine).toBeDefined();
+            expect(googleLine).toContain('[]🇭🇰 Hong Kong');
+            expect(googleLine).toContain('[]🇺🇸 United States');
+            expect(googleLine).not.toMatch(/`\.\*/);
+        });
+
+        it('works with groupByCountry and include_auto_select=false', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true&include_auto_select=false');
+            const text = await res.text();
+
+            // Should NOT have Auto Select
+            expect(text).not.toMatch(/custom_proxy_group=.*自动选择.*url-test/);
+
+            // Node Select should reference Manual Switch and country groups but NOT Auto Select
+            const nodeSelectLine = text.split('\n').find(l => l.includes('节点选择') && l.includes('`select`'));
+            expect(nodeSelectLine).toBeDefined();
+            expect(nodeSelectLine).toContain('手动切换');
+            expect(nodeSelectLine).not.toContain('自动选择');
+        });
+
+        it('generates all 30 country groups', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
+            const text = await res.text();
+
+            const countryGroupCount = (text.match(/custom_proxy_group=.+`url-test`\(.+\)`http/g) || []).length;
+            expect(countryGroupCount).toBe(30);
+        });
+
+        it('uses English group names with lang=en', async () => {
+            const app = createTestApp();
+            const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true&lang=en');
+            const text = await res.text();
+
+            expect(text).toContain('Manual Switch');
+            expect(text).toContain('Node Select');
+            // Country groups should still appear
+            expect(text).toContain('🇯🇵 Japan');
+        });
+    });
 });

@@ -215,13 +215,15 @@ export function createApp(bindings = {}) {
                 : PREDEFINED_RULE_SETS.balanced;
             const customRules = parseJsonArray(c.req.query('customRules'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const lang = c.get('lang');
 
             const config = generateSubconverterConfig({
                 selectedRules,
                 customRules,
                 lang,
-                includeAutoSelect
+                includeAutoSelect,
+                groupByCountry
             });
 
             return c.text(config, 200, {
