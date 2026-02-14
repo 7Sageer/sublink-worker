@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { createTranslator } from '../src/i18n/index.js';
-import { groupProxiesByCountry } from '../src/utils.js';
+import { groupProxiesByCountry, parseCountryFromNodeName } from '../src/utils.js';
 
 // Create translator for tests
 const t = createTranslator('zh-CN');
@@ -82,5 +82,42 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         expect(grouped['Hong Kong'].proxies).toHaveLength(2);
         expect(grouped['United States'].proxies).toHaveLength(1);
         expect(grouped['Taiwan'].proxies).toHaveLength(1);
+    });
+
+    describe('parseCountryFromNodeName word boundary handling', () => {
+        it('should NOT match "US" inside "plus"', () => {
+            expect(parseCountryFromNodeName('plus-node-1')).toBeNull();
+            expect(parseCountryFromNodeName('surplus')).toBeNull();
+            expect(parseCountryFromNodeName('focus')).toBeNull();
+        });
+
+        it('should NOT match "JP" inside "VJP123"', () => {
+            expect(parseCountryFromNodeName('VJP123')).toBeNull();
+        });
+
+        it('should NOT match "IN" inside "main" or "point"', () => {
+            const result1 = parseCountryFromNodeName('main-server');
+            expect(result1?.code).not.toBe('IN');
+            const result2 = parseCountryFromNodeName('endpoint-1');
+            expect(result2?.code).not.toBe('IN');
+        });
+
+        it('should still match short codes with proper delimiters', () => {
+            expect(parseCountryFromNodeName('US-Node-1')).toMatchObject({ code: 'US' });
+            expect(parseCountryFromNodeName('HK 01')).toMatchObject({ code: 'HK' });
+            expect(parseCountryFromNodeName('node-JP-fast')).toMatchObject({ code: 'JP' });
+            expect(parseCountryFromNodeName('SG|premium')).toMatchObject({ code: 'SG' });
+        });
+
+        it('should match Chinese aliases without issues', () => {
+            expect(parseCountryFromNodeName('香港节点1')).toMatchObject({ code: 'HK' });
+            expect(parseCountryFromNodeName('日本高速')).toMatchObject({ code: 'JP' });
+            expect(parseCountryFromNodeName('新加坡专线')).toMatchObject({ code: 'SG' });
+        });
+
+        it('should prefer longer alias over shorter (Indonesia vs India)', () => {
+            expect(parseCountryFromNodeName('Indonesia-1')).toMatchObject({ code: 'ID' });
+            expect(parseCountryFromNodeName('印度尼西亚节点')).toMatchObject({ code: 'ID' });
+        });
     });
 });

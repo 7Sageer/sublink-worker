@@ -363,8 +363,23 @@ export const COUNTRY_DATA = {
 };
 
 export function parseCountryFromNodeName(nodeName) {
-	const allAliases = Object.values(COUNTRY_DATA).flatMap(c => c.aliases);
-	const regex = new RegExp(allAliases.map(p => p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|'), 'i');
+	// Build patterns sorted by length descending so longer aliases match first
+	// (e.g. "Indonesia" before "India", "United States" before "US").
+	// Short aliases (<=3 chars, all ASCII, e.g. US, UK, HK) get \b word boundaries
+	// to prevent false positives like "plus" matching "US".
+	const allEntries = Object.values(COUNTRY_DATA).flatMap(c =>
+		c.aliases.map(alias => ({ alias, escaped: alias.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') }))
+	);
+	allEntries.sort((a, b) => b.alias.length - a.alias.length);
+
+	const patterns = allEntries.map(({ alias, escaped }) => {
+		if (alias.length <= 3 && /^[A-Za-z]+$/.test(alias)) {
+			return `\\b${escaped}\\b`;
+		}
+		return escaped;
+	});
+
+	const regex = new RegExp(patterns.join('|'), 'i');
 	const match = nodeName.match(regex);
 
 	if (match) {
