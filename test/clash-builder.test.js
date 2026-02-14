@@ -86,4 +86,34 @@ proxies:
     expect(grp).toBeDefined();
     expect(grp.proxies).toContain('node-from-provider');
   });
+
+  it('should default Private and Location:CN groups to DIRECT', async () => {
+    const input = `
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:443#HK-Node-1
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:444#US-Node-1
+    `;
+
+    const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');
+    const yamlText = await builder.build();
+    const built = yaml.load(yamlText);
+
+    const privateName = t('outboundNames.Private');
+    const cnName = t('outboundNames.Location:CN');
+
+    const privateGroup = (built['proxy-groups'] || []).find(g => g && g.name === privateName);
+    const cnGroup = (built['proxy-groups'] || []).find(g => g && g.name === cnName);
+
+    expect(privateGroup).toBeDefined();
+    expect(cnGroup).toBeDefined();
+
+    // DIRECT should be the first option (default selected)
+    expect(privateGroup.proxies[0]).toBe('DIRECT');
+    expect(cnGroup.proxies[0]).toBe('DIRECT');
+
+    // Other groups should NOT default to DIRECT
+    const fallbackName = t('outboundNames.Fall Back');
+    const fallbackGroup = (built['proxy-groups'] || []).find(g => g && g.name === fallbackName);
+    expect(fallbackGroup).toBeDefined();
+    expect(fallbackGroup.proxies[0]).not.toBe('DIRECT');
+  });
 });

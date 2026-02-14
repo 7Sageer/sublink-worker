@@ -98,6 +98,9 @@ export const UNIFIED_RULES = [
 	}
 ];
 
+// Rule names that should default to DIRECT instead of Node Select
+export const DIRECT_DEFAULT_RULES = new Set(['Private', 'Location:CN']);
+
 export const PREDEFINED_RULE_SETS = {
 	minimal: ['Location:CN', 'Private', 'Non-China'],
 	balanced: ['Location:CN', 'Private', 'Non-China', 'Github', 'Google', 'Youtube', 'AI Services', 'Telegram'],
