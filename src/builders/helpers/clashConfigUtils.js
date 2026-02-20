@@ -23,7 +23,7 @@ export function emitClashRules(rules = [], translator) {
         .filter(rule => Array.isArray(rule.site_rules) && rule.site_rules[0])
         .forEach(rule => {
             rule.site_rules.forEach(site => {
-                results.push(`RULE-SET,${site},${translator('outboundNames.' + rule.outbound)}`);
+                results.push(`RULE-SET,geosite_${site},${translator('outboundNames.' + rule.outbound)}`);
             });
         });
 
@@ -31,7 +31,7 @@ export function emitClashRules(rules = [], translator) {
         .filter(rule => Array.isArray(rule.ip_rules) && rule.ip_rules[0])
         .forEach(rule => {
             rule.ip_rules.forEach(ip => {
-                results.push(`RULE-SET,${ip},${translator('outboundNames.' + rule.outbound)},no-resolve`);
+                results.push(`RULE-SET,geoip_${ip},${translator('outboundNames.' + rule.outbound)},no-resolve`);
             });
         });
 

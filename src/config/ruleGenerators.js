@@ -162,23 +162,25 @@ export function generateClashRuleSets(selectedRules = [], customRules = [], useM
 	const ip_rule_providers = {};
 
 	Array.from(siteRuleSets).forEach(rule => {
-		site_rule_providers[rule] = {
+		const rule_name = `geosite_${rule}`
+		site_rule_providers[rule_name] = {
 			type: 'http',
 			format: format,
 			behavior: 'domain',
 			url: `${CLASH_SITE_RULE_SET_BASE_URL}${rule}${ext}`,
-			path: `./ruleset/${rule}${ext}`,
+			path: `./ruleset/${rule_name}${ext}`,
 			interval: 86400
 		};
 	});
 
 	Array.from(ipRuleSets).forEach(rule => {
-		ip_rule_providers[rule] = {
+		const rule_name = `geoip_${rule}`
+		ip_rule_providers[rule_name] = {
 			type: 'http',
 			format: format,
 			behavior: 'ipcidr',
 			url: `${CLASH_IP_RULE_SET_BASE_URL}${rule}${ext}`,
-			path: `./ruleset/${rule}${ext}`,
+			path: `./ruleset/${rule_name}${ext}`,
 			interval: 86400
 		};
 	});
