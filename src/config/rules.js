@@ -33,7 +33,7 @@ export const UNIFIED_RULES = [
 	},
 	{
 		name: 'Private',
-		site_rules: [],
+		site_rules: ['private'],
 		ip_rules: ['private']
 	},
 	{
