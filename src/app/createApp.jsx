@@ -80,6 +80,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const countryGroupType = c.req.query('country_group_type') || 'url-test';
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -111,7 +112,8 @@ export function createApp(bindings = {}) {
                 externalController,
                 externalUiDownloadUrl,
                 singboxConfigVersion,
-                includeAutoSelect
+                includeAutoSelect,
+                countryGroupType
             );
             await builder.build();
             return c.json(builder.config);
@@ -132,6 +134,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const countryGroupType = c.req.query('country_group_type') || 'url-test';
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -155,7 +158,8 @@ export function createApp(bindings = {}) {
                 enableClashUI,
                 externalController,
                 externalUiDownloadUrl,
-                includeAutoSelect
+                includeAutoSelect,
+                countryGroupType
             );
             await builder.build();
             return c.text(builder.formatConfig(), 200, {
@@ -178,6 +182,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const countryGroupType = c.req.query('country_group_type') || 'url-test';
             const configId = c.req.query('configId');
             const lang = c.get('lang');
 
@@ -195,7 +200,8 @@ export function createApp(bindings = {}) {
                 lang,
                 ua,
                 groupByCountry,
-                includeAutoSelect
+                includeAutoSelect,
+                countryGroupType
             );
             builder.setSubscriptionUrl(c.req.url);
             await builder.build();

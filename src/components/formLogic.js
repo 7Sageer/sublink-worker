@@ -17,6 +17,7 @@ export const formLogicFn = (t) => {
             selectedPredefinedRule: 'balanced',
             subconverterCopied: false,
             groupByCountry: false,
+            countryGroupType: 'url-test',
             includeAutoSelect: true,
             enableClashUI: false,
             externalController: '',
@@ -64,6 +65,7 @@ export const formLogicFn = (t) => {
                 this.input = localStorage.getItem('inputTextarea') || '';
                 this.showAdvanced = localStorage.getItem('advancedToggle') === 'true';
                 this.groupByCountry = localStorage.getItem('groupByCountry') === 'true';
+                this.countryGroupType = localStorage.getItem('countryGroupType') || 'url-test';
                 this.includeAutoSelect = localStorage.getItem('includeAutoSelect') !== 'false';
                 this.enableClashUI = localStorage.getItem('enableClashUI') === 'true';
                 this.externalController = localStorage.getItem('externalController') || '';
@@ -95,6 +97,7 @@ export const formLogicFn = (t) => {
                 });
                 this.$watch('showAdvanced', val => localStorage.setItem('advancedToggle', val));
                 this.$watch('groupByCountry', val => localStorage.setItem('groupByCountry', val));
+                this.$watch('countryGroupType', val => localStorage.setItem('countryGroupType', val));
                 this.$watch('includeAutoSelect', val => localStorage.setItem('includeAutoSelect', val));
                 this.$watch('enableClashUI', val => localStorage.setItem('enableClashUI', val));
                 this.$watch('externalController', val => localStorage.setItem('externalController', val));
@@ -303,6 +306,7 @@ export const formLogicFn = (t) => {
                     params.append('customRules', JSON.stringify(customRules));
 
                     if (this.groupByCountry) params.append('group_by_country', 'true');
+                    if (this.groupByCountry && this.countryGroupType !== 'url-test') params.append('country_group_type', this.countryGroupType);
                     if (!this.includeAutoSelect) params.append('include_auto_select', 'false');
                     if (this.enableClashUI) params.append('enable_clash_ui', 'true');
                     if (this.externalController) params.append('external_controller', this.externalController);
@@ -545,6 +549,7 @@ export const formLogicFn = (t) => {
 
                 // Extract other parameters
                 this.groupByCountry = params.get('group_by_country') === 'true';
+                this.countryGroupType = params.get('country_group_type') || 'url-test';
                 this.includeAutoSelect = params.get('include_auto_select') !== 'false';
                 this.enableClashUI = params.get('enable_clash_ui') === 'true';
 

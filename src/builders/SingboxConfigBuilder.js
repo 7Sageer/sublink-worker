@@ -7,9 +7,9 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true, countryGroupType = 'url-test') {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect, countryGroupType);
 
         this.selectedRules = selectedRules;
         this.customRules = customRules;
@@ -276,9 +276,10 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             const groupName = `${emoji} ${name}`;
             const norm = normalizeGroupName(groupName);
             if (!existingTags.has(norm)) {
+                const singboxType = this.countryGroupType === 'select' ? 'selector' : 'urltest';
                 this.config.outbounds.push({
                     tag: groupName,
-                    type: 'urltest',
+                    type: singboxType,
                     outbounds: countryProxies
                 });
                 existingTags.add(norm);
