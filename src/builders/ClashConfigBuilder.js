@@ -452,7 +452,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             if (!existingNames.has(norm)) {
                 const countryGroup = {
                     name: groupName,
-                    type: this.countryGroupType || 'url-test',
+                    type: this.countryGroupType,
                     proxies: proxies
                 };
                 if (countryGroup.type === 'url-test' || countryGroup.type === 'fallback') {

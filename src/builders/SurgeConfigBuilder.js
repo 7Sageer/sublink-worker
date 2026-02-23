@@ -343,7 +343,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             const groupName = `${emoji} ${name}`;
             countryGroupNames.push(groupName);
             if (!existing.has(groupName.trim())) {
-                const type = this.countryGroupType || 'url-test';
+                const type = this.countryGroupType;
                 const extra = type === 'select' ? '' : ', url=https://www.gstatic.com/generate_204, interval=300';
                 this.config['proxy-groups'].push(
                     this.createProxyGroup(groupName, type, proxies, extra)

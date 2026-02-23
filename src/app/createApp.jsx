@@ -19,6 +19,10 @@ import { normalizeRuntime } from '../runtime/runtimeConfig.js';
 import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11, generateSubconverterConfig } from '../config/index.js';
 
 const DEFAULT_USER_AGENT = 'curl/7.74.0';
+const VALID_COUNTRY_GROUP_TYPES = ['url-test', 'select', 'fallback'];
+function parseCountryGroupType(raw) {
+    return VALID_COUNTRY_GROUP_TYPES.includes(raw) ? raw : 'url-test';
+}
 
 export function createApp(bindings = {}) {
     const runtime = normalizeRuntime(bindings);
@@ -80,7 +84,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
-            const countryGroupType = c.req.query('country_group_type') || 'url-test';
+            const countryGroupType = parseCountryGroupType(c.req.query('country_group_type'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -134,7 +138,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
-            const countryGroupType = c.req.query('country_group_type') || 'url-test';
+            const countryGroupType = parseCountryGroupType(c.req.query('country_group_type'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -182,7 +186,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
-            const countryGroupType = c.req.query('country_group_type') || 'url-test';
+            const countryGroupType = parseCountryGroupType(c.req.query('country_group_type'));
             const configId = c.req.query('configId');
             const lang = c.get('lang');
 

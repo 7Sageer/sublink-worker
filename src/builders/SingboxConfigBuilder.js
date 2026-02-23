@@ -276,6 +276,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             const groupName = `${emoji} ${name}`;
             const norm = normalizeGroupName(groupName);
             if (!existingTags.has(norm)) {
+                // sing-box has no native fallback type; urltest is the closest equivalent
                 const singboxType = this.countryGroupType === 'select' ? 'selector' : 'urltest';
                 this.config.outbounds.push({
                     tag: groupName,
