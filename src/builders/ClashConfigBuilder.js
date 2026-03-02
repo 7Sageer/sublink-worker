@@ -40,11 +40,11 @@ function supportsMrsFormat(userAgent) {
 }
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, includeAutoSelect = true, countryGroupType = 'url-test') {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
-        super(inputString, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
+        super(inputString, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect, countryGroupType);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.countryGroupNames = [];
@@ -450,14 +450,17 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             const groupName = `${emoji} ${name}`;
             const norm = normalizeGroupName(groupName);
             if (!existingNames.has(norm)) {
-                this.config['proxy-groups'].push({
+                const countryGroup = {
                     name: groupName,
-                    type: 'url-test',
-                    proxies: proxies,
-                    url: 'https://www.gstatic.com/generate_204',
-                    interval: 300,
-                    lazy: false
-                });
+                    type: this.countryGroupType,
+                    proxies: proxies
+                };
+                if (countryGroup.type === 'url-test' || countryGroup.type === 'fallback') {
+                    countryGroup.url = 'https://www.gstatic.com/generate_204';
+                    countryGroup.interval = 300;
+                    countryGroup.lazy = false;
+                }
+                this.config['proxy-groups'].push(countryGroup);
                 existingNames.add(norm);
             }
             countryGroupNames.push(groupName);

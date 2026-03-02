@@ -167,13 +167,23 @@ export const Form = (props) => {
             </h3>
             
             <div class="space-y-4">
-              <label class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
-                <span class="font-medium text-gray-700 dark:text-gray-300">{t('groupByCountry')}</span>
-                <div class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" x-model="groupByCountry" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+              <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30">
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span class="font-medium text-gray-700 dark:text-gray-300">{t('groupByCountry')}</span>
+                  <div class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" x-model="groupByCountry" class="sr-only peer" />
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                  </div>
+                </label>
+                <div x-show="groupByCountry" {...{'x-transition:enter': 'transition ease-out duration-200', 'x-transition:enter-start': 'opacity-0', 'x-transition:enter-end': 'opacity-100', 'x-transition:leave': 'transition ease-in duration-150', 'x-transition:leave-start': 'opacity-100', 'x-transition:leave-end': 'opacity-0'}} class="mt-2 flex items-center gap-2">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{t('countryGroupType')}</span>
+                  <select x-model="countryGroupType" class="text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1">
+                    <option value="url-test">{t('countryGroupTypeUrlTest')}</option>
+                    <option value="select">{t('countryGroupTypeSelect')}</option>
+                    <option value="fallback">{t('countryGroupTypeFallback')}</option>
+                  </select>
                 </div>
-              </label>
+              </div>
 
               <label class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
                 <span class="font-medium text-gray-700 dark:text-gray-300">{t('includeAutoSelect')}</span>

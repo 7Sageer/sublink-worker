@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
+import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 import { createTranslator } from '../src/i18n/index.js';
 import { groupProxiesByCountry, parseCountryFromNodeName } from '../src/utils.js';
 
@@ -82,6 +83,37 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         expect(grouped['Hong Kong'].proxies).toHaveLength(2);
         expect(grouped['United States'].proxies).toHaveLength(1);
         expect(grouped['Taiwan'].proxies).toHaveLength(1);
+    });
+
+    it('should use select type for country groups when countryGroupType is select (Clash)', async () => {
+        const input = `
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:443#HK-Node-1
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:445#US-Node-1
+    `;
+        const builder = new ClashConfigBuilder(input, 'all', [], null, 'zh-CN', 'test-agent', true, false, undefined, undefined, true, 'select');
+        const yamlText = await builder.build();
+        const built = yaml.load(yamlText);
+
+        const hkGroup = built['proxy-groups'].find(g => g.name === '🇭🇰 Hong Kong');
+        expect(hkGroup.type).toBe('select');
+        expect(hkGroup.url).toBeUndefined();
+        expect(hkGroup.interval).toBeUndefined();
+    });
+
+    it('should map select to selector and fallback to urltest for SingBox country groups', async () => {
+        const input = `
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:443#HK-Node-1
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:445#US-Node-1
+    `;
+        const selectBuilder = new SingboxConfigBuilder(input, 'all', [], null, 'zh-CN', 'test-agent', true, false, undefined, undefined, '1.12', true, 'select');
+        await selectBuilder.build();
+        const hkSelect = selectBuilder.config.outbounds.find(o => o.tag === '🇭🇰 Hong Kong');
+        expect(hkSelect.type).toBe('selector');
+
+        const fallbackBuilder = new SingboxConfigBuilder(input, 'all', [], null, 'zh-CN', 'test-agent', true, false, undefined, undefined, '1.12', true, 'fallback');
+        await fallbackBuilder.build();
+        const hkFallback = fallbackBuilder.config.outbounds.find(o => o.tag === '🇭🇰 Hong Kong');
+        expect(hkFallback.type).toBe('urltest');
     });
 
     describe('parseCountryFromNodeName word boundary handling', () => {

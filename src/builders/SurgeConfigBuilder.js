@@ -5,9 +5,9 @@ import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true, countryGroupType = 'url-test') {
         const resolvedBaseConfig = baseConfig ?? SURGE_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect, countryGroupType);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.subscriptionUrl = null;
@@ -343,8 +343,10 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             const groupName = `${emoji} ${name}`;
             countryGroupNames.push(groupName);
             if (!existing.has(groupName.trim())) {
+                const type = this.countryGroupType;
+                const extra = type === 'select' ? '' : ', url=https://www.gstatic.com/generate_204, interval=300';
                 this.config['proxy-groups'].push(
-                    this.createProxyGroup(groupName, 'url-test', proxies, ', url=https://www.gstatic.com/generate_204, interval=300')
+                    this.createProxyGroup(groupName, type, proxies, extra)
                 );
                 existing.add(groupName.trim());
             }
