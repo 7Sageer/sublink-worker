@@ -270,7 +270,7 @@ export function parseUrlParams(url) {
 
 export function createTlsConfig(params) {
 	let tls = { enabled: false };
-	if (params.security != 'none') {
+	if (params.security && params.security !== 'none') {
 		tls = {
 			enabled: true,
 			server_name: params.sni || params.host,

@@ -383,11 +383,17 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     if (DIRECT_DEFAULT_RULES.has(outbound)) {
                         proxies = ['DIRECT', ...proxies.filter(p => p !== 'DIRECT')];
                     }
-                    this.config['proxy-groups'].push({
+                    const group = {
                         type: "select",
                         name,
                         proxies
-                    });
+                    };
+                    // Add 'use' field if we have proxy-providers
+                    const providerNames = this.getAllProviderNames();
+                    if (providerNames.length > 0) {
+                        group.use = providerNames;
+                    }
+                    this.config['proxy-groups'].push(group);
                 }
             }
         });
@@ -399,11 +405,17 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 const name = this.t(`outboundNames.${rule.name}`);
                 if (!this.hasProxyGroup(name)) {
                     const proxies = this.buildSelectGroupMembers(proxyList);
-                    this.config['proxy-groups'].push({
+                    const group = {
                         type: "select",
                         name,
                         proxies
-                    });
+                    };
+                    // Add 'use' field if we have proxy-providers
+                    const providerNames = this.getAllProviderNames();
+                    if (providerNames.length > 0) {
+                        group.use = providerNames;
+                    }
+                    this.config['proxy-groups'].push(group);
                 }
             });
         }
@@ -413,11 +425,17 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         const name = this.t('outboundNames.Fall Back');
         if (this.hasProxyGroup(name)) return;
         const proxies = this.buildSelectGroupMembers(proxyList);
-        this.config['proxy-groups'].push({
+        const group = {
             type: "select",
             name,
             proxies
-        });
+        };
+        // Add 'use' field if we have proxy-providers
+        const providerNames = this.getAllProviderNames();
+        if (providerNames.length > 0) {
+            group.use = providerNames;
+        }
+        this.config['proxy-groups'].push(group);
     }
 
     addCountryGroups() {
