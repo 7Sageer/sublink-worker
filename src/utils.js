@@ -273,7 +273,7 @@ export function createTlsConfig(params) {
 	if (params.security && params.security !== 'none') {
 		tls = {
 			enabled: true,
-			server_name: params.sni || params.host,
+			server_name: params.sni || params.host || params.peer,
 			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
 			// utls: {
 			//   enabled: true,
@@ -287,6 +287,16 @@ export function createTlsConfig(params) {
 				short_id: params.sid,
 			};
 		}
+	} else if (params?.insecure || params?.allowInsecure || params?.allow_insecure) {
+		tls = {
+			enabled: true,
+			server_name: params.sni || params.host || params.peer,
+			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+			// utls: {
+			//   enabled: true,
+			//   fingerprint: "chrome"
+			// },
+		};
 	}
 	return tls;
 }
