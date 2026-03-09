@@ -1,7 +1,7 @@
 export const formLogicFn = (t) => {
     window.formData = function () {
         // Inline parseSurgeConfigInput to make it available in toString()
-        function parseSurgeValue(rawValue = '') {
+        const parseSurgeValue = (rawValue = '') => {
             const trimmed = rawValue.trim();
             if (trimmed === '') return '';
             const unquoted = trimmed.replace(/^"(.*)"$/, '$1');
@@ -10,9 +10,9 @@ export const formLogicFn = (t) => {
             if (lower === 'false') return false;
             if (/^-?\d+(\.\d+)?$/.test(unquoted)) return Number(unquoted);
             return unquoted;
-        }
+        };
 
-        function convertSurgeIniToJson(content) {
+        const convertSurgeIniToJson = (content) => {
             const lines = content.split(/\r?\n/);
             const config = {};
             let currentSection = null;
@@ -56,9 +56,9 @@ export const formLogicFn = (t) => {
                 throw new Error('Unable to parse Surge INI content');
             }
             return config;
-        }
+        };
 
-        function parseSurgeConfigInput(content) {
+        const parseSurgeConfigInput = (content) => {
             const trimmed = content.trim();
             if (!trimmed) throw new Error('Config content is empty');
             try {
@@ -67,7 +67,7 @@ export const formLogicFn = (t) => {
                 const converted = convertSurgeIniToJson(content);
                 return { configObject: converted, convertedFromIni: true };
             }
-        }
+        };
 
         return {
             input: '',
