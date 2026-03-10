@@ -19,6 +19,8 @@ export function parseHysteria2(url) {
         password = params.auth;
     }
 
+    // Hysteria2 requires TLS by protocol design
+    if (!params.security) params.security = 'tls';
     const tls = createTlsConfig(params);
     const obfs = {};
     if (params['obfs-password']) {
