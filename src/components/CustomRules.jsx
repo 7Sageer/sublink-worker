@@ -123,6 +123,20 @@ export const CustomRules = (props) => {
                 />
             </div>
 
+            {/* SRC IP CIDR */}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
+                    {t('customRuleSrcIPCIDR')}
+                    <i class="fas fa-info-circle text-gray-400 hover:text-primary-500 cursor-help" title={t('customRuleSrcIPCIDRTooltip')}></i>
+                </label>
+                <input
+                    type="text"
+                    x-model="rule.src_ip_cidr"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                    placeholder={t('customRuleSrcIPCIDRPlaceholder')}
+                />
+            </div>
+
             {/* IP CIDR */}
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -200,7 +214,7 @@ export const CustomRules = (props) => {
           id="customRulesJson"
           name="customRulesJson"
           model="jsonContent"
-          placeholder='[{"name": "MyRule", "domain_suffix": ["example.com"], "outbound": "Proxy"}]'
+          placeholder='[{"name": "MyRule", "src_ip_cidr": "192.168.1.13/32", "domain_suffix": "example.com", "outbound": "Proxy"}]'
           variant="mono"
           textareaClass="min-h-[16rem]"
           containerClass="group"
@@ -283,6 +297,7 @@ export const CustomRules = (props) => {
                 name: '',
                 domain_suffix: '',
                 domain_keyword: '',
+                src_ip_cidr: '',
                 ip_cidr: '',
                 protocol: '',
                 site: '',

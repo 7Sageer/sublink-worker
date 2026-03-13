@@ -41,6 +41,7 @@ export const Form = (props) => {
     window.APP_TRANSLATIONS = ${JSON.stringify(translations)};
     window.PREDEFINED_RULE_SETS = ${JSON.stringify(PREDEFINED_RULE_SETS)};
     window.APP_LANG = ${JSON.stringify(lang || 'zh-CN')};
+    if (typeof __name === 'undefined') { var __name = function(fn) { return fn; }; }
     (${formLogicFn.toString()})();
   `;
 

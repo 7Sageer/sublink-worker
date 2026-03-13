@@ -37,14 +37,25 @@ function buildCountryGroupRefs(countryGroupNames) {
  * @param {boolean} options.groupByCountry - Whether to group proxies by country
  * @returns {string} INI format config string
  */
-export function generateSubconverterConfig({ selectedRules = [], lang = 'zh-CN', includeAutoSelect = true, groupByCountry = false } = {}) {
+export function generateSubconverterConfig({ selectedRules = [], customRules = [], lang = 'zh-CN', includeAutoSelect = true, groupByCountry = false } = {}) {
 	const t = createTranslator(lang);
-	const rules = generateRules(selectedRules);
+	const rules = generateRules(selectedRules, customRules);
 
 	const lines = ['[custom]'];
 
 	// --- Ruleset lines ---
 	// Domain-type rules first, then IP-type rules (reduces DNS leaks, same as SurgeConfigBuilder)
+
+	// Source-IP rules first (highest priority, no DNS needed)
+	rules.forEach(rule => {
+		const groupName = t(`outboundNames.${rule.outbound}`);
+
+		if (rule.src_ip_cidr) {
+			rule.src_ip_cidr.forEach(cidr => {
+				if (cidr) lines.push(`ruleset=${groupName},[]SRC-IP-CIDR,${cidr}`);
+			});
+		}
+	});
 
 	// First pass: domain-type rules (DOMAIN-SUFFIX, DOMAIN-KEYWORD, GEOSITE)
 	rules.forEach(rule => {

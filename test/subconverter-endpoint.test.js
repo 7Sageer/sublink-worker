@@ -93,6 +93,17 @@ describe('GET /subconverter', () => {
         expect(text).not.toContain('GEOSITE,bilibili');
     });
 
+    it('accepts customRules and emits SRC-IP-CIDR rules', async () => {
+        const app = createTestApp();
+        const customRules = JSON.stringify([
+            { name: 'LAN', src_ip_cidr: '192.168.1.13/32' }
+        ]);
+        const res = await app.request(`http://localhost/subconverter?selectedRules=minimal&customRules=${encodeURIComponent(customRules)}`);
+        const text = await res.text();
+
+        expect(text).toContain('ruleset=LAN,[]SRC-IP-CIDR,192.168.1.13/32');
+    });
+
     it('generates correct proxy group structure', async () => {
         const app = createTestApp();
         const res = await app.request('http://localhost/subconverter?selectedRules=minimal');

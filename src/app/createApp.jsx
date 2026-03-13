@@ -231,10 +231,12 @@ export function createApp(bindings = {}) {
 
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
+            const customRules = parseJsonArray(c.req.query('customRules'));
             const lang = c.get('lang');
 
             const config = generateSubconverterConfig({
                 selectedRules,
+                customRules,
                 lang,
                 includeAutoSelect,
                 groupByCountry
