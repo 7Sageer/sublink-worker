@@ -58,22 +58,52 @@ function detectFormat(content) {
  * Fetch subscription content from a URL and parse it
  * @param {string} url - The subscription URL to fetch
  * @param {string} userAgent - Optional User-Agent header
+ * @param {object} options - Optional options
+ * @param {object} options.cacheService - Optional SubscriptionCacheService instance
+ * @param {boolean} options.cacheEnabled - Whether to use cache (default: true)
  * @returns {Promise<object|string[]|null>} - Parsed subscription content
  */
-export async function fetchSubscription(url, userAgent) {
+export async function fetchSubscription(url, userAgent, options = {}) {
+    const { cacheService, cacheEnabled = true } = options;
+
     try {
-        const headers = new Headers();
-        if (userAgent) {
-            headers.set('User-Agent', userAgent);
+        let text;
+        let fromCache = false;
+        let warning = null;
+
+        if (cacheService && cacheEnabled) {
+            const result = await cacheService.fetchWithCache(url, {
+                headers: { 'User-Agent': userAgent },
+                cacheEnabled
+            });
+
+            if (!result.success) {
+                throw new Error(`Download failed: ${result.error || 'No content available'}`);
+            }
+
+            if (result.warning) {
+                warning = result.warning;
+                console.warn(result.warning);
+            }
+
+            text = result.content;
+            fromCache = result.fromCache;
+        } else {
+            // Direct fetch without cache
+            const headers = new Headers();
+            if (userAgent) {
+                headers.set('User-Agent', userAgent);
+            }
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: headers
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            text = await response.text();
         }
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: headers
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const text = await response.text();
+
         const decodedText = decodeContent(text);
 
         return parseSubscriptionContent(decodedText);
@@ -87,26 +117,56 @@ export async function fetchSubscription(url, userAgent) {
  * Fetch subscription content and detect its format without parsing
  * @param {string} url - The subscription URL to fetch
  * @param {string} userAgent - Optional User-Agent header
- * @returns {Promise<{content: string, format: 'clash'|'singbox'|'unknown', url: string}|null>}
+ * @param {object} options - Optional options
+ * @param {object} options.cacheService - Optional SubscriptionCacheService instance
+ * @param {boolean} options.cacheEnabled - Whether to use cache (default: true)
+ * @returns {Promise<{content: string, format: 'clash'|'singbox'|'unknown', url: string, fromCache?: boolean, warning?: string}|null>}
  */
-export async function fetchSubscriptionWithFormat(url, userAgent) {
+export async function fetchSubscriptionWithFormat(url, userAgent, options = {}) {
+    const { cacheService, cacheEnabled = true } = options;
+
     try {
-        const headers = new Headers();
-        if (userAgent) {
-            headers.set('User-Agent', userAgent);
+        let text;
+        let fromCache = false;
+        let warning = null;
+
+        if (cacheService && cacheEnabled) {
+            const result = await cacheService.fetchWithCache(url, {
+                headers: { 'User-Agent': userAgent },
+                cacheEnabled
+            });
+
+            if (!result.success) {
+                throw new Error(`Download failed: ${result.error || 'No content available'}`);
+            }
+
+            if (result.warning) {
+                warning = result.warning;
+                console.warn(result.warning);
+            }
+
+            text = result.content;
+            fromCache = result.fromCache;
+        } else {
+            // Direct fetch without cache
+            const headers = new Headers();
+            if (userAgent) {
+                headers.set('User-Agent', userAgent);
+            }
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: headers
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            text = await response.text();
         }
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: headers
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const text = await response.text();
+
         const content = decodeContent(text);
         const format = detectFormat(content);
 
-        return { content, format, url };
+        return { content, format, url, fromCache, warning };
     } catch (error) {
         console.error('Error fetching subscription:', error);
         return null;

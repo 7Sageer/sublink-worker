@@ -24,7 +24,8 @@ export function createApp(bindings = {}) {
     const runtime = normalizeRuntime(bindings);
     const services = {
         shortLinks: runtime.kv ? new ShortLinkService(runtime.kv, { shortLinkTtlSeconds: runtime.config.shortLinkTtlSeconds }) : null,
-        configStorage: runtime.kv ? new ConfigStorageService(runtime.kv, { configTtlSeconds: runtime.config.configTtlSeconds }) : null
+        configStorage: runtime.kv ? new ConfigStorageService(runtime.kv, { configTtlSeconds: runtime.config.configTtlSeconds }) : null,
+        subscriptionCache: runtime.subscriptionCache || null  // D1 subscription cache service
     };
 
     const app = new Hono();
@@ -111,7 +112,8 @@ export function createApp(bindings = {}) {
                 externalController,
                 externalUiDownloadUrl,
                 singboxConfigVersion,
-                includeAutoSelect
+                includeAutoSelect,
+                services.subscriptionCache
             );
             await builder.build();
             return c.json(builder.config);
@@ -155,7 +157,8 @@ export function createApp(bindings = {}) {
                 enableClashUI,
                 externalController,
                 externalUiDownloadUrl,
-                includeAutoSelect
+                includeAutoSelect,
+                services.subscriptionCache
             );
             await builder.build();
             return c.text(builder.formatConfig(), 200, {
@@ -195,7 +198,8 @@ export function createApp(bindings = {}) {
                 lang,
                 ua,
                 groupByCountry,
-                includeAutoSelect
+                includeAutoSelect,
+                services.subscriptionCache
             );
             builder.setSubscriptionUrl(c.req.url);
             await builder.build();
@@ -260,6 +264,8 @@ export function createApp(bindings = {}) {
         const finalProxyList = [];
         const userAgent = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
         const headers = { 'User-Agent': userAgent };
+        const cacheEnabled = c.req.query('cache') !== 'false';
+        const subscriptionCache = services.subscriptionCache;
 
         for (const proxy of proxylist) {
             const trimmedProxy = proxy.trim();
@@ -267,8 +273,26 @@ export function createApp(bindings = {}) {
 
             if (trimmedProxy.startsWith('http://') || trimmedProxy.startsWith('https://')) {
                 try {
-                    const response = await fetch(trimmedProxy, { method: 'GET', headers });
-                    const text = await response.text();
+                    let text;
+                    let fromCache = false;
+
+                    if (subscriptionCache && cacheEnabled) {
+                        const result = await subscriptionCache.fetchWithCache(trimmedProxy, {
+                            headers,
+                            cacheEnabled
+                        });
+                        if (result.success) {
+                            text = result.content;
+                            fromCache = result.fromCache;
+                        } else {
+                            runtime.logger.warn('Failed to fetch proxy for xray:', result.error);
+                            continue;
+                        }
+                    } else {
+                        const response = await fetch(trimmedProxy, { method: 'GET', headers });
+                        text = await response.text();
+                    }
+
                     let processed = tryDecodeSubscriptionLines(text, { decodeUriComponent: true });
                     if (!Array.isArray(processed)) processed = [processed];
                     finalProxyList.push(...processed.filter(item => typeof item === 'string' && item.trim() !== ''));

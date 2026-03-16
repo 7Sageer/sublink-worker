@@ -17,11 +17,11 @@
     "@cloudflare/vitest-pool-workers": "^0.10.11",
     "esbuild": "^0.27.0",
     "vitest": "^3.2.4",
-    "wrangler": "^4.51.0"
+    "wrangler": "^4.73.0"
   },
   "dependencies": {
     "esbuild-register": "^3.6.0",
-    "hono": "^4.10.7",
+    "hono": "^4.12.8",
     "ioredis": "^5.8.2",
     "js-yaml": "^4.1.1"
   },
