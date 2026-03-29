@@ -78,6 +78,48 @@ describe('Auto Proxy Providers Detection', () => {
             expect(nodeSelect.use).toContain('_auto_provider_1');
         });
 
+        it('should parse and embed proxies when useProxyProvider is false', async () => {
+            // Mock fetchSubscriptionWithFormat to return Clash format
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: mockClashYaml,
+                format: 'clash',
+                url: 'https://example.com/clash-sub?token=xxx'
+            });
+
+            const builder = new ClashConfigBuilder(
+                'https://example.com/clash-sub?token=xxx',
+                [], // selectedRules
+                [], // customRules
+                null, // baseConfig
+                'zh-CN', // lang
+                'test-agent', // userAgent
+                false, // groupByCountry
+                false, // enableClashUI
+                null, // externalController
+                null, // externalUiDownloadUrl
+                true, // includeAutoSelect
+                false // useProxyProvider - DISABLED
+            );
+            const yamlText = await builder.build();
+            const config = yaml.load(yamlText);
+
+            // Should NOT have proxy-providers when useProxyProvider is false
+            expect(config['proxy-providers']).toBeUndefined();
+
+            // Should have parsed proxies embedded directly
+            expect(config.proxies).toBeDefined();
+            expect(config.proxies.length).toBeGreaterThan(0);
+
+            // Verify the proxy names are embedded
+            const proxyNames = config.proxies.map(p => p.name);
+            expect(proxyNames).toContain('HK-Node');
+            expect(proxyNames).toContain('JP-Node');
+
+            // proxy-groups should NOT have 'use' field when useProxyProvider is false
+            const nodeSelect = config['proxy-groups'].find(g => g.name === '🚀 节点选择');
+            expect(nodeSelect.use).toBeUndefined();
+        });
+
         it('should parse and convert Sing-Box URL (incompatible format)', async () => {
             // Mock fetchSubscriptionWithFormat to return Sing-Box format
             fetchSubscriptionWithFormat.mockResolvedValue({
@@ -136,6 +178,49 @@ describe('Auto Proxy Providers Detection', () => {
             // outbounds should have 'providers' field
             const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
             expect(nodeSelect.providers).toContain('_auto_provider_1');
+        });
+
+        it('should parse and embed proxies when useProxyProvider is false', async () => {
+            // Mock fetchSubscriptionWithFormat to return Sing-Box format
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: mockSingboxJson,
+                format: 'singbox',
+                url: 'https://example.com/singbox-sub?token=xxx'
+            });
+
+            const builder = new SingboxConfigBuilder(
+                'https://example.com/singbox-sub?token=xxx',
+                [],
+                [],
+                null,
+                'zh-CN',
+                'test-agent',
+                false, // groupByCountry
+                false, // enableClashUI
+                null, // externalController
+                null, // externalUiDownloadUrl
+                '1.12', // singboxVersion
+                true, // includeAutoSelect
+                false // useProxyProvider - DISABLED
+            );
+            await builder.build();
+            const config = builder.config;
+
+            // Should NOT have outbound_providers when useProxyProvider is false
+            expect(config.outbound_providers).toBeUndefined();
+
+            // Should have parsed outbounds embedded directly
+            const proxyOutbounds = config.outbounds.filter(o => o.server);
+            expect(proxyOutbounds.length).toBeGreaterThan(0);
+
+            // Verify the proxy tags are embedded
+            const proxyTags = proxyOutbounds.map(o => o.tag);
+            expect(proxyTags).toContain('SS-HK');
+            expect(proxyTags).toContain('SS-JP');
+
+            // outbounds should NOT have 'providers' field when useProxyProvider is false
+            const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
+            expect(nodeSelect.providers).toBeUndefined();
         });
 
         it('should parse and convert Clash URL (incompatible format)', async () => {
