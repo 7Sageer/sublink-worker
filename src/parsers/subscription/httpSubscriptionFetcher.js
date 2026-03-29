@@ -87,7 +87,7 @@ export async function fetchSubscription(url, userAgent) {
  * Fetch subscription content and detect its format without parsing
  * @param {string} url - The subscription URL to fetch
  * @param {string} userAgent - Optional User-Agent header
- * @returns {Promise<{content: string, format: 'clash'|'singbox'|'unknown', url: string}|null>}
+ * @returns {Promise<{content: string, format: 'clash'|'singbox'|'unknown', url: string, subscriptionUserinfo?: string}|null>}
  */
 export async function fetchSubscriptionWithFormat(url, userAgent) {
     try {
@@ -106,7 +106,9 @@ export async function fetchSubscriptionWithFormat(url, userAgent) {
         const content = decodeContent(text);
         const format = detectFormat(content);
 
-        return { content, format, url };
+        const subscriptionUserinfo = response.headers.get('subscription-userinfo') || undefined;
+
+        return { content, format, url, subscriptionUserinfo };
     } catch (error) {
         console.error('Error fetching subscription:', error);
         return null;
