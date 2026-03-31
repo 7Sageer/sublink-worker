@@ -49,8 +49,30 @@ export const SING_BOX_CONFIG = {
 		interval: '30m'
 	},
 	inbounds: [
-		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed' }
+		{
+			tag: "tun-in",
+			type: "tun",
+			address: [
+				"172.19.0.0/30"
+			],
+			mtu: 9000,
+			auto_route: true,
+			strict_route: true,
+			stack: "system",
+			platform: {
+				http_proxy: {
+					enabled: true,
+					server: "127.0.0.1",
+					server_port: 2080
+				}
+			}
+		},
+		{
+			tag: "mixed-in",
+			type: "mixed",
+			listen: "127.0.0.1",
+			listen_port: 2080
+		}
 	],
 	outbounds: [
 		{ type: 'block', tag: 'REJECT' },
@@ -120,8 +142,30 @@ export const SING_BOX_CONFIG_V1_11 = {
 		interval: '30m'
 	},
 	inbounds: [
-		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed' }
+		{
+			tag: "tun-in",
+			type: "tun",
+			address: [
+				"172.19.0.0/30"
+			],
+			mtu: 9000,
+			auto_route: true,
+			strict_route: true,
+			stack: "system",
+			platform: {
+				http_proxy: {
+					enabled: true,
+					server: "127.0.0.1",
+					server_port: 2080
+				}
+			}
+		},
+		{
+			tag: "mixed-in",
+			type: "mixed",
+			listen: "127.0.0.1",
+			listen_port: 2080
+		}
 	],
 	outbounds: [
 		{ type: 'block', tag: 'REJECT' },
