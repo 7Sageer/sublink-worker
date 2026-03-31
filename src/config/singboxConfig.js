@@ -23,7 +23,7 @@ export const SING_BOX_CONFIG = {
 				server: "dns_direct"
 			},
 			{
-				rule_set: "geosite-cn",
+				rule_set: "cn",
 				server: "dns_direct"
 			},
 			{
@@ -35,7 +35,7 @@ export const SING_BOX_CONFIG = {
 				server: "dns_proxy"
 			},
 			{
-				rule_set: "geosite-geolocation-!cn",
+				rule_set: "geolocation-!cn",
 				server: "dns_proxy"
 			}
 		],
@@ -58,10 +58,10 @@ export const SING_BOX_CONFIG = {
 	route: {
 		"rule_set": [
 			{
-				"tag": "geosite-geolocation-!cn",
+				"tag": "geolocation-!cn",
 				"type": "local",
 				"format": "binary",
-				"path": "geosite-geolocation-!cn.srs"
+				"path": "geolocation-!cn.srs"
 			}
 		],
 		rules: []
@@ -93,7 +93,7 @@ export const SING_BOX_CONFIG_V1_11 = {
 				server: "dns_direct"
 			},
 			{
-				rule_set: "geosite-cn",
+				rule_set: "cn",
 				server: "dns_direct"
 			},
 			{
@@ -105,7 +105,7 @@ export const SING_BOX_CONFIG_V1_11 = {
 				server: "dns_proxy"
 			},
 			{
-				rule_set: "geosite-geolocation-!cn",
+				rule_set: "geolocation-!cn",
 				server: "dns_proxy"
 			}
 		],
