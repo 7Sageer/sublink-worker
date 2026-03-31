@@ -7,57 +7,40 @@ export const SING_BOX_CONFIG = {
 	dns: {
 		servers: [
 			{
-				type: "tcp",
 				tag: "dns_proxy",
-				server: "1.1.1.1",
-				detour: "🚀 节点选择",
-				domain_resolver: "dns_resolver"
+				address: "tls://8.8.8.8",
+				detour: "🚀 节点选择"
 			},
 			{
-				type: "https",
 				tag: "dns_direct",
-				server: "dns.alidns.com",
-				domain_resolver: "dns_resolver"
-			},
-			{
-				type: "udp",
-				tag: "dns_resolver",
-				server: "223.5.5.5"
-			},
-			{
-				type: "fakeip",
-				tag: "dns_fakeip",
-				inet4_range: "198.18.0.0/15",
-				inet6_range: "fc00::/18"
+				address: "https://dns.alidns.com/dns-query",
+				detour: "DIRECT"
 			}
 		],
 		rules: [
 			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"A",
-					"AAAA"
-				],
-				server: "dns_fakeip"
+				outbound: "any",
+				server: "dns_direct"
 			},
 			{
-				rule_set: "geolocation-!cn",
-				query_type: "CNAME",
+				rule_set: "geosite-cn",
+				server: "dns_direct"
+			},
+			{
+				clash_mode: "direct",
+				server: "dns_direct"
+			},
+			{
+				clash_mode: "global",
 				server: "dns_proxy"
 			},
 			{
-				query_type: [
-					"A",
-					"AAAA",
-					"CNAME"
-				],
-				invert: true,
-				action: "predefined",
-				rcode: "REFUSED"
+				rule_set: "geosite-geolocation-!cn",
+				server: "dns_proxy"
 			}
 		],
 		final: "dns_direct",
-		independent_cache: true
+		strategy: "ipv4_only"
 	},
 	ntp: {
 		enabled: true,
@@ -74,7 +57,7 @@ export const SING_BOX_CONFIG = {
 		{ type: "direct", tag: 'DIRECT' }
 	],
 	route: {
-		default_domain_resolver: "dns_resolver",
+		default_domain_resolver: "dns_direct",
 		"rule_set": [
 			{
 				"tag": "geosite-geolocation-!cn",
@@ -87,8 +70,7 @@ export const SING_BOX_CONFIG = {
 	},
 	experimental: {
 		cache_file: {
-			enabled: true,
-			store_fakeip: true
+			enabled: true
 		}
 	}
 };
@@ -98,58 +80,39 @@ export const SING_BOX_CONFIG_V1_11 = {
 		servers: [
 			{
 				tag: "dns_proxy",
-				address: "tls://1.1.1.1",
+				address: "tls://8.8.8.8",
 				detour: "🚀 节点选择"
 			},
 			{
 				tag: "dns_direct",
 				address: "https://dns.alidns.com/dns-query",
-				detour: "DIRECT",
-				address_resolver: "dns_resolver"
-			},
-			{
-				tag: "dns_resolver",
-				address: "223.5.5.5",
 				detour: "DIRECT"
-			},
-			{
-				tag: "dns_fakeip",
-				address: "fakeip"
 			}
 		],
 		rules: [
 			{
-				rule_set: "geolocation-!cn",
-				query_type: [
-					"A",
-					"AAAA"
-				],
-				server: "dns_fakeip"
+				outbound: "any",
+				server: "dns_direct"
 			},
 			{
-				rule_set: "geolocation-!cn",
-				query_type: "CNAME",
+				rule_set: "geosite-cn",
+				server: "dns_direct"
+			},
+			{
+				clash_mode: "direct",
+				server: "dns_direct"
+			},
+			{
+				clash_mode: "global",
 				server: "dns_proxy"
 			},
 			{
-				query_type: [
-					"A",
-					"AAAA",
-					"CNAME"
-				],
-				invert: true,
-				server: "dns_direct",
-				disable_cache: true
+				rule_set: "geosite-geolocation-!cn",
+				server: "dns_proxy"
 			}
 		],
 		final: "dns_direct",
-		strategy: "prefer_ipv4",
-		independent_cache: true,
-		fakeip: {
-			enabled: true,
-			inet4_range: "198.18.0.0/15",
-			inet6_range: "fc00::/18"
-		}
+		strategy: "ipv4_only"
 	},
 	ntp: {
 		enabled: true,
@@ -171,8 +134,7 @@ export const SING_BOX_CONFIG_V1_11 = {
 	},
 	experimental: {
 		cache_file: {
-			enabled: true,
-			store_fakeip: true
+			enabled: true
 		}
 	}
 };
