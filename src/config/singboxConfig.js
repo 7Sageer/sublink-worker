@@ -7,39 +7,40 @@ export const SING_BOX_CONFIG = {
 	dns: {
 		servers: [
 			{
-				tag: "dns_proxy",
+				tag: "proxyDns",
 				address: "tls://8.8.8.8",
-				detour: "🚀 节点选择"
+				detour: "Proxy"
 			},
 			{
-				tag: "dns_direct",
-				address: "https://dns.alidns.com/dns-query",
-				detour: "DIRECT"
+				tag: "localDns",
+				address: "https://223.5.5.5/dns-query",
+				detour: "direct"
 			}
 		],
 		rules: [
 			{
 				outbound: "any",
-				server: "dns_direct"
+				server: "localDns"
 			},
 			{
-				rule_set: "cn",
-				server: "dns_direct"
+				rule_set: "geosite-cn",
+				server: "localDns"
 			},
 			{
 				clash_mode: "direct",
-				server: "dns_direct"
+				server: "localDns"
 			},
 			{
 				clash_mode: "global",
-				server: "dns_proxy"
+				server: "proxyDns"
 			},
 			{
-				rule_set: "geolocation-!cn",
-				server: "dns_proxy"
+				rule_set: "geosite-geolocation-!cn",
+				server: "proxyDns"
 			}
 		],
-		final: "dns_direct"
+		final: "localDns",
+		strategy: "ipv4_only"
 	},
 	ntp: {
 		enabled: true,
@@ -58,10 +59,10 @@ export const SING_BOX_CONFIG = {
 	route: {
 		"rule_set": [
 			{
-				"tag": "geolocation-!cn",
+				"tag": "geosite-geolocation-!cn",
 				"type": "local",
 				"format": "binary",
-				"path": "geolocation-!cn.srs"
+				"path": "geosite-geolocation-!cn.srs"
 			}
 		],
 		rules: []
@@ -77,39 +78,40 @@ export const SING_BOX_CONFIG_V1_11 = {
 	dns: {
 		servers: [
 			{
-				tag: "dns_proxy",
+				tag: "proxyDns",
 				address: "tls://8.8.8.8",
-				detour: "🚀 节点选择"
+				detour: "Proxy"
 			},
 			{
-				tag: "dns_direct",
-				address: "https://dns.alidns.com/dns-query",
-				detour: "DIRECT"
+				tag: "localDns",
+				address: "https://223.5.5.5/dns-query",
+				detour: "direct"
 			}
 		],
 		rules: [
 			{
 				outbound: "any",
-				server: "dns_direct"
+				server: "localDns"
 			},
 			{
-				rule_set: "cn",
-				server: "dns_direct"
+				rule_set: "geosite-cn",
+				server: "localDns"
 			},
 			{
 				clash_mode: "direct",
-				server: "dns_direct"
+				server: "localDns"
 			},
 			{
 				clash_mode: "global",
-				server: "dns_proxy"
+				server: "proxyDns"
 			},
 			{
-				rule_set: "geolocation-!cn",
-				server: "dns_proxy"
+				rule_set: "geosite-geolocation-!cn",
+				server: "proxyDns"
 			}
 		],
-		final: "dns_direct"
+		final: "localDns",
+		strategy: "ipv4_only"
 	},
 	ntp: {
 		enabled: true,
