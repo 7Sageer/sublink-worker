@@ -39,8 +39,7 @@ export const SING_BOX_CONFIG = {
 				server: "dns_proxy"
 			}
 		],
-		final: "dns_direct",
-		strategy: "ipv4_only"
+		final: "dns_direct"
 	},
 	ntp: {
 		enabled: true,
@@ -57,7 +56,6 @@ export const SING_BOX_CONFIG = {
 		{ type: "direct", tag: 'DIRECT' }
 	],
 	route: {
-		default_domain_resolver: "dns_direct",
 		"rule_set": [
 			{
 				"tag": "geosite-geolocation-!cn",
@@ -111,8 +109,7 @@ export const SING_BOX_CONFIG_V1_11 = {
 				server: "dns_proxy"
 			}
 		],
-		final: "dns_direct",
-		strategy: "ipv4_only"
+		final: "dns_direct"
 	},
 	ntp: {
 		enabled: true,
