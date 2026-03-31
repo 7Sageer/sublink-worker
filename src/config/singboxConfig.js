@@ -14,7 +14,7 @@ export const SING_BOX_CONFIG = {
 			{
 				tag: "localDns",
 				address: "https://223.5.5.5/dns-query",
-				detour: "direct"
+				detour: "DIRECT"
 			}
 		],
 		rules: [
@@ -85,7 +85,7 @@ export const SING_BOX_CONFIG_V1_11 = {
 			{
 				tag: "localDns",
 				address: "https://223.5.5.5/dns-query",
-				detour: "direct"
+				detour: "DIRECT"
 			}
 		],
 		rules: [
