@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import yaml from 'js-yaml';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { parseVless } from '../src/parsers/protocols/vlessParser.js';
@@ -87,6 +88,33 @@ describe('UDP handling in proxy conversion', () => {
             expect(converted.udp).toBe(true);
             expect(converted.name).toBe('TestProxy');
             expect(converted.type).toBe('vless');
+        });
+
+        it('should enable udp by default for Clash proxies built from URI subscriptions', async () => {
+            const input = 'ss://YWVzLTEyOC1nY206dGVzdA@example.com:443#TestSS';
+            const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', null);
+            const built = yaml.load(await builder.build());
+
+            expect(built.proxies).toHaveLength(1);
+            expect(built.proxies[0].type).toBe('ss');
+            expect(built.proxies[0].udp).toBe(true);
+        });
+
+        it('should keep explicit udp=false when generating Clash proxies', () => {
+            const proxyWithDisabledUdp = {
+                tag: 'TestProxy',
+                type: 'vmess',
+                server: 'example.com',
+                server_port: 443,
+                uuid: 'test-uuid',
+                udp: false,
+                tls: { enabled: true, server_name: 'example.com' }
+            };
+
+            const builder = new ClashConfigBuilder('', [], [], null, 'zh-CN', null);
+            const converted = builder.convertProxy(proxyWithDisabledUdp);
+
+            expect(converted.udp).toBe(false);
         });
     });
 
