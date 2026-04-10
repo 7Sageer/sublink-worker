@@ -413,7 +413,16 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             this.customRules.forEach(rule => {
                 const name = this.t(`outboundNames.${rule.name}`);
                 if (!this.hasProxyGroup(name)) {
-                    const proxies = this.buildSelectGroupMembers(proxyList);
+                    // Custom rules should not include country groups as direct proxies
+                    // to prevent them from acting as global proxies.
+                    // Custom rules should route through: Node Select -> Country Groups
+                    const proxies = [
+                        this.t('outboundNames.Node Select'),
+                        ...(this.includeAutoSelect ? [this.t('outboundNames.Auto Select')] : []),
+                        ...(this.manualGroupName ? [this.manualGroupName] : []),
+                        'DIRECT',
+                        'REJECT'
+                    ];
                     const group = {
                         type: "select",
                         name,
