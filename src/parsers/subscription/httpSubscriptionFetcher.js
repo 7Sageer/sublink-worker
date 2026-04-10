@@ -10,9 +10,6 @@ function decodeContent(text) {
     let decodedText;
     try {
         decodedText = decodeBase64(text.trim());
-        if (decodedText.includes('%')) {
-            decodedText = decodeURIComponent(decodedText);
-        }
     } catch (e) {
         decodedText = text;
         if (decodedText.includes('%')) {
