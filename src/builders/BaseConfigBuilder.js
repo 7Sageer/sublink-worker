@@ -4,7 +4,7 @@ import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true, subscriptionCache = null) {
         this.inputString = inputString;
         this.config = deepCopy(baseConfig);
         this.customRules = [];
@@ -15,6 +15,7 @@ export class BaseConfigBuilder {
         this.groupByCountry = groupByCountry;
         this.includeAutoSelect = includeAutoSelect;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
+        this.subscriptionCache = subscriptionCache;  // D1 subscription cache service
     }
 
     async build() {
@@ -88,8 +89,20 @@ export class BaseConfigBuilder {
                 if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
                     const { fetchSubscriptionWithFormat } = await import('../parsers/subscription/httpSubscriptionFetcher.js');
 
+                    // Check for cache=false query param to disable caching
+                    let cacheEnabled = true;
                     try {
-                        const fetchResult = await fetchSubscriptionWithFormat(trimmedUrl, this.userAgent);
+                        const urlObj = new URL(trimmedUrl);
+                        cacheEnabled = urlObj.searchParams.get('cache') !== 'false';
+                    } catch (e) {
+                        // Invalid URL, use default cache enabled
+                    }
+
+                    try {
+                        const fetchResult = await fetchSubscriptionWithFormat(trimmedUrl, this.userAgent, {
+                            cacheService: this.subscriptionCache,
+                            cacheEnabled
+                        });
                         if (fetchResult) {
                             const { content, format, url: originalUrl } = fetchResult;
 

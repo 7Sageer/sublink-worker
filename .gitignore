@@ -176,3 +176,6 @@ dist
 .vercel
 
 CLAUDE.local.md
+.lh
+.claude
+docs/.DS_Store
