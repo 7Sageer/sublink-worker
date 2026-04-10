@@ -222,7 +222,16 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const selectorMembers = this.buildSelectorMembers(proxyList);
+                // Custom rules should not include country groups as direct outbounds
+                // to prevent them from acting as global proxies.
+                // Custom rules should route through: Node Select -> Country Groups
+                const selectorMembers = [
+                    this.t('outboundNames.Node Select'),
+                    ...(this.includeAutoSelect ? [this.t('outboundNames.Auto Select')] : []),
+                    ...(this.manualGroupName ? [this.manualGroupName] : []),
+                    'DIRECT',
+                    'REJECT'
+                ];
                 if (this.hasOutboundTag(rule.name)) return;
                 this.config.outbounds.push({
                     type: "selector",

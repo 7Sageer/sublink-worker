@@ -296,8 +296,17 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const options = this.buildAggregatedOptions(proxyList);
                 if (this.hasProxyGroup(rule.name)) return;
+                // Custom rules should not include country groups as direct options
+                // to prevent them from acting as global proxies.
+                // Custom rules should route through: Node Select -> Country Groups
+                const options = [
+                    this.t('outboundNames.Node Select'),
+                    ...(this.includeAutoSelect ? [this.t('outboundNames.Auto Select')] : []),
+                    ...(this.manualGroupName ? [this.manualGroupName] : []),
+                    'DIRECT',
+                    'REJECT'
+                ];
                 this.config['proxy-groups'].push(
                     this.createProxyGroup(rule.name, 'select', options)
                 );
