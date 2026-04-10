@@ -114,6 +114,10 @@ export function createApp(bindings = {}) {
                 includeAutoSelect
             );
             await builder.build();
+            const userinfo = builder.getSubscriptionUserinfo();
+            if (userinfo) {
+                c.header('subscription-userinfo', userinfo);
+            }
             return c.json(builder.config);
         } catch (error) {
             return handleError(c, error, runtime.logger);
