@@ -4,7 +4,7 @@ import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true, mergeUserGroups = true) {
         this.inputString = inputString;
         this.config = deepCopy(baseConfig);
         this.customRules = [];
@@ -14,6 +14,7 @@ export class BaseConfigBuilder {
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
         this.includeAutoSelect = includeAutoSelect;
+        this.mergeUserGroups = mergeUserGroups;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
         this.subscriptionUserinfo = undefined;
     }
@@ -344,8 +345,8 @@ export class BaseConfigBuilder {
         this.addCustomRuleGroups(proxyList);
         this.addFallBackGroup(proxyList);
 
-        // Merge user-defined proxy-groups after system groups are created
-        if (this.pendingUserProxyGroups && this.pendingUserProxyGroups.length > 0) {
+        // Merge user-defined proxy-groups after system groups are created (only if enabled)
+        if (this.mergeUserGroups && this.pendingUserProxyGroups && this.pendingUserProxyGroups.length > 0) {
             this.mergeUserProxyGroups(this.pendingUserProxyGroups);
         }
     }
