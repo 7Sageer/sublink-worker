@@ -3,7 +3,7 @@ import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDE
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { deepCopy, groupProxiesByCountry } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
-import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
+import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleSelectorMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigUtils.js';
 import { normalizeGroupName, findGroupIndexByName } from './helpers/groupNameUtils.js';
 
@@ -413,16 +413,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             this.customRules.forEach(rule => {
                 const name = this.t(`outboundNames.${rule.name}`);
                 if (!this.hasProxyGroup(name)) {
-                    // Custom rules should not include country groups as direct proxies
-                    // to prevent them from acting as global proxies.
-                    // Custom rules should route through: Node Select -> Country Groups
-                    const proxies = [
-                        this.t('outboundNames.Node Select'),
-                        ...(this.includeAutoSelect ? [this.t('outboundNames.Auto Select')] : []),
-                        ...(this.manualGroupName ? [this.manualGroupName] : []),
-                        'DIRECT',
-                        'REJECT'
-                    ];
+                    const proxies = buildCustomRuleSelectorMembers({
+                        proxyList,
+                        translator: this.t,
+                        groupByCountry: this.groupByCountry,
+                        manualGroupName: this.manualGroupName,
+                        includeAutoSelect: this.includeAutoSelect
+                    });
                     const group = {
                         type: "select",
                         name,

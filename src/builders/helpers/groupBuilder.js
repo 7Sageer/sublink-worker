@@ -56,3 +56,21 @@ export function buildSelectorMembers({ proxyList = [], translator, groupByCountr
         ];
     return withDirectReject(base);
 }
+
+export function buildCustomRuleSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, includeAutoSelect = true }) {
+    if (!groupByCountry) {
+        return buildSelectorMembers({
+            proxyList,
+            translator,
+            groupByCountry,
+            manualGroupName,
+            includeAutoSelect
+        });
+    }
+
+    return withDirectReject([
+        translator('outboundNames.Node Select'),
+        ...(includeAutoSelect ? [translator('outboundNames.Auto Select')] : []),
+        ...(manualGroupName ? [manualGroupName] : [])
+    ]);
+}
