@@ -22,6 +22,34 @@ describe('Issue #256 - Custom rules should not bypass selector chain', () => {
     const AUTO_SELECT = '⚡ 自动选择';
 
     describe('SingboxConfigBuilder', () => {
+        it('should restore full proxy options for custom rules when groupByCountry is disabled', async () => {
+            const builder = new SingboxConfigBuilder(
+                inputString,
+                'minimal',
+                customRules,
+                null,
+                'zh-CN',
+                '',
+                false,
+                false,
+                null,
+                null,
+                '1.12',
+                true
+            );
+
+            await builder.build();
+
+            const customRule1 = builder.config.outbounds.find(o => o?.tag === 'Custom-Rule-1');
+            expect(customRule1).toBeDefined();
+            expect(customRule1.outbounds).toContain(NODE_SELECT);
+            expect(customRule1.outbounds).toContain('US-Node-1');
+            expect(customRule1.outbounds).toContain('UK-Node-1');
+            expect(customRule1.outbounds).toContain('DIRECT');
+            expect(customRule1.outbounds).toContain('REJECT');
+            expect(customRule1.outbounds).not.toContain(AUTO_SELECT);
+        });
+
         it('should not include country groups in custom rule outbounds when groupByCountry is enabled', async () => {
             const builder = new SingboxConfigBuilder(
                 inputString,
@@ -99,6 +127,33 @@ describe('Issue #256 - Custom rules should not bypass selector chain', () => {
     });
 
     describe('ClashConfigBuilder', () => {
+        it('should restore full proxy options for custom rules when groupByCountry is disabled', async () => {
+            const builder = new ClashConfigBuilder(
+                inputString,
+                'minimal',
+                customRules,
+                null,
+                'zh-CN',
+                '',
+                false,
+                false,
+                null,
+                null,
+                true
+            );
+
+            await builder.build();
+
+            const customRule1 = builder.config['proxy-groups'].find(g => g?.name === 'Custom-Rule-1');
+            expect(customRule1).toBeDefined();
+            expect(customRule1.proxies).toContain(NODE_SELECT);
+            expect(customRule1.proxies).toContain('US-Node-1');
+            expect(customRule1.proxies).toContain('UK-Node-1');
+            expect(customRule1.proxies).toContain('DIRECT');
+            expect(customRule1.proxies).toContain('REJECT');
+            expect(customRule1.proxies).not.toContain(AUTO_SELECT);
+        });
+
         it('should not include country groups in custom rule proxies when groupByCountry is enabled', async () => {
             const builder = new ClashConfigBuilder(
                 inputString,
@@ -166,6 +221,35 @@ describe('Issue #256 - Custom rules should not bypass selector chain', () => {
     });
 
     describe('SurgeConfigBuilder', () => {
+        it('should restore full proxy options for custom rules when groupByCountry is disabled', async () => {
+            const builder = new SurgeConfigBuilder(
+                inputString,
+                'minimal',
+                customRules,
+                null,
+                'zh-CN',
+                '',
+                false,
+                true
+            );
+
+            await builder.build();
+
+            const customRule1 = builder.config['proxy-groups'].find(g => {
+                const name = typeof g === 'string' ? g.split('=')[0].trim() : g?.name;
+                return name === 'Custom-Rule-1';
+            });
+            expect(customRule1).toBeDefined();
+
+            const groupString = typeof customRule1 === 'string' ? customRule1 : '';
+            expect(groupString).toContain(NODE_SELECT);
+            expect(groupString).toContain('US-Node-1');
+            expect(groupString).toContain('UK-Node-1');
+            expect(groupString).toContain('DIRECT');
+            expect(groupString).toContain('REJECT');
+            expect(groupString).not.toContain(AUTO_SELECT);
+        });
+
         it('should not include country groups in custom rule options when groupByCountry is enabled', async () => {
             const builder = new SurgeConfigBuilder(
                 inputString,
