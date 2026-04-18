@@ -111,7 +111,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 			tag: 'geolocation-!cn',
 			type: 'remote',
 			format: 'binary',
-			url: `${SITE_RULE_SET_BASE_URL}geosite-geolocation-!cn.srs`,
+			url: `${SITE_RULE_SET_BASE_URL}geolocation-!cn.srs`,
 		});
 	}
 
@@ -122,7 +122,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					tag: site,
 					type: 'remote',
 					format: 'binary',
-					url: `${SITE_RULE_SET_BASE_URL}geosite-${site}.srs`,
+					url: `${SITE_RULE_SET_BASE_URL}${site}.srs`,
 				});
 			});
 			toStringArray(rule.ip).forEach(ip => {
@@ -130,7 +130,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					tag: `${ip}-ip`,
 					type: 'remote',
 					format: 'binary',
-					url: `${IP_RULE_SET_BASE_URL}geoip-${ip}.srs`,
+					url: `${IP_RULE_SET_BASE_URL}${ip}.srs`,
 				});
 			});
 		});

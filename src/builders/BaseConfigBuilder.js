@@ -15,6 +15,7 @@ export class BaseConfigBuilder {
         this.groupByCountry = groupByCountry;
         this.includeAutoSelect = includeAutoSelect;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
+        this.subscriptionUserinfo = undefined;
     }
 
     async build() {
@@ -91,7 +92,11 @@ export class BaseConfigBuilder {
                     try {
                         const fetchResult = await fetchSubscriptionWithFormat(trimmedUrl, this.userAgent);
                         if (fetchResult) {
-                            const { content, format, url: originalUrl } = fetchResult;
+                            const { content, format, url: originalUrl, subscriptionUserinfo } = fetchResult;
+
+                            if (subscriptionUserinfo && !this.subscriptionUserinfo) {
+                                this.subscriptionUserinfo = subscriptionUserinfo;
+                            }
 
                             // If format is compatible with target client, use as provider
                             if (this.isCompatibleProviderFormat(format)) {
@@ -252,6 +257,10 @@ export class BaseConfigBuilder {
 
     hasConfigOverride(key) {
         return this.appliedOverrideKeys?.has(key);
+    }
+
+    getSubscriptionUserinfo() {
+        return this.subscriptionUserinfo;
     }
 
     getOutboundsList() {
