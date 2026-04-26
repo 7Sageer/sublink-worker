@@ -181,3 +181,6 @@ AGENTS.local.md
 
 # Local planning
 .roadmap/
+
+# Local upstream source references
+.upstreams/
