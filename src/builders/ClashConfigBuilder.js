@@ -319,11 +319,21 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         return (this.config['proxy-groups'] || []).some(group => group && normalizeGroupName(group.name) === target);
     }
 
+    hasSelectableSources(proxyList = []) {
+        return uniqueNames(proxyList).length > 0 || this.getAllProviderNames().length > 0;
+    }
+
+    shouldIncludeAutoSelectGroup(proxyList = []) {
+        return this.includeAutoSelect && this.hasSelectableSources(proxyList);
+    }
+
     addAutoSelectGroup(proxyList) {
         if (!this.includeAutoSelect) return;
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const autoName = this.t('outboundNames.Auto Select');
         if (this.hasProxyGroup(autoName)) return;
+        const providerNames = this.getAllProviderNames();
+        if (uniqueNames(proxyList).length === 0 && providerNames.length === 0) return;
 
         const group = {
             name: autoName,
@@ -334,8 +344,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             lazy: false
         };
 
-        // Add 'use' field if we have proxy-providers
-        const providerNames = this.getAllProviderNames();
         if (providerNames.length > 0) {
             group.use = providerNames;
         }
@@ -353,7 +361,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
             countryGroupNames: this.countryGroupNames,
-            includeAutoSelect: this.includeAutoSelect
+            includeAutoSelect: this.shouldIncludeAutoSelectGroup(proxyList)
         });
 
         const group = {
@@ -378,7 +386,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
             countryGroupNames: this.countryGroupNames,
-            includeAutoSelect: this.includeAutoSelect
+            includeAutoSelect: this.shouldIncludeAutoSelectGroup(proxyList)
         });
     }
 
@@ -417,7 +425,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         proxyList,
                         translator: this.t,
                         manualGroupName: this.manualGroupName,
-                        includeAutoSelect: this.includeAutoSelect
+                        includeAutoSelect: this.shouldIncludeAutoSelectGroup(proxyList)
                     });
                     const group = {
                         type: "select",
@@ -515,7 +523,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 groupByCountry: true,
                 manualGroupName,
                 countryGroupNames,
-                includeAutoSelect: this.includeAutoSelect
+                includeAutoSelect: this.shouldIncludeAutoSelectGroup(this.getProxyList())
             });
             nodeSelectGroup.proxies = rebuilt;
         }
