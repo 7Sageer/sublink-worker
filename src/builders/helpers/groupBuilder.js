@@ -56,3 +56,15 @@ export function buildSelectorMembers({ proxyList = [], translator, groupByCountr
         ];
     return withDirectReject(base);
 }
+
+export function buildCustomRuleMembers({ proxyList = [], translator, manualGroupName, includeAutoSelect = true }) {
+    if (!translator) {
+        throw new Error('buildCustomRuleMembers requires a translator function');
+    }
+    return withDirectReject([
+        translator('outboundNames.Node Select'),
+        ...(includeAutoSelect ? [translator('outboundNames.Auto Select')] : []),
+        ...(manualGroupName ? [manualGroupName] : []),
+        ...proxyList
+    ]);
+}
