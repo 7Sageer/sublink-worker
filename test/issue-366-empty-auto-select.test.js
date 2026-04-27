@@ -21,6 +21,6 @@ describe('Issue #366 - avoid empty Auto Select groups', () => {
         expect(autoSelect).toBeUndefined();
         expect(nodeSelect).toBeDefined();
         expect(nodeSelect.outbounds).not.toContain('⚡ 自动选择');
-        expect(nodeSelect.outbounds).toEqual(['DIRECT', 'REJECT']);
+        expect(nodeSelect.outbounds).toEqual(['DIRECT']);
     });
 });

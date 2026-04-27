@@ -13,24 +13,25 @@ describe('Issue #371 - custom rule groups keep full proxy choices without countr
         { name: 'Custom-Rule', site_rules: ['google'], ip_rules: [], domain_suffix: [], domain_keyword: [] }
     ];
 
-    const expectedCountryMembers = [
+    const expectedSingboxCountryMembers = [
         '🚀 节点选择',
         '⚡ 自动选择',
         '🖐️ 手动切换',
         'US-Node-1',
         'UK-Node-1',
-        'DIRECT',
-        'REJECT'
+        'DIRECT'
     ];
 
-    const expectedFlatMembers = [
+    const expectedSingboxFlatMembers = [
         '🚀 节点选择',
         '⚡ 自动选择',
         'US-Node-1',
         'UK-Node-1',
-        'DIRECT',
-        'REJECT'
+        'DIRECT'
     ];
+
+    const expectedCountryMembers = [...expectedSingboxCountryMembers, 'REJECT'];
+    const expectedFlatMembers = [...expectedSingboxFlatMembers, 'REJECT'];
 
     const expectCompleteOptionsWithoutCountries = (members, expectedMembers) => {
         expect(members).toEqual(expectedMembers);
@@ -58,7 +59,7 @@ describe('Issue #371 - custom rule groups keep full proxy choices without countr
         await builder.build();
 
         const customRule = builder.config.outbounds.find(outbound => outbound?.tag === 'Custom-Rule');
-        expectCompleteOptionsWithoutCountries(customRule.outbounds, expectedCountryMembers);
+        expectCompleteOptionsWithoutCountries(customRule.outbounds, expectedSingboxCountryMembers);
     });
 
     it('Singbox custom rule includes direct proxy choices when groupByCountry is disabled', async () => {
@@ -80,7 +81,7 @@ describe('Issue #371 - custom rule groups keep full proxy choices without countr
         await builder.build();
 
         const customRule = builder.config.outbounds.find(outbound => outbound?.tag === 'Custom-Rule');
-        expectCompleteOptionsWithoutCountries(customRule.outbounds, expectedFlatMembers);
+        expectCompleteOptionsWithoutCountries(customRule.outbounds, expectedSingboxFlatMembers);
     });
 
     it('Clash custom rule includes direct proxy choices when groupByCountry is enabled', async () => {
