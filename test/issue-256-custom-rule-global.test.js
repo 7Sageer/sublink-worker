@@ -47,12 +47,13 @@ describe('Issue #256 - Custom rules should not bypass selector chain', () => {
             expect(customRule1).toBeDefined();
             expect(customRule2).toBeDefined();
 
-            // Custom rules should contain Node Select, Auto Select, DIRECT, REJECT
+            // Custom rules should contain Node Select, Auto Select, and DIRECT.
+            // REJECT is a route action in sing-box 1.11+ instead of a special outbound.
             // But should NOT contain country groups like "🇺🇸 United States"
             expect(customRule1.outbounds).toContain(NODE_SELECT);
             expect(customRule1.outbounds).toContain(AUTO_SELECT);
             expect(customRule1.outbounds).toContain('DIRECT');
-            expect(customRule1.outbounds).toContain('REJECT');
+            expect(customRule1.outbounds).not.toContain('REJECT');
 
             // Should NOT contain country groups
             const hasCountryGroup = customRule1.outbounds.some(tag =>
