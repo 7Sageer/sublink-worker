@@ -1,4 +1,6 @@
 const PATH_LENGTH = 7;
+const FNV_32_OFFSET_BASIS = 0x811c9dc5;
+const FNV_32_PRIME = 0x01000193;
 
 // 自定义的字符串前缀检查函数
 export function checkStartsWith(str, prefix) {
@@ -209,6 +211,22 @@ export function groupProxiesByCountry(proxies, { getName } = {}) {
 
 	return grouped;
 }
+
+export function createStableProviderName(url) {
+	if (typeof url !== 'string' || url.trim() === '') {
+		throw new Error('Provider URL must be a non-empty string');
+	}
+
+	const normalizedUrl = url.trim();
+	let hash = FNV_32_OFFSET_BASIS;
+	for (let i = 0; i < normalizedUrl.length; i++) {
+		hash ^= normalizedUrl.charCodeAt(i);
+		hash = Math.imul(hash, FNV_32_PRIME);
+	}
+
+	return `_auto_provider_${(hash >>> 0).toString(36)}`;
+}
+
 export function deepCopy(obj) {
 	if (obj === null || typeof obj !== 'object') {
 		return obj;
