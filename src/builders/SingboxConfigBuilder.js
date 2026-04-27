@@ -44,11 +44,12 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
      * @returns {object[]} - Array of outbound provider objects
      */
     generateOutboundProviders() {
-        return this.providerUrls.map((url, index) => ({
-            tag: `_auto_provider_${index + 1}`,
+        const existingTags = this.getExistingProviderTags();
+        return this.getAutoProviderDescriptors(existingTags).map(({ name, url }) => ({
+            tag: name,
             type: 'http',
             download_url: url,
-            path: `./providers/_auto_provider_${index + 1}.json`,
+            path: `./providers/${name}.json`,
             download_interval: '24h',
             health_check: {
                 enabled: true,
@@ -63,7 +64,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
      * @returns {string[]} - Array of provider tags
      */
     getProviderTags() {
-        return this.providerUrls.map((_, index) => `_auto_provider_${index + 1}`);
+        return this.getAutoProviderDescriptors(this.getExistingProviderTags()).map(provider => provider.name);
+    }
+
+    getExistingProviderTags() {
+        return Array.isArray(this.config.outbound_providers)
+            ? this.config.outbound_providers.map(p => p?.tag).filter(Boolean)
+            : [];
     }
 
     /**
@@ -74,9 +81,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         if (this.singboxVersion === '1.11') {
             return [];
         }
-        const existingTags = Array.isArray(this.config.outbound_providers)
-            ? this.config.outbound_providers.map(p => p?.tag).filter(Boolean)
-            : [];
+        const existingTags = this.getExistingProviderTags();
         const autoTags = this.getProviderTags();
         return [...new Set([...existingTags, ...autoTags])];
     }

@@ -72,10 +72,12 @@ describe('Issues #370/#373/#277 - remote subscription decode and empty Clash out
         );
         const built = yaml.load(await builder.build());
 
-        expect(built['proxy-providers']?._auto_provider_1?.url).toBe('https://example.com/plain-clash.yaml');
+        const providerName = Object.keys(built['proxy-providers'] ?? {})[0];
+        expect(providerName).toMatch(/^_auto_provider_[a-z0-9]+$/);
+        expect(built['proxy-providers'][providerName]?.url).toBe('https://example.com/plain-clash.yaml');
 
         const autoSelect = built['proxy-groups'].find(group => group.name === '⚡ 自动选择');
-        expect(autoSelect.use).toEqual(['_auto_provider_1']);
+        expect(autoSelect.use).toEqual([providerName]);
         expectNoEmptyUrlTestGroup(built);
     });
 
