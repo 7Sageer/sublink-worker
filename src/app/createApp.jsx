@@ -268,6 +268,7 @@ export function createApp(bindings = {}) {
 
         const proxylist = inputString.split('\n');
         const finalProxyList = [];
+        let subscriptionUserinfo;
         const userAgent = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
         const headers = { 'User-Agent': userAgent };
 
@@ -278,6 +279,10 @@ export function createApp(bindings = {}) {
             if (trimmedProxy.startsWith('http://') || trimmedProxy.startsWith('https://')) {
                 try {
                     const response = await fetch(trimmedProxy, { method: 'GET', headers });
+                    const fetchedUserinfo = response.headers.get('subscription-userinfo');
+                    if (fetchedUserinfo && subscriptionUserinfo === undefined) {
+                        subscriptionUserinfo = fetchedUserinfo;
+                    }
                     const text = await response.text();
                     let processed = tryDecodeSubscriptionLines(text, { decodeUriComponent: true });
                     if (!Array.isArray(processed)) processed = [processed];
@@ -297,7 +302,12 @@ export function createApp(bindings = {}) {
             return c.text('Missing config parameter', 400);
         }
 
-        return c.text(encodeBase64(finalString));
+        const responseHeaders = {};
+        if (subscriptionUserinfo) {
+            responseHeaders['subscription-userinfo'] = subscriptionUserinfo;
+        }
+
+        return c.text(encodeBase64(finalString), 200, responseHeaders);
     });
 
     app.get('/shorten-v2', async (c) => {
