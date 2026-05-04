@@ -24,6 +24,9 @@ describe('country flags in node names', () => {
     it('adds a detected country flag and avoids duplicates', () => {
         expect(addCountryFlagToNodeName('US-Node-1')).toBe('🇺🇸 US-Node-1');
         expect(addCountryFlagToNodeName('香港节点2')).toBe('🇭🇰 香港节点2');
+        expect(addCountryFlagToNodeName('台湾节点')).toBe('🇹🇼 台湾节点');
+        expect(addCountryFlagToNodeName('芬兰节点')).toBe('🇫🇮 芬兰节点');
+        expect(addCountryFlagToNodeName('HU-Node-1')).toBe('🇭🇺 HU-Node-1');
         expect(addCountryFlagToNodeName('🇯🇵 JP-Node-1')).toBe('🇯🇵 JP-Node-1');
         expect(addCountryFlagToNodeName('plain-node')).toBe('plain-node');
     });

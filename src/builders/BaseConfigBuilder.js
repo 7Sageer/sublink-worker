@@ -9,6 +9,7 @@ export class BaseConfigBuilder {
         this.config = deepCopy(baseConfig);
         this.customRules = [];
         this.selectedRules = [];
+        this.lang = lang;
         this.t = createTranslator(lang);
         this.userAgent = userAgent;
         this.appliedOverrideKeys = new Set();

@@ -224,11 +224,9 @@ export const formLogicFn = (t) => {
                     params.append('group_by_country', 'true');
                 }
 
-                // Include lang parameter so subconverter gets correct group names
+                // Include lang parameter so downloaded configs keep the page language.
                 const appLang = window.APP_LANG || 'zh-CN';
-                if (appLang !== 'zh-CN') {
-                    params.append('lang', appLang);
-                }
+                params.append('lang', appLang);
 
                 const queryString = params.toString();
                 return origin + '/subconverter' + (queryString ? '?' + queryString : '');
@@ -380,6 +378,7 @@ export const formLogicFn = (t) => {
                     params.append('ua', this.customUA);
                     params.append('selectedRules', JSON.stringify(this.selectedRules));
                     params.append('customRules', JSON.stringify(customRules));
+                    params.append('lang', window.APP_LANG || 'zh-CN');
 
                     if (this.groupByCountry) params.append('group_by_country', 'true');
                     if (this.showFlags) params.append('show_flags', 'true');
