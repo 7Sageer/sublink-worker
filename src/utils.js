@@ -212,6 +212,23 @@ export function groupProxiesByCountry(proxies, { getName } = {}) {
 	return grouped;
 }
 
+export function addCountryFlagToNodeName(nodeName) {
+	if (typeof nodeName !== 'string') {
+		return nodeName;
+	}
+
+	if (/[\u{1F1E6}-\u{1F1FF}]{2}/u.test(nodeName)) {
+		return nodeName;
+	}
+
+	const countryInfo = parseCountryFromNodeName(nodeName);
+	if (!countryInfo?.emoji) {
+		return nodeName;
+	}
+
+	return `${countryInfo.emoji} ${nodeName}`;
+}
+
 export function createStableProviderName(url) {
 	if (typeof url !== 'string' || url.trim() === '') {
 		throw new Error('Provider URL must be a non-empty string');

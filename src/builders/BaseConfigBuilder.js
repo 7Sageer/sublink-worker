@@ -1,10 +1,10 @@
 import { ProxyParser } from '../parsers/index.js';
-import { createStableProviderName, deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
+import { addCountryFlagToNodeName, createStableProviderName, deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true, showFlags = false) {
         this.inputString = inputString;
         this.config = deepCopy(baseConfig);
         this.customRules = [];
@@ -14,6 +14,7 @@ export class BaseConfigBuilder {
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
         this.includeAutoSelect = includeAutoSelect;
+        this.showFlags = showFlags;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
         this.autoProviderDescriptors = undefined;
         this.subscriptionUserinfo = undefined;
@@ -99,8 +100,9 @@ export class BaseConfigBuilder {
                                 this.subscriptionUserinfo = subscriptionUserinfo;
                             }
 
-                            // If format is compatible with target client, use as provider
-                            if (this.isCompatibleProviderFormat(format)) {
+                            // If format is compatible with target client, use as provider.
+                            // When node flags are requested we need concrete proxy names, so parse instead.
+                            if (!this.showFlags && this.isCompatibleProviderFormat(format)) {
                                 this.providerUrls.push(originalUrl);
                                 continue;  // Skip parsing, will be used as provider
                             }
@@ -357,11 +359,27 @@ export class BaseConfigBuilder {
         throw new Error('addCountryGroups must be implemented in child class');
     }
 
+    addCountryFlagToProxy(proxy) {
+        if (!this.showFlags || !proxy?.tag) {
+            return proxy;
+        }
+
+        const flaggedTag = addCountryFlagToNodeName(proxy.tag);
+        if (flaggedTag === proxy.tag) {
+            return proxy;
+        }
+
+        return {
+            ...proxy,
+            tag: flaggedTag
+        };
+    }
+
     addCustomItems(customItems) {
         const validItems = customItems.filter(item => item != null);
         validItems.forEach(item => {
             if (item?.tag) {
-                const convertedProxy = this.convertProxy(item);
+                const convertedProxy = this.convertProxy(this.addCountryFlagToProxy(item));
                 if (convertedProxy) {
                     this.addProxyToConfig(convertedProxy);
                 }
