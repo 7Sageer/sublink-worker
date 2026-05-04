@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { createTranslator } from '../src/i18n/index.js';
-import { groupProxiesByCountry, parseCountryFromNodeName } from '../src/utils.js';
+import { COUNTRY_DATA, groupProxiesByCountry, parseCountryFromNodeName } from '../src/utils.js';
 
 // Create translator for tests
 const t = createTranslator('zh-CN');
@@ -25,19 +25,19 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         expect(proxiesCount).toBeGreaterThan(0);
 
         // Check Hong Kong group
-        const hkGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇭🇰 Hong Kong');
+        const hkGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇭🇰 香港');
         expect(hkGroup).toBeDefined();
         expect(hkGroup.proxies.length).toBe(2);
         expect(hkGroup.type).toBe('url-test');
 
         // Check US group
-        const usGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇺🇸 United States');
+        const usGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇺🇸 美国');
         expect(usGroup).toBeDefined();
         expect(usGroup.proxies.length).toBe(2);
         expect(usGroup.type).toBe('url-test');
 
         // Check Taiwan group
-        const twGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇹🇼 Taiwan');
+        const twGroup = (built['proxy-groups'] || []).find(g => g && g.name === '🇹🇼 台湾');
         expect(twGroup).toBeDefined();
         expect(twGroup.proxies.length).toBe(1);
         expect(twGroup.type).toBe('url-test');
@@ -55,7 +55,7 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         const nodeSelectGroup = (built['proxy-groups'] || []).find(g => g && g.name === nodeSelectLabel);
         expect(nodeSelectGroup).toBeDefined();
 
-        const expectedProxies = ['DIRECT', 'REJECT', autoName, manualName, '🇭🇰 Hong Kong', '🇹🇼 Taiwan', '🇺🇸 United States'];
+        const expectedProxies = ['DIRECT', 'REJECT', autoName, manualName, '🇭🇰 香港', '🇹🇼 台湾', '🇺🇸 美国'];
         const actualProxies = nodeSelectGroup.proxies || [];
         expect(actualProxies.sort()).toEqual(expectedProxies.sort());
 
@@ -63,7 +63,7 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         const youtubeLabel = t('outboundNames.Youtube');
         const youtubeGroup = (built['proxy-groups'] || []).find(g => g && g.name === youtubeLabel);
         if (youtubeGroup) {
-            const expectedMembers = [nodeSelectLabel, autoName, manualName, '🇭🇰 Hong Kong', '🇹🇼 Taiwan', '🇺🇸 United States'];
+            const expectedMembers = [nodeSelectLabel, autoName, manualName, '🇭🇰 香港', '🇹🇼 台湾', '🇺🇸 美国'];
             const actualMembers = youtubeGroup.proxies || [];
             const missing = expectedMembers.filter(name => !actualMembers.includes(name));
             expect(missing).toEqual([]);
@@ -118,6 +118,19 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         it('should prefer longer alias over shorter (Indonesia vs India)', () => {
             expect(parseCountryFromNodeName('Indonesia-1')).toMatchObject({ code: 'ID' });
             expect(parseCountryFromNodeName('印度尼西亚节点')).toMatchObject({ code: 'ID' });
+        });
+
+        it('should include the full ISO country/region list and newly covered countries', () => {
+            expect(Object.keys(COUNTRY_DATA)).toHaveLength(249);
+            expect(COUNTRY_DATA.TW.emoji).toBe('🇹🇼');
+            expect(COUNTRY_DATA.FI.emoji).toBe('🇫🇮');
+            expect(COUNTRY_DATA.HU.emoji).toBe('🇭🇺');
+            expect(parseCountryFromNodeName('芬兰节点')).toMatchObject({ code: 'FI' });
+            expect(parseCountryFromNodeName('Finland-1')).toMatchObject({ code: 'FI' });
+            expect(parseCountryFromNodeName('FI-1')).toMatchObject({ code: 'FI' });
+            expect(parseCountryFromNodeName('匈牙利节点')).toMatchObject({ code: 'HU' });
+            expect(parseCountryFromNodeName('Hungary-1')).toMatchObject({ code: 'HU' });
+            expect(parseCountryFromNodeName('HU-1')).toMatchObject({ code: 'HU' });
         });
     });
 });

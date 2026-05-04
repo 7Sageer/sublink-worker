@@ -212,6 +212,23 @@ export function groupProxiesByCountry(proxies, { getName } = {}) {
 	return grouped;
 }
 
+export function addCountryFlagToNodeName(nodeName) {
+	if (typeof nodeName !== 'string') {
+		return nodeName;
+	}
+
+	if (/[\u{1F1E6}-\u{1F1FF}]{2}/u.test(nodeName)) {
+		return nodeName;
+	}
+
+	const countryInfo = parseCountryFromNodeName(nodeName);
+	if (!countryInfo?.emoji) {
+		return nodeName;
+	}
+
+	return `${countryInfo.emoji} ${nodeName}`;
+}
+
 export function createStableProviderName(url) {
 	if (typeof url !== 'string' || url.trim() === '') {
 		throw new Error('Provider URL must be a non-empty string');
@@ -347,65 +364,198 @@ export function parseArray(value) {
 		.filter(entry => entry.length > 0);
 }
 
-export const COUNTRY_DATA = {
-	'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
-	'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
-	'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
-	'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
-	'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
-	'US': { name: 'United States', emoji: '🇺🇸', aliases: ['美国', 'United States', 'US'] },
-	'GB': { name: 'United Kingdom', emoji: '🇬🇧', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
-	'DE': { name: 'Germany', emoji: '🇩🇪', aliases: ['德国', 'Germany'] },
-	'FR': { name: 'France', emoji: '🇫🇷', aliases: ['法国', 'France'] },
-	'RU': { name: 'Russia', emoji: '🇷🇺', aliases: ['俄罗斯', 'Russia'] },
-	'CA': { name: 'Canada', emoji: '🇨🇦', aliases: ['加拿大', 'Canada'] },
-	'AU': { name: 'Australia', emoji: '🇦🇺', aliases: ['澳大利亚', 'Australia'] },
-	'IN': { name: 'India', emoji: '🇮🇳', aliases: ['印度', 'India'] },
-	'BR': { name: 'Brazil', emoji: '🇧🇷', aliases: ['巴西', 'Brazil'] },
-	'ZA': { name: 'South Africa', emoji: '🇿🇦', aliases: ['南非', 'South Africa'] },
-	'AR': { name: 'Argentina', emoji: '🇦🇷', aliases: ['阿根廷', 'Argentina'] },
-	'TR': { name: 'Turkey', emoji: '🇹🇷', aliases: ['土耳其', 'Turkey'] },
-	'NL': { name: 'Netherlands', emoji: '🇳🇱', aliases: ['荷兰', 'Netherlands'] },
-	'CH': { name: 'Switzerland', emoji: '🇨🇭', aliases: ['瑞士', 'Switzerland'] },
-	'SE': { name: 'Sweden', emoji: '🇸🇪', aliases: ['瑞典', 'Sweden'] },
-	'IT': { name: 'Italy', emoji: '🇮🇹', aliases: ['意大利', 'Italy'] },
-	'ES': { name: 'Spain', emoji: '🇪🇸', aliases: ['西班牙', 'Spain'] },
-	'IE': { name: 'Ireland', emoji: '🇮🇪', aliases: ['爱尔兰', 'Ireland'] },
-	'MY': { name: 'Malaysia', emoji: '🇲🇾', aliases: ['马来西亚', 'Malaysia'] },
-	'TH': { name: 'Thailand', emoji: '🇹🇭', aliases: ['泰国', 'Thailand'] },
-	'VN': { name: 'Vietnam', emoji: '🇻🇳', aliases: ['越南', 'Vietnam'] },
-	'PH': { name: 'Philippines', emoji: '🇵🇭', aliases: ['菲律宾', 'Philippines'] },
-	'ID': { name: 'Indonesia', emoji: '🇮🇩', aliases: ['印度尼西亚', 'Indonesia'] },
-	'NZ': { name: 'New Zealand', emoji: '🇳🇿', aliases: ['新西兰', 'New Zealand'] },
-	'AE': { name: 'United Arab Emirates', emoji: '🇦🇪', aliases: ['阿联酋', 'United Arab Emirates'] },
+const ISO_REGION_CODES = `
+AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ
+CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR
+GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP
+KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT
+MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW
+SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM
+US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW
+`.trim().split(/\s+/);
+
+const COUNTRY_OVERRIDES = {
+	HK: { name: 'Hong Kong', names: { 'zh-CN': '香港' }, aliases: ['香港', 'Hong Kong', 'HK'] },
+	TW: { name: 'Taiwan', names: { 'zh-CN': '台湾' }, aliases: ['台湾', '台灣', 'Taiwan', 'TW'] },
+	JP: { name: 'Japan', names: { 'zh-CN': '日本' }, aliases: ['日本', 'Japan', 'JP'] },
+	KR: { name: 'Korea', names: { 'zh-CN': '韩国' }, aliases: ['韩国', '韓國', 'Korea', 'South Korea', 'KR'] },
+	SG: { name: 'Singapore', names: { 'zh-CN': '新加坡' }, aliases: ['新加坡', 'Singapore', 'SG'] },
+	US: { name: 'United States', names: { 'zh-CN': '美国' }, aliases: ['美国', '美國', 'United States', 'United States of America', 'USA', 'US'] },
+	GB: { name: 'United Kingdom', names: { 'zh-CN': '英国' }, aliases: ['英国', '英國', 'United Kingdom', 'Great Britain', 'UK', 'GB'] },
+	DE: { name: 'Germany', names: { 'zh-CN': '德国' }, aliases: ['德国', '德國', 'Germany'] },
+	FR: { name: 'France', names: { 'zh-CN': '法国' }, aliases: ['法国', '法國', 'France'] },
+	RU: { name: 'Russia', names: { 'zh-CN': '俄罗斯' }, aliases: ['俄罗斯', '俄羅斯', 'Russia', 'Russian Federation'] },
+	CA: { name: 'Canada', names: { 'zh-CN': '加拿大' }, aliases: ['加拿大', 'Canada'] },
+	AU: { name: 'Australia', names: { 'zh-CN': '澳大利亚' }, aliases: ['澳大利亚', '澳洲', 'Australia'] },
+	IN: { name: 'India', names: { 'zh-CN': '印度' }, aliases: ['印度', 'India'] },
+	BR: { name: 'Brazil', names: { 'zh-CN': '巴西' }, aliases: ['巴西', 'Brazil'] },
+	ZA: { name: 'South Africa', names: { 'zh-CN': '南非' }, aliases: ['南非', 'South Africa'] },
+	AR: { name: 'Argentina', names: { 'zh-CN': '阿根廷' }, aliases: ['阿根廷', 'Argentina'] },
+	TR: { name: 'Turkey', names: { 'zh-CN': '土耳其' }, aliases: ['土耳其', 'Turkey', 'Türkiye'] },
+	NL: { name: 'Netherlands', names: { 'zh-CN': '荷兰' }, aliases: ['荷兰', '荷蘭', 'Netherlands', 'Holland'] },
+	CH: { name: 'Switzerland', names: { 'zh-CN': '瑞士' }, aliases: ['瑞士', 'Switzerland'] },
+	SE: { name: 'Sweden', names: { 'zh-CN': '瑞典' }, aliases: ['瑞典', 'Sweden'] },
+	IT: { name: 'Italy', names: { 'zh-CN': '意大利' }, aliases: ['意大利', 'Italy'] },
+	ES: { name: 'Spain', names: { 'zh-CN': '西班牙' }, aliases: ['西班牙', 'Spain'] },
+	IE: { name: 'Ireland', names: { 'zh-CN': '爱尔兰' }, aliases: ['爱尔兰', '愛爾蘭', 'Ireland'] },
+	MY: { name: 'Malaysia', names: { 'zh-CN': '马来西亚' }, aliases: ['马来西亚', '馬來西亞', 'Malaysia'] },
+	TH: { name: 'Thailand', names: { 'zh-CN': '泰国' }, aliases: ['泰国', '泰國', 'Thailand'] },
+	VN: { name: 'Vietnam', names: { 'zh-CN': '越南' }, aliases: ['越南', 'Vietnam', 'Viet Nam'] },
+	PH: { name: 'Philippines', names: { 'zh-CN': '菲律宾' }, aliases: ['菲律宾', '菲律賓', 'Philippines'] },
+	ID: { name: 'Indonesia', names: { 'zh-CN': '印度尼西亚' }, aliases: ['印度尼西亚', '印度尼西亞', 'Indonesia'] },
+	NZ: { name: 'New Zealand', names: { 'zh-CN': '新西兰' }, aliases: ['新西兰', '紐西蘭', 'New Zealand'] },
+	AE: { name: 'United Arab Emirates', names: { 'zh-CN': '阿联酋' }, aliases: ['阿联酋', '阿聯酋', 'United Arab Emirates', 'UAE'] },
+	MO: { name: 'Macao', names: { 'zh-CN': '澳门' }, aliases: ['澳门', '澳門', 'Macao', 'Macau'] },
+	CN: { name: 'China', names: { 'zh-CN': '中国' }, aliases: ['中国', '中國', 'China', 'CN'] },
+	CZ: { aliases: ['捷克', 'Czechia', 'Czech Republic'] },
+	LA: { aliases: ['老挝', '寮國', 'Laos', 'Lao'] },
+	MM: { aliases: ['缅甸', '緬甸', 'Myanmar', 'Burma'] },
 };
 
-export function parseCountryFromNodeName(nodeName) {
-	// Build patterns sorted by length descending so longer aliases match first
-	// (e.g. "Indonesia" before "India", "United States" before "US").
-	// Short aliases (<=3 chars, all ASCII, e.g. US, UK, HK) get \b word boundaries
-	// to prevent false positives like "plus" matching "US".
-	const allEntries = Object.values(COUNTRY_DATA).flatMap(c =>
-		c.aliases.map(alias => ({ alias, escaped: alias.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') }))
-	);
-	allEntries.sort((a, b) => b.alias.length - a.alias.length);
+const DISPLAY_NAME_CACHE = new Map();
+let COUNTRY_ALIAS_ENTRIES;
+let COUNTRY_CODE_ENTRIES;
 
-	const patterns = allEntries.map(({ alias, escaped }) => {
-		if (alias.length <= 3 && /^[A-Za-z]+$/.test(alias)) {
-			return `\\b${escaped}\\b`;
+function uniqueStrings(values) {
+	const seen = new Set();
+	return values
+		.filter(value => typeof value === 'string' && value.trim().length > 0)
+		.map(value => value.trim())
+		.filter(value => {
+			const key = value.toLowerCase();
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		});
+}
+
+function getRegionDisplayName(code, locale) {
+	if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') {
+		return null;
+	}
+
+	const cacheKey = locale;
+	let displayNames = DISPLAY_NAME_CACHE.get(cacheKey);
+	if (!displayNames) {
+		try {
+			displayNames = new Intl.DisplayNames([locale], { type: 'region' });
+			DISPLAY_NAME_CACHE.set(cacheKey, displayNames);
+		} catch {
+			return null;
 		}
-		return escaped;
-	});
+	}
 
-	const regex = new RegExp(patterns.join('|'), 'i');
-	const match = nodeName.match(regex);
+	try {
+		return displayNames.of(code) || null;
+	} catch {
+		return null;
+	}
+}
 
-	if (match) {
-		const matchedAlias = match[0];
-		for (const code in COUNTRY_DATA) {
-			if (COUNTRY_DATA[code].aliases.some(alias => alias.toLowerCase() === matchedAlias.toLowerCase())) {
-				return { code, ...COUNTRY_DATA[code] };
-			}
+function resolveCountryDisplayLocale(lang) {
+	const normalized = String(lang || '').replace('_', '-');
+	if (checkStartsWith(normalized, 'zh')) return 'zh-CN';
+	if (checkStartsWith(normalized, 'fa')) return 'fa';
+	if (checkStartsWith(normalized, 'ru')) return 'ru';
+	return 'en-US';
+}
+
+export function countryCodeToFlagEmoji(code) {
+	const normalized = String(code || '').toUpperCase();
+	if (!/^[A-Z]{2}$/.test(normalized)) return '';
+	return [...normalized]
+		.map(char => String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 65))
+		.join('');
+}
+
+function createCountryInfo(code) {
+	const generatedNames = {
+		'en-US': getRegionDisplayName(code, 'en-US') || code,
+		'zh-CN': getRegionDisplayName(code, 'zh-CN') || getRegionDisplayName(code, 'en-US') || code,
+		fa: getRegionDisplayName(code, 'fa') || getRegionDisplayName(code, 'en-US') || code,
+		ru: getRegionDisplayName(code, 'ru') || getRegionDisplayName(code, 'en-US') || code
+	};
+	const override = COUNTRY_OVERRIDES[code] || {};
+	const names = {
+		...generatedNames,
+		...(override.names || {})
+	};
+
+	return {
+		code,
+		name: override.name || names['en-US'],
+		names,
+		emoji: override.emoji || countryCodeToFlagEmoji(code),
+		aliases: uniqueStrings([
+			...(override.aliases || []),
+			...Object.values(generatedNames),
+			...Object.values(names)
+		])
+	};
+}
+
+export const COUNTRY_DATA = Object.fromEntries(
+	ISO_REGION_CODES.map(code => [code, createCountryInfo(code)])
+);
+
+export function getCountryDisplayName(countryInfo, lang = 'en-US') {
+	const country = typeof countryInfo === 'string' ? COUNTRY_DATA[countryInfo.toUpperCase()] : countryInfo;
+	if (!country) return '';
+	const locale = resolveCountryDisplayLocale(lang);
+	return country.names?.[locale] || country.name || country.code || '';
+}
+
+export function formatCountryGroupName(countryInfo, lang = 'en-US') {
+	if (!countryInfo) return '';
+	const emoji = countryInfo.emoji || countryCodeToFlagEmoji(countryInfo.code);
+	const name = getCountryDisplayName(countryInfo, lang);
+	return `${emoji} ${name}`.trim();
+}
+
+function buildAliasPattern(alias, escaped) {
+	if (/^[A-Za-z][A-Za-z\s.'()-]*[A-Za-z]$/.test(alias) || /^[A-Za-z]{2,3}$/.test(alias)) {
+		return `\\b${escaped}\\b`;
+	}
+	return escaped;
+}
+
+function getCountryAliasEntries() {
+	if (!COUNTRY_ALIAS_ENTRIES) {
+		COUNTRY_ALIAS_ENTRIES = Object.values(COUNTRY_DATA)
+			.flatMap(country => country.aliases.map(alias => ({
+				country,
+				alias,
+				regex: new RegExp(buildAliasPattern(alias, alias.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')), 'iu')
+			})))
+			.sort((a, b) => b.alias.length - a.alias.length);
+	}
+	return COUNTRY_ALIAS_ENTRIES;
+}
+
+function getCountryCodeEntries() {
+	if (!COUNTRY_CODE_ENTRIES) {
+		COUNTRY_CODE_ENTRIES = Object.values(COUNTRY_DATA).map(country => ({
+			country,
+			regex: new RegExp(`(^|[^A-Za-z0-9])${country.code}(?=$|[^A-Za-z0-9])`, 'u')
+		}));
+	}
+	return COUNTRY_CODE_ENTRIES;
+}
+
+export function parseCountryFromNodeName(nodeName) {
+	if (typeof nodeName !== 'string' || nodeName.trim().length === 0) {
+		return null;
+	}
+
+	for (const entry of getCountryAliasEntries()) {
+		if (entry.regex.test(nodeName)) {
+			return { code: entry.country.code, ...entry.country };
+		}
+	}
+
+	for (const entry of getCountryCodeEntries()) {
+		if (entry.regex.test(nodeName)) {
+			return { code: entry.country.code, ...entry.country };
 		}
 	}
 
