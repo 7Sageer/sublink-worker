@@ -6,6 +6,7 @@ import { Navbar } from '../components/Navbar.jsx';
 import { Form } from '../components/Form.jsx';
 import { Footer } from '../components/Footer.jsx';
 import { UpdateChecker } from '../components/UpdateChecker.jsx';
+import { LoginPage } from '../components/LoginPage.jsx';
 import { SingboxConfigBuilder } from '../builders/SingboxConfigBuilder.js';
 import { ClashConfigBuilder } from '../builders/ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from '../builders/SurgeConfigBuilder.js';
@@ -15,6 +16,7 @@ import { APP_NAME, APP_SUBTITLE } from '../constants.js';
 import { ShortLinkService } from '../services/shortLinkService.js';
 import { ConfigStorageService } from '../services/configStorageService.js';
 import { ServiceError, MissingDependencyError } from '../services/errors.js';
+import { AUTH_COOKIE_NAME, createAuthCookieValue, isValidAuthCookie, timingSafeEqual } from '../services/frontendAuth.js';
 import { normalizeRuntime } from '../runtime/runtimeConfig.js';
 import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11, generateSubconverterConfig } from '../config/index.js';
 
@@ -37,7 +39,46 @@ export function createApp(bindings = {}) {
         await next();
     });
 
-    app.get('/', (c) => {
+    app.get('/login', (c) => {
+        if (!runtime.config.authSecret) {
+            return c.redirect('/');
+        }
+        return renderLoginPage(c);
+    });
+
+    app.post('/login', async (c) => {
+        if (!runtime.config.authSecret) {
+            return c.redirect('/');
+        }
+
+        const body = await c.req.parseBody();
+        const submittedSecret = typeof body.secret === 'string' ? body.secret : '';
+        if (!timingSafeEqual(submittedSecret, runtime.config.authSecret)) {
+            return renderLoginPage(c, true, 401);
+        }
+
+        const cookieValue = await createAuthCookieValue(
+            runtime.config.authSecret,
+            Date.now(),
+            runtime.config.authSessionTtlSeconds
+        );
+        setAuthCookie(c, cookieValue, runtime.config.authSessionTtlSeconds);
+        return c.redirect('/');
+    });
+
+    app.post('/logout', (c) => {
+        if (!runtime.config.authSecret) {
+            return c.redirect('/');
+        }
+        clearAuthCookie(c);
+        return c.redirect('/login');
+    });
+
+    app.get('/', async (c) => {
+        if (runtime.config.authSecret && !(await isAuthenticated(c, runtime.config.authSecret))) {
+            return c.redirect('/login?redirect=%2F');
+        }
+
         const t = c.get('t');
         const lang = resolveLanguage(c.get('lang'));
         const subtitle = APP_SUBTITLE[lang] || APP_SUBTITLE['zh-CN'];
@@ -62,6 +103,16 @@ export function createApp(bindings = {}) {
                         </div>
                     </main>
                     <Footer />
+                    {runtime.config.authSecret ? (
+                        <form method="post" action="/logout" class="fixed bottom-4 right-4 z-50">
+                            <button
+                                type="submit"
+                                class="px-3 py-2 text-xs font-medium rounded-lg bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 shadow-sm hover:text-gray-900 dark:hover:text-white transition-colors"
+                            >
+                                {t('logout')}
+                            </button>
+                        </form>
+                    ) : null}
                     <UpdateChecker />
                 </div>
             </Layout>
@@ -409,6 +460,70 @@ export function createApp(bindings = {}) {
     });
 
     return app;
+}
+
+function renderLoginPage(c, error = false, status = 200) {
+    const t = c.get('t');
+    return c.html(<LoginPage t={t} error={error} />, status);
+}
+
+async function isAuthenticated(c, authSecret) {
+    const cookieValue = parseCookieHeader(getRequestHeader(c.req, 'Cookie'))[AUTH_COOKIE_NAME];
+    return isValidAuthCookie(cookieValue, authSecret, Date.now());
+}
+
+function setAuthCookie(c, value, maxAge) {
+    const attributes = [
+        `${AUTH_COOKIE_NAME}=${value}`,
+        'Path=/',
+        `Max-Age=${maxAge}`,
+        'HttpOnly',
+        'SameSite=Lax'
+    ];
+    if (isHttpsRequest(c)) {
+        attributes.push('Secure');
+    }
+    c.header('Set-Cookie', attributes.join('; '));
+}
+
+function clearAuthCookie(c) {
+    const attributes = [
+        `${AUTH_COOKIE_NAME}=`,
+        'Path=/',
+        'Max-Age=0',
+        'HttpOnly',
+        'SameSite=Lax'
+    ];
+    if (isHttpsRequest(c)) {
+        attributes.push('Secure');
+    }
+    c.header('Set-Cookie', attributes.join('; '));
+}
+
+function parseCookieHeader(header) {
+    if (!header) {
+        return {};
+    }
+    return header.split(';').reduce((cookies, part) => {
+        const separatorIndex = part.indexOf('=');
+        if (separatorIndex === -1) {
+            return cookies;
+        }
+        const name = part.slice(0, separatorIndex).trim();
+        const value = part.slice(separatorIndex + 1).trim();
+        if (name) {
+            cookies[name] = value;
+        }
+        return cookies;
+    }, {});
+}
+
+function isHttpsRequest(c) {
+    const forwardedProto = getRequestHeader(c.req, 'X-Forwarded-Proto');
+    if (forwardedProto) {
+        return forwardedProto.split(',')[0].trim().toLowerCase() === 'https';
+    }
+    return new URL(c.req.url).protocol === 'https:';
 }
 
 export function parseSelectedRules(raw) {

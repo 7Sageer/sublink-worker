@@ -11,7 +11,8 @@ export function createVercelRuntime(env = process.env) {
         logger: console,
         config: {
             configTtlSeconds: undefined,
-            shortLinkTtlSeconds: null
+            shortLinkTtlSeconds: null,
+            authSecret: env.AUTH_SECRET
         }
     };
 }
