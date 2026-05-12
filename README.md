@@ -46,6 +46,9 @@
 - **Docker**: `docker pull ghcr.io/7sageer/sublink-worker:latest`
 - **Docker Compose**: `docker compose up -d` (includes Redis)
 
+### Optional Frontend Login
+- Set `AUTH_SECRET` to require an access secret on the home page; leave it unset to keep public access.
+
 ## ✨ Features
 
 ### Supported Protocols
