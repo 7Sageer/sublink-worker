@@ -48,9 +48,6 @@
 
 ## ✨ Features
 
-### Supported Protocols
-ShadowSocks • VMess • VLESS • Hysteria2 • Trojan • TUIC
-
 ### Client Support
 Sing-Box • Clash • Xray/V2Ray • Surge
 
