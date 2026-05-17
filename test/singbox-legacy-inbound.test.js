@@ -24,6 +24,7 @@ const sampleInput = JSON.stringify({
 });
 
 const LEGACY_INBOUND_FIELDS = ['sniff', 'sniff_timeout', 'sniff_override_destination', 'domain_strategy', 'udp_disable_domain_unmapping'];
+const LEGACY_SPECIAL_OUTBOUNDS = ['block', 'dns'];
 
 describe('sing-box 1.13+ compatibility: no legacy inbound fields', () => {
     it('SING_BOX_CONFIG inbounds should not contain legacy fields', () => {
@@ -39,6 +40,14 @@ describe('sing-box 1.13+ compatibility: no legacy inbound fields', () => {
             for (const field of LEGACY_INBOUND_FIELDS) {
                 expect(inbound).not.toHaveProperty(field);
             }
+        }
+    });
+
+    it('base configs should not contain legacy special outbounds', () => {
+        for (const config of [SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11]) {
+            const outboundTypes = config.outbounds.map(outbound => outbound.type);
+            expect(outboundTypes).not.toContain('block');
+            expect(outboundTypes).not.toContain('dns');
         }
     });
 
@@ -75,9 +84,12 @@ describe('sing-box 1.13+ compatibility: no legacy inbound fields', () => {
 
         const sniffRule = result.route.rules.find(r => r.action === 'sniff');
         expect(sniffRule).toBeDefined();
+
+        const legacyOutbounds = result.outbounds.filter(outbound => LEGACY_SPECIAL_OUTBOUNDS.includes(outbound.type));
+        expect(legacyOutbounds).toEqual([]);
     });
 
-    it('should not reintroduce legacy fields when user provides custom base config with sniff on inbound', async () => {
+    it('should not reintroduce legacy fields or special outbounds from custom base config', async () => {
         // Simulate a user-provided base config that still has legacy sniff field
         const customBaseConfig = {
             inbounds: [
@@ -99,5 +111,21 @@ describe('sing-box 1.13+ compatibility: no legacy inbound fields', () => {
         // Route rules must still have sniff action
         const sniffRule = result.route.rules.find(r => r.action === 'sniff');
         expect(sniffRule).toBeDefined();
+
+        const legacyOutbounds = result.outbounds.filter(outbound => LEGACY_SPECIAL_OUTBOUNDS.includes(outbound.type));
+        expect(legacyOutbounds).toEqual([]);
+        expect(result.outbounds.flatMap(outbound => outbound.outbounds || [])).not.toContain('REJECT');
+    });
+
+    it('should emit reject action for ad blocking rules instead of REJECT outbound', async () => {
+        const builder = new SingboxConfigBuilder(
+            sampleInput, ['Ad Block'], [], null, 'zh-CN', null, false
+        );
+        const result = await builder.build();
+
+        const rejectRule = result.route.rules.find(rule => rule.rule_set?.includes('category-ads-all'));
+        expect(rejectRule).toMatchObject({ action: 'reject' });
+        expect(rejectRule).not.toHaveProperty('outbound');
+        expect(result.outbounds.some(outbound => outbound.tag === '🛑 广告拦截')).toBe(false);
     });
 });

@@ -300,7 +300,7 @@ proxy-groups:
             expect(autoGroups[0].url).toBe('http://custom.test/204');
         });
 
-        it('should fill empty url-test proxies with all available nodes', async () => {
+        it('should reject empty url-test groups instead of silently filling them', async () => {
             const inputWithEmptyProxies = `
 proxies:
   - name: Node-A
@@ -321,15 +321,9 @@ proxy-groups:
     proxies: []
 `;
             const builder = new ClashConfigBuilder(inputWithEmptyProxies, 'minimal', [], null, 'zh-CN', 'test-agent');
-            const yamlText = await builder.build();
-            const config = yaml.load(yamlText);
-
-            const emptyGroup = config['proxy-groups'].find(g => g.name === 'Empty Test Group');
-            expect(emptyGroup).toBeDefined();
-            // Empty group should be filled with all available proxies
-            expect(emptyGroup.proxies.length).toBeGreaterThan(0);
-            expect(emptyGroup.proxies).toContain('Node-A');
-            expect(emptyGroup.proxies).toContain('Node-B');
+            await expect(builder.build()).rejects.toThrow(
+                'Invalid proxy group "Empty Test Group": type "url-test" requires at least one proxy or provider reference'
+            );
         });
 
         it('should filter out invalid proxy references from user groups', async () => {

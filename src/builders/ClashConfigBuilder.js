@@ -3,9 +3,10 @@ import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDE
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { deepCopy, groupProxiesByCountry } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
-import { buildSelectorMembers, buildNodeSelectMembers, uniqueNames } from './helpers/groupBuilder.js';
+import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigUtils.js';
 import { normalizeGroupName, findGroupIndexByName } from './helpers/groupNameUtils.js';
+import { InvalidConfigError } from '../services/errors.js';
 
 /**
  * Check if the client supports MRS (Meta Rule Set) format
@@ -76,8 +77,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
      */
     generateProxyProviders() {
         const providers = {};
-        this.providerUrls.forEach((url, index) => {
-            const name = `_auto_provider_${index + 1}`;
+        const existingProviders = this.getExistingProviderNames();
+        this.getAutoProviderDescriptors(existingProviders).forEach(({ name, url }) => {
             providers[name] = {
                 type: 'http',
                 url: url,
@@ -100,7 +101,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
      * @returns {string[]} - Array of provider names
      */
     getProviderNames() {
-        return this.providerUrls.map((_, index) => `_auto_provider_${index + 1}`);
+        return this.getAutoProviderDescriptors(this.getExistingProviderNames()).map(provider => provider.name);
+    }
+
+    getExistingProviderNames() {
+        return this.config?.['proxy-providers'] && typeof this.config['proxy-providers'] === 'object'
+            ? Object.keys(this.config['proxy-providers'])
+            : [];
     }
 
     /**
@@ -108,9 +115,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
      * @returns {string[]} - Array of provider names
      */
     getAllProviderNames() {
-        const existingProviders = this.config?.['proxy-providers'] && typeof this.config['proxy-providers'] === 'object'
-            ? Object.keys(this.config['proxy-providers'])
-            : [];
+        const existingProviders = this.getExistingProviderNames();
         const autoProviders = this.getProviderNames();
         return [...new Set([...existingProviders, ...autoProviders])];
     }
@@ -319,11 +324,21 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         return (this.config['proxy-groups'] || []).some(group => group && normalizeGroupName(group.name) === target);
     }
 
+    hasSelectableSources(proxyList = []) {
+        return uniqueNames(proxyList).length > 0 || this.getAllProviderNames().length > 0;
+    }
+
+    shouldIncludeAutoSelectGroup(proxyList = []) {
+        return this.includeAutoSelect && this.hasSelectableSources(proxyList);
+    }
+
     addAutoSelectGroup(proxyList) {
         if (!this.includeAutoSelect) return;
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
         const autoName = this.t('outboundNames.Auto Select');
         if (this.hasProxyGroup(autoName)) return;
+        const providerNames = this.getAllProviderNames();
+        if (uniqueNames(proxyList).length === 0 && providerNames.length === 0) return;
 
         const group = {
             name: autoName,
@@ -334,8 +349,6 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             lazy: false
         };
 
-        // Add 'use' field if we have proxy-providers
-        const providerNames = this.getAllProviderNames();
         if (providerNames.length > 0) {
             group.use = providerNames;
         }
@@ -353,7 +366,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
             countryGroupNames: this.countryGroupNames,
-            includeAutoSelect: this.includeAutoSelect
+            includeAutoSelect: this.shouldIncludeAutoSelectGroup(proxyList)
         });
 
         const group = {
@@ -378,7 +391,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             groupByCountry: this.groupByCountry,
             manualGroupName: this.manualGroupName,
             countryGroupNames: this.countryGroupNames,
-            includeAutoSelect: this.includeAutoSelect
+            includeAutoSelect: this.shouldIncludeAutoSelectGroup(proxyList)
         });
     }
 
@@ -413,16 +426,12 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             this.customRules.forEach(rule => {
                 const name = this.t(`outboundNames.${rule.name}`);
                 if (!this.hasProxyGroup(name)) {
-                    // Custom rules should not include country groups as direct proxies
-                    // to prevent them from acting as global proxies.
-                    // Custom rules should route through: Node Select -> Country Groups
-                    const proxies = [
-                        this.t('outboundNames.Node Select'),
-                        ...(this.includeAutoSelect ? [this.t('outboundNames.Auto Select')] : []),
-                        ...(this.manualGroupName ? [this.manualGroupName] : []),
-                        'DIRECT',
-                        'REJECT'
-                    ];
+                    const proxies = buildCustomRuleMembers({
+                        proxyList,
+                        translator: this.t,
+                        manualGroupName: this.manualGroupName,
+                        includeAutoSelect: this.shouldIncludeAutoSelectGroup(proxyList)
+                    });
                     const group = {
                         type: "select",
                         name,
@@ -519,7 +528,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                 groupByCountry: true,
                 manualGroupName,
                 countryGroupNames,
-                includeAutoSelect: this.includeAutoSelect
+                includeAutoSelect: this.shouldIncludeAutoSelectGroup(this.getProxyList())
             });
             nodeSelectGroup.proxies = rebuilt;
         }
@@ -596,11 +605,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     newGroup.use = newGroup.use.filter(p => allProviderNames.has(p));
                 }
 
-                // Add group if:
-                // 1. Has valid proxies or use, OR
-                // 2. Is url-test/fallback type (will be filled by validateProxyGroups)
-                const isAutoFillableType = newGroup.type === 'url-test' || newGroup.type === 'fallback';
-                if ((newGroup.proxies?.length > 0) || (newGroup.use?.length > 0) || isAutoFillableType) {
+                if ((newGroup.proxies?.length > 0) || (newGroup.use?.length > 0) || newGroup.type) {
                     this.config['proxy-groups'].push(newGroup);
                 }
             }
@@ -608,25 +613,27 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     /**
-     * Validate proxy groups before final output
-     * Ensures url-test/fallback groups have proxies, fills empty ones with all nodes
+     * Reject invalid proxy groups before final output.
+     * Why: empty groups make Clash reject the whole config, so we should fail fast
+     * instead of masking the upstream merge/parsing problem.
      */
     validateProxyGroups() {
-        const proxyList = this.getProxyList();
-        const providerNames = this.getAllProviderNames();
-
         (this.config['proxy-groups'] || []).forEach(group => {
-            // For url-test/fallback groups, ensure they have proxies or providers
-            if ((group.type === 'url-test' || group.type === 'fallback') &&
-                (!group.proxies || group.proxies.length === 0) &&
-                (!group.use || group.use.length === 0)) {
-                // Fill with all available proxies
-                group.proxies = [...proxyList];
-                // Also use all providers if available
-                if (providerNames.length > 0) {
-                    group.use = [...providerNames];
-                }
+            const requiresMembers = group?.type === 'url-test' || group?.type === 'fallback';
+            if (!requiresMembers) {
+                return;
             }
+
+            const hasProxyRefs = Array.isArray(group.proxies) && group.proxies.length > 0;
+            const hasProviderRefs = Array.isArray(group.use) && group.use.length > 0;
+            if (hasProxyRefs || hasProviderRefs) {
+                return;
+            }
+
+            const groupName = group?.name || '(unnamed group)';
+            throw new InvalidConfigError(
+                `Invalid proxy group "${groupName}": type "${group.type}" requires at least one proxy or provider reference`
+            );
         });
     }
 
@@ -653,10 +660,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             };
         }
 
-        // Validate proxy groups: fill empty url-test/fallback groups with all proxies
-        this.validateProxyGroups();
-
         sanitizeClashProxyGroups(this.config);
+        this.validateProxyGroups();
 
         this.config.rules = [
             ...ruleResults,

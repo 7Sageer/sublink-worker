@@ -77,6 +77,29 @@ describe('Worker', () => {
         expect(text).toContain('proxies:');
     });
 
+    it('GET /clash rejects empty url-test proxy groups with a diagnostic error', async () => {
+        const app = createTestApp();
+        const config = `
+proxies:
+  - name: Node-A
+    type: ss
+    server: a.example.com
+    port: 443
+    cipher: aes-128-gcm
+    password: test
+proxy-groups:
+  - name: Empty Test Group
+    type: url-test
+    proxies: []
+`;
+        const res = await app.request(`http://localhost/clash?config=${encodeURIComponent(config)}`);
+
+        expect(res.status).toBe(400);
+        const text = await res.text();
+        expect(text).toContain('Invalid proxy group "Empty Test Group"');
+        expect(text).toContain('requires at least one proxy or provider reference');
+    });
+
     it('GET /shorten-v2 returns short code', async () => {
         const url = 'http://example.com';
         const kvMock = {

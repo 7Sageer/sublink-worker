@@ -69,13 +69,15 @@ describe('Auto Proxy Providers Detection', () => {
             // Should have proxy-providers
             expect(config['proxy-providers']).toBeDefined();
             expect(Object.keys(config['proxy-providers'])).toHaveLength(1);
-            expect(config['proxy-providers']._auto_provider_1).toBeDefined();
-            expect(config['proxy-providers']._auto_provider_1.url).toBe('https://example.com/clash-sub?token=xxx');
-            expect(config['proxy-providers']._auto_provider_1.type).toBe('http');
+            const providerName = Object.keys(config['proxy-providers'])[0];
+            expect(providerName).toMatch(/^_auto_provider_[a-z0-9]+$/);
+            expect(config['proxy-providers'][providerName].url).toBe('https://example.com/clash-sub?token=xxx');
+            expect(config['proxy-providers'][providerName].type).toBe('http');
+            expect(config['proxy-providers'][providerName].path).toBe(`./proxy_providers/${providerName}.yaml`);
 
             // proxy-groups should have 'use' field
             const nodeSelect = config['proxy-groups'].find(g => g.name === '🚀 节点选择');
-            expect(nodeSelect.use).toContain('_auto_provider_1');
+            expect(nodeSelect.use).toContain(providerName);
         });
 
         it('should parse and convert Sing-Box URL (incompatible format)', async () => {
@@ -130,12 +132,15 @@ describe('Auto Proxy Providers Detection', () => {
             // Should have outbound_providers
             expect(config.outbound_providers).toBeDefined();
             expect(config.outbound_providers).toHaveLength(1);
-            expect(config.outbound_providers[0].download_url).toBe('https://example.com/singbox-sub?token=xxx');
-            expect(config.outbound_providers[0].type).toBe('http');
+            const provider = config.outbound_providers[0];
+            expect(provider.tag).toMatch(/^_auto_provider_[a-z0-9]+$/);
+            expect(provider.download_url).toBe('https://example.com/singbox-sub?token=xxx');
+            expect(provider.type).toBe('http');
+            expect(provider.path).toBe(`./providers/${provider.tag}.json`);
 
             // outbounds should have 'providers' field
             const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
-            expect(nodeSelect.providers).toContain('_auto_provider_1');
+            expect(nodeSelect.providers).toContain(provider.tag);
         });
 
         it('should parse and convert Clash URL (incompatible format)', async () => {
@@ -224,9 +229,108 @@ describe('Auto Proxy Providers Detection', () => {
 
             // Should have two proxy-providers
             expect(config['proxy-providers']).toBeDefined();
-            expect(Object.keys(config['proxy-providers'])).toHaveLength(2);
-            expect(config['proxy-providers']._auto_provider_1).toBeDefined();
-            expect(config['proxy-providers']._auto_provider_2).toBeDefined();
+            const providerNames = Object.keys(config['proxy-providers']);
+            expect(providerNames).toHaveLength(2);
+            expect(new Set(providerNames).size).toBe(2);
+            expect(providerNames.every(name => name.startsWith('_auto_provider_'))).toBe(true);
+
+            const nodeSelect = config['proxy-groups'].find(g => g.name === '🚀 节点选择');
+            expect(nodeSelect.use).toEqual(expect.arrayContaining(providerNames));
+        });
+
+        it('should generate distinct stable Clash provider paths across separate builds', async () => {
+            fetchSubscriptionWithFormat.mockImplementation((url) => Promise.resolve({
+                content: mockClashYaml,
+                format: 'clash',
+                url
+            }));
+
+            const firstBuilder = new ClashConfigBuilder(
+                'https://provider-a.example.com/sub?token=aaa',
+                [],
+                [],
+                null,
+                'zh-CN',
+                'test-agent'
+            );
+            const secondBuilder = new ClashConfigBuilder(
+                'https://provider-b.example.com/sub?token=bbb',
+                [],
+                [],
+                null,
+                'zh-CN',
+                'test-agent'
+            );
+
+            const firstConfig = yaml.load(await firstBuilder.build());
+            const secondConfig = yaml.load(await secondBuilder.build());
+            const firstProviderName = Object.keys(firstConfig['proxy-providers'])[0];
+            const secondProviderName = Object.keys(secondConfig['proxy-providers'])[0];
+            const firstProvider = firstConfig['proxy-providers'][firstProviderName];
+            const secondProvider = secondConfig['proxy-providers'][secondProviderName];
+
+            expect(firstProviderName).not.toBe(secondProviderName);
+            expect(firstProvider.path).not.toBe(secondProvider.path);
+            expect(firstProvider.path).toBe(`./proxy_providers/${firstProviderName}.yaml`);
+            expect(secondProvider.path).toBe(`./proxy_providers/${secondProviderName}.yaml`);
+        });
+
+        it('should keep Clash provider name stable for the same URL', async () => {
+            fetchSubscriptionWithFormat.mockImplementation((url) => Promise.resolve({
+                content: mockClashYaml,
+                format: 'clash',
+                url
+            }));
+
+            const buildProviderName = async () => {
+                const builder = new ClashConfigBuilder(
+                    'https://stable.example.com/sub?token=same',
+                    [],
+                    [],
+                    null,
+                    'zh-CN',
+                    'test-agent'
+                );
+                const config = yaml.load(await builder.build());
+                return Object.keys(config['proxy-providers'])[0];
+            };
+
+            await expect(buildProviderName()).resolves.toBe(await buildProviderName());
+        });
+
+        it('should generate distinct stable Sing-Box provider paths across separate builds', async () => {
+            fetchSubscriptionWithFormat.mockImplementation((url) => Promise.resolve({
+                content: mockSingboxJson,
+                format: 'singbox',
+                url
+            }));
+
+            const firstBuilder = new SingboxConfigBuilder(
+                'https://provider-a.example.com/singbox?token=aaa',
+                [],
+                [],
+                null,
+                'zh-CN',
+                'test-agent'
+            );
+            const secondBuilder = new SingboxConfigBuilder(
+                'https://provider-b.example.com/singbox?token=bbb',
+                [],
+                [],
+                null,
+                'zh-CN',
+                'test-agent'
+            );
+
+            const firstConfig = await firstBuilder.build();
+            const secondConfig = await secondBuilder.build();
+            const firstProvider = firstConfig.outbound_providers[0];
+            const secondProvider = secondConfig.outbound_providers[0];
+
+            expect(firstProvider.tag).not.toBe(secondProvider.tag);
+            expect(firstProvider.path).not.toBe(secondProvider.path);
+            expect(firstProvider.path).toBe(`./providers/${firstProvider.tag}.json`);
+            expect(secondProvider.path).toBe(`./providers/${secondProvider.tag}.json`);
         });
     });
 
@@ -261,11 +365,13 @@ describe('Auto Proxy Providers Detection', () => {
 
             expect(config['proxy-providers']).toBeDefined();
             expect(config['proxy-providers'].provider1?.url).toBe('https://user.example.com/sub');
-            expect(config['proxy-providers']._auto_provider_1?.url).toBe('https://auto.example.com/clash-sub');
+            const autoProviderName = Object.keys(config['proxy-providers'])
+                .find(name => name.startsWith('_auto_provider_'));
+            expect(config['proxy-providers'][autoProviderName]?.url).toBe('https://auto.example.com/clash-sub');
 
             const nodeSelect = config['proxy-groups'].find(g => g.name === '🚀 节点选择');
             expect(nodeSelect.use).toContain('provider1');
-            expect(nodeSelect.use).toContain('_auto_provider_1');
+            expect(nodeSelect.use).toContain(autoProviderName);
         });
 
         it('should merge user-defined Sing-Box outbound_providers with auto providers', async () => {
@@ -299,11 +405,13 @@ describe('Auto Proxy Providers Detection', () => {
             expect(config.outbound_providers).toBeDefined();
             expect(config.outbound_providers).toHaveLength(2);
             expect(config.outbound_providers.map(p => p.tag)).toContain('user-provider');
-            expect(config.outbound_providers.map(p => p.tag)).toContain('_auto_provider_1');
+            const autoProvider = config.outbound_providers
+                .find(provider => provider.tag.startsWith('_auto_provider_'));
+            expect(autoProvider.download_url).toBe('https://auto.example.com/singbox-sub');
 
             const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
             expect(nodeSelect.providers).toContain('user-provider');
-            expect(nodeSelect.providers).toContain('_auto_provider_1');
+            expect(nodeSelect.providers).toContain(autoProvider.tag);
         });
     });
 });

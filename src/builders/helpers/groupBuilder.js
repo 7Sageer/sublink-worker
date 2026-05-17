@@ -13,15 +13,15 @@ export function uniqueNames(names = []) {
     return result;
 }
 
-export function withDirectReject(options = []) {
+export function withDirectReject(options = [], { includeReject = true } = {}) {
     return uniqueNames([
         ...options,
         'DIRECT',
-        'REJECT'
+        ...(includeReject ? ['REJECT'] : [])
     ]);
 }
 
-export function buildNodeSelectMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], includeAutoSelect = true }) {
+export function buildNodeSelectMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], includeAutoSelect = true, includeReject = true }) {
     if (!translator) {
         throw new Error('buildNodeSelectMembers requires a translator function');
     }
@@ -36,10 +36,10 @@ export function buildNodeSelectMembers({ proxyList = [], translator, groupByCoun
             ...(includeAutoSelect ? [autoName] : []),
             ...proxyList
         ];
-    return withDirectReject(base);
+    return withDirectReject(base, { includeReject });
 }
 
-export function buildSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], includeAutoSelect = true }) {
+export function buildSelectorMembers({ proxyList = [], translator, groupByCountry = false, manualGroupName, countryGroupNames = [], includeAutoSelect = true, includeReject = true }) {
     if (!translator) {
         throw new Error('buildSelectorMembers requires a translator function');
     }
@@ -54,5 +54,17 @@ export function buildSelectorMembers({ proxyList = [], translator, groupByCountr
             translator('outboundNames.Node Select'),
             ...proxyList
         ];
-    return withDirectReject(base);
+    return withDirectReject(base, { includeReject });
+}
+
+export function buildCustomRuleMembers({ proxyList = [], translator, manualGroupName, includeAutoSelect = true, includeReject = true }) {
+    if (!translator) {
+        throw new Error('buildCustomRuleMembers requires a translator function');
+    }
+    return withDirectReject([
+        translator('outboundNames.Node Select'),
+        ...(includeAutoSelect ? [translator('outboundNames.Auto Select')] : []),
+        ...(manualGroupName ? [manualGroupName] : []),
+        ...proxyList
+    ], { includeReject });
 }

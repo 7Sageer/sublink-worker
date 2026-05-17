@@ -176,3 +176,11 @@ dist
 .vercel
 
 CLAUDE.local.md
+AGENTS.local.md
+.claude/settings.local.json
+
+# Local planning
+.roadmap/
+
+# Local upstream source references
+.upstreams/

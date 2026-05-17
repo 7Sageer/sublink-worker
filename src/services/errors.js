@@ -19,3 +19,10 @@ export class InvalidPayloadError extends ServiceError {
         this.name = 'InvalidPayloadError';
     }
 }
+
+export class InvalidConfigError extends ServiceError {
+    constructor(message = 'Invalid config') {
+        super(message, 400);
+        this.name = 'InvalidConfigError';
+    }
+}
