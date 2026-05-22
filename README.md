@@ -79,27 +79,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This project is for learning and exchange purposes only. Please do not use it for illegal purposes. All consequences resulting from the use of this project are solely the responsibility of the user and are not related to the developer.
 
-## 💰 Sponsorship
-
-<div align="center">
-  <h3>Thanks to the following sponsors for their support of this project</h3>
-<table border="0">
-  <tr>
-    <td>
-      <a href="https://yxvm.com/" target="_blank" title="YXVM">
-        <img src="https://image.779477.xyz/yxvm.png" alt="YXVM" height="60" hspace="20"/>
-      </a>
-    </td>
-    <td>
-      <a href="https://github.com/NodeSeekDev/NodeSupport" target="_blank" title="NodeSupport">
-        <img src="https://image.779477.xyz/ns.png" alt="NodeSupport" height="60" hspace="20"/>
-      </a>
-    </td>
-  </tr>
-</table>
-  <p>If you would like to sponsor this project, please contact the developer <a href="https://github.com/7Sageer" style="text-decoration: none;">@7Sageer</a></p>
-</div>
-
 ## ⭐ Star History
 
 Thanks to everyone who has starred this project! 🌟
