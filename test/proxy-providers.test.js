@@ -295,7 +295,9 @@ describe('Auto Proxy Providers Detection', () => {
                 return Object.keys(config['proxy-providers'])[0];
             };
 
-            await expect(buildProviderName()).resolves.toBe(await buildProviderName());
+            const first = await buildProviderName();
+            const second = await buildProviderName();
+            expect(first).toBe(second);
         });
 
         it('should generate distinct stable Sing-Box provider paths across separate builds', async () => {
