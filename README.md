@@ -40,6 +40,11 @@
 - Choose a "deploy" button above to click
 - That's it! See the [Document](https://sublink.works/guide/quick-start/) for more information.
 
+### Cloudflare Workers (CLI)
+- Deploy with **`npm run deploy`**, not a bare `wrangler deploy`.
+- `npm run deploy` runs `setup-kv` first, which finds or creates the `SUBLINK_KV` namespace **in your own account** and writes its id into `wrangler.toml`, then runs `wrangler deploy`.
+- Why not plain `wrangler deploy`? The KV namespace id committed in `wrangler.toml` belongs to another account, so a bare deploy fails with `KV namespace not found [code: 10041]`. When deploying via Cloudflare's Git/Workers Builds, set the **Deploy command** to `npm run deploy` for the same reason.
+
 ### Alternative Runtimes
 - **Node.js**: `npm run build:node && node dist/node-server.cjs`
 - **Vercel**: `vercel deploy` (configure KV in project settings)
