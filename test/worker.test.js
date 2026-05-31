@@ -100,7 +100,7 @@ proxy-groups:
         expect(text).toContain('requires at least one proxy or provider reference');
     });
 
-    it('GET /shorten-v2 returns short code', async () => {
+    it('POST /shorten-v2 returns short code', async () => {
         const url = 'http://example.com';
         const kvMock = {
             put: vi.fn(async () => {}),
@@ -108,7 +108,11 @@ proxy-groups:
             delete: vi.fn(async () => {})
         };
         const app = createTestApp({ kv: kvMock });
-        const res = await app.request(`http://localhost/shorten-v2?url=${encodeURIComponent(url)}`);
+        const res = await app.request('http://localhost/shorten-v2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+        });
         expect(res.status).toBe(200);
         const text = await res.text();
         expect(text).toBeTruthy();
