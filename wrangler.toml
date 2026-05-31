@@ -4,8 +4,11 @@ main = "src/worker.jsx"
 compatibility_date = "2024-07-24"
 compatibility_flags = ["nodejs_compat"]
 
+# KV id is account-specific, so it must not be a real value in source control.
+# `npm run setup-kv` (invoked by `npm run deploy`) finds/creates SUBLINK_KV in
+# your own account and rewrites this placeholder before `wrangler deploy`.
 kv_namespaces = [
-  { binding = "SUBLINK_KV", id = "8943789ed0af49659f887fc740d11240" }
+  { binding = "SUBLINK_KV", id = "PLACEHOLDER" }
 ]
 
 [assets]
