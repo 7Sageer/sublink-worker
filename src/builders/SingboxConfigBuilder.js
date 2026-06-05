@@ -1,7 +1,7 @@
 
 import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS, DIRECT_DEFAULT_RULES, REJECT_ACTION_RULES } from '../config/index.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { deepCopy, groupProxiesByCountry } from '../utils.js';
+import { deepCopy, groupProxiesByCountry, base64ToHex } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
@@ -119,6 +119,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // Remove packet_encoding for now - it's version-specific in sing-box
         // xudp is default in newer versions
         delete sanitized.packet_encoding;
+
+        if (sanitized.tls?.pinSHA256) {
+            const hex = base64ToHex(sanitized.tls.pinSHA256);
+            const colonHex = hex.toUpperCase().match(/.{2}/g).join(':');
+            sanitized.tls = { ...sanitized.tls, certificate_hash: [colonHex] };
+            delete sanitized.tls.pinSHA256;
+        }
 
         return sanitized;
     }

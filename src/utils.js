@@ -293,11 +293,10 @@ export function createTlsConfig(params) {
 			enabled: true,
 			server_name: params.sni || params.host,
 			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
-			// utls: {
-			//   enabled: true,
-			//   fingerprint: "chrome"
-			// },
 		};
+		if (params.pinSHA256) {
+			tls.pinSHA256 = params.pinSHA256;
+		}
 		if (params.security === 'reality') {
 			tls.reality = {
 				enabled: true,
@@ -307,6 +306,24 @@ export function createTlsConfig(params) {
 		}
 	}
 	return tls;
+}
+
+export function base64ToHex(b64) {
+	const raw = atob(b64);
+	let hex = '';
+	for (let i = 0; i < raw.length; i++) {
+		hex += raw.charCodeAt(i).toString(16).padStart(2, '0');
+	}
+	return hex;
+}
+
+export function hexToBase64(hex) {
+	const clean = hex.replace(/[:\s]/g, '');
+	const bytes = [];
+	for (let i = 0; i < clean.length; i += 2) {
+		bytes.push(parseInt(clean.slice(i, i + 2), 16));
+	}
+	return btoa(String.fromCharCode(...bytes));
 }
 
 export function createTransportConfig(params) {
