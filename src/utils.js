@@ -292,7 +292,7 @@ export function createTlsConfig(params) {
 		tls = {
 			enabled: true,
 			server_name: params.sni || params.host,
-			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+			insecure: parseBool(params?.allowInsecure) || parseBool(params?.insecure) || parseBool(params?.allow_insecure) || false,
 		};
 		if (params.pinSHA256) {
 			tls.pinSHA256 = normalizePinSHA256(params.pinSHA256);
