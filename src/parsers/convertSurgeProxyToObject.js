@@ -9,8 +9,6 @@
  * - Hysteria2: ProxyName = hysteria2, server, port, password=xxx, ...
  */
 
-import { hexToBase64 } from '../utils.js';
-
 /**
  * Parse key=value parameters from a Surge proxy line
  * @param {string[]} parts - Array of parameter strings
@@ -180,7 +178,7 @@ export function convertSurgeProxyToObject(line) {
                     server_name: params.sni || params['server-name'] || server,
                     insecure: parseBool(params['skip-cert-verify']),
                     alpn: params.alpn ? params.alpn.split(',').map(a => a.trim()) : undefined,
-                    ...(params['server-cert-fingerprint-sha256'] ? { pinSHA256: hexToBase64(params['server-cert-fingerprint-sha256']) } : {})
+                    ...(params['server-cert-fingerprint-sha256'] ? { pinSHA256: params['server-cert-fingerprint-sha256'].toLowerCase() } : {})
                 },
                 obfs: params['obfs-password'] ? {
                     type: params.obfs || 'salamander',

@@ -1,5 +1,3 @@
-import { hexToBase64 } from '../utils.js';
-
 export function convertYamlProxyToObject(p) {
     if (!p || typeof p !== 'object' || !p.type) return null;
     const type = String(p.type).toLowerCase();
@@ -185,7 +183,7 @@ export function convertYamlProxyToObject(p) {
                 enabled: true,
                 server_name: p.sni,
                 insecure: !!p['skip-cert-verify'],
-                ...(p.fingerprint ? { pinSHA256: hexToBase64(p.fingerprint) } : {})
+                ...(p.fingerprint ? { pinSHA256: p.fingerprint.toLowerCase() } : {})
             };
             const obfs = {};
             if (p.obfs) {

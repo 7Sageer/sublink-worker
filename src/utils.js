@@ -295,7 +295,7 @@ export function createTlsConfig(params) {
 			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
 		};
 		if (params.pinSHA256) {
-			tls.pinSHA256 = params.pinSHA256;
+			tls.pinSHA256 = normalizePinSHA256(params.pinSHA256);
 		}
 		if (params.security === 'reality') {
 			tls.reality = {
@@ -308,22 +308,18 @@ export function createTlsConfig(params) {
 	return tls;
 }
 
-export function base64ToHex(b64) {
-	const raw = atob(b64);
+export function normalizePinSHA256(value) {
+	if (!value) return undefined;
+	const clean = value.replace(/[:\s]/g, '');
+	if (/^[0-9a-fA-F]+$/.test(clean)) {
+		return clean.toLowerCase();
+	}
+	const raw = atob(clean);
 	let hex = '';
 	for (let i = 0; i < raw.length; i++) {
 		hex += raw.charCodeAt(i).toString(16).padStart(2, '0');
 	}
 	return hex;
-}
-
-export function hexToBase64(hex) {
-	const clean = hex.replace(/[:\s]/g, '');
-	const bytes = [];
-	for (let i = 0; i < clean.length; i += 2) {
-		bytes.push(parseInt(clean.slice(i, i + 2), 16));
-	}
-	return btoa(String.fromCharCode(...bytes));
 }
 
 export function createTransportConfig(params) {

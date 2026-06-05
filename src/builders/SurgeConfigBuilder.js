@@ -1,5 +1,5 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { groupProxiesByCountry, base64ToHex } from '../utils.js';
+import { groupProxiesByCountry } from '../utils.js';
 import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS, DIRECT_DEFAULT_RULES } from '../config/index.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
@@ -107,7 +107,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                     surgeProxy += ', skip-cert-verify=true';
                 }
                 if (proxy.tls?.pinSHA256) {
-                    surgeProxy += `, server-cert-fingerprint-sha256=${base64ToHex(proxy.tls.pinSHA256)}`;
+                    surgeProxy += `, server-cert-fingerprint-sha256=${proxy.tls.pinSHA256}`;
                 }
                 if (proxy.tls?.alpn) {
                     surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
