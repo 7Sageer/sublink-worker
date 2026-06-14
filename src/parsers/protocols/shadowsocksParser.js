@@ -68,7 +68,6 @@ function createConfig(tag, server, server_port, method, password, pluginInfo) {
         server_port: parseInt(server_port),
         method,
         password,
-        network: 'tcp',
         tcp_fast_open: false
     };
 
