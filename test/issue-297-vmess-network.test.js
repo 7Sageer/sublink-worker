@@ -3,16 +3,16 @@ import { parseVmess } from '../src/parsers/protocols/vmessParser.js';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 
 /**
- * Issue #297: Singbox 订阅无法导入
+ * Issue #297 (follow-up): the original fix hardcoded `network: 'tcp'` on every
+ * parsed proxy so sing-box would stop seeing transport names like 'ws' in that
+ * slot. That value is harmless in Clash but in sing-box `network` is a TCP/UDP
+ * allowlist (option/types.go NetworkList), and "tcp" silently disables UDP —
+ * breaking DNS hijack, fakeip, QUIC, and any selector that picks the node.
  *
- * 问题：VMess 使用 WebSocket 传输时，network 字段被错误设置为 'ws'
- * 错误信息：unknown net: ws
- *
- * Sing-Box 的 network 字段只接受 'tcp' 或 'udp'
- * WebSocket 应该只在 transport 对象中配置
+ * The proper fix is to never emit a top-level `network` in sing-box output and
+ * let it default to ["tcp","udp"]. Transport info lives in `transport.type`.
  */
-describe('Issue #297: VMess network field should be tcp/udp only', () => {
-    // Base64 encoded VMess config with WebSocket transport
+describe('Issue #297: sing-box outbounds must not carry a top-level `network`', () => {
     const vmessWsConfig = {
         v: '2',
         ps: 'VMess-WS-Test',
@@ -31,19 +31,17 @@ describe('Issue #297: VMess network field should be tcp/udp only', () => {
 
     const vmessWsUrl = 'vmess://' + Buffer.from(JSON.stringify(vmessWsConfig)).toString('base64');
 
-    it('parseVmess should set network to tcp for WebSocket transport', () => {
+    it('parseVmess should not emit a top-level network field for WebSocket transport', () => {
         const result = parseVmess(vmessWsUrl);
 
-        // network 字段应该是 'tcp'，不是 'ws'
-        expect(result.network).toBe('tcp');
+        expect(result.network).toBeUndefined();
 
-        // transport.type 应该是 'ws'
         expect(result.transport).toBeDefined();
         expect(result.transport.type).toBe('ws');
         expect(result.transport.path).toBe('/ws');
     });
 
-    it('parseVmess should set network to tcp for gRPC transport', () => {
+    it('parseVmess should not emit a top-level network field for gRPC transport', () => {
         const vmessGrpcConfig = {
             ...vmessWsConfig,
             ps: 'VMess-gRPC-Test',
@@ -54,12 +52,12 @@ describe('Issue #297: VMess network field should be tcp/udp only', () => {
 
         const result = parseVmess(vmessGrpcUrl);
 
-        expect(result.network).toBe('tcp');
+        expect(result.network).toBeUndefined();
         expect(result.transport).toBeDefined();
         expect(result.transport.type).toBe('grpc');
     });
 
-    it('parseVmess should set network to tcp for HTTP transport', () => {
+    it('parseVmess should not emit a top-level network field for HTTP transport', () => {
         const vmessHttpConfig = {
             ...vmessWsConfig,
             ps: 'VMess-HTTP-Test',
@@ -70,12 +68,12 @@ describe('Issue #297: VMess network field should be tcp/udp only', () => {
 
         const result = parseVmess(vmessHttpUrl);
 
-        expect(result.network).toBe('tcp');
+        expect(result.network).toBeUndefined();
         expect(result.transport).toBeDefined();
         expect(result.transport.type).toBe('http');
     });
 
-    it('parseVmess should set network to tcp for H2 transport', () => {
+    it('parseVmess should not emit a top-level network field for H2 transport', () => {
         const vmessH2Config = {
             ...vmessWsConfig,
             ps: 'VMess-H2-Test',
@@ -86,12 +84,12 @@ describe('Issue #297: VMess network field should be tcp/udp only', () => {
 
         const result = parseVmess(vmessH2Url);
 
-        expect(result.network).toBe('tcp');
+        expect(result.network).toBeUndefined();
         expect(result.transport).toBeDefined();
         expect(result.transport.type).toBe('h2');
     });
 
-    it('parseVmess should set network to tcp for plain TCP (no transport)', () => {
+    it('parseVmess should not emit a top-level network field for plain TCP (no transport)', () => {
         const vmessTcpConfig = {
             ...vmessWsConfig,
             ps: 'VMess-TCP-Test',
@@ -102,12 +100,11 @@ describe('Issue #297: VMess network field should be tcp/udp only', () => {
 
         const result = parseVmess(vmessTcpUrl);
 
-        expect(result.network).toBe('tcp');
-        // Plain TCP should not have transport object
+        expect(result.network).toBeUndefined();
         expect(result.transport).toBeUndefined();
     });
 
-    it('SingboxConfigBuilder should output valid network field for VMess with WS', async () => {
+    it('SingboxConfigBuilder must not emit network on VMess outbound with WS transport', async () => {
         const builder = new SingboxConfigBuilder(
             vmessWsUrl,
             [],
@@ -122,14 +119,7 @@ describe('Issue #297: VMess network field should be tcp/udp only', () => {
         const vmessProxy = result.outbounds.find(o => o.tag === 'VMess-WS-Test');
 
         expect(vmessProxy).toBeDefined();
-        // network 必须是 'tcp' 或 'udp'，不能是 'ws'
-        expect(['tcp', 'udp', undefined]).toContain(vmessProxy.network);
-        expect(vmessProxy.network).not.toBe('ws');
-        expect(vmessProxy.network).not.toBe('grpc');
-        expect(vmessProxy.network).not.toBe('http');
-        expect(vmessProxy.network).not.toBe('h2');
-
-        // transport 配置应该正确
+        expect(vmessProxy.network).toBeUndefined();
         expect(vmessProxy.transport?.type).toBe('ws');
     });
 });

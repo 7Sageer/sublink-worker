@@ -16,7 +16,6 @@ export function parseTrojan(url) {
         server: host,
         server_port: port,
         password: decodeURIComponent(password) || parsedURL.username,
-        network: 'tcp',
         tcp_fast_open: false,
         tls,
         transport,

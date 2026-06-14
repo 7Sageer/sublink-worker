@@ -86,7 +86,6 @@ export function parseVmess(url) {
         uuid: vmessConfig.id,
         alter_id: parseInt(vmessConfig.aid) || 0,
         security: vmessConfig.scy || 'auto',
-        network: 'tcp',
         tcp_fast_open: false,
         transport,
         tls: tls.enabled ? tls : undefined
