@@ -197,10 +197,19 @@ describe('GET /subconverter', () => {
             const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
             const text = await res.text();
 
-            // Should contain country url-test groups with (?i) flag and \b boundaries for ASCII aliases
-            expect(text).toMatch(/custom_proxy_group=🇭🇰 Hong Kong`url-test`\(\?i\)\(香港\|\\bHong Kong\\b\|\\bHK\\b\)/);
-            expect(text).toMatch(/custom_proxy_group=🇯🇵 Japan`url-test`\(\?i\)\(日本\|\\bJapan\\b\|\\bJP\\b\)/);
-            expect(text).toMatch(/custom_proxy_group=🇺🇸 United States`url-test`\(\?i\)\(美国\|\\bUnited States\\b\|\\bUS\\b\)/);
+            // Should contain localized country url-test groups with (?i) flag and word boundaries for ASCII aliases.
+            expect(text).toContain('custom_proxy_group=🇭🇰 香港`url-test`(?i)(');
+            expect(text).toContain('香港');
+            expect(text).toContain('\\bHong Kong\\b');
+            expect(text).toContain('\\bHK\\b');
+            expect(text).toContain('custom_proxy_group=🇯🇵 日本`url-test`(?i)(');
+            expect(text).toContain('\\bJapan\\b');
+            expect(text).toContain('\\bJP\\b');
+            expect(text).toContain('custom_proxy_group=🇺🇸 美国`url-test`(?i)(');
+            expect(text).toContain('\\bUnited States\\b');
+            expect(text).toContain('\\bUS\\b');
+            expect(text).toContain('custom_proxy_group=🇫🇮 芬兰`url-test`(?i)(');
+            expect(text).toContain('custom_proxy_group=🇭🇺 匈牙利`url-test`(?i)(');
         });
 
         it('generates Manual Switch group with all nodes', async () => {
@@ -221,8 +230,8 @@ describe('GET /subconverter', () => {
             expect(nodeSelectLine).toBeDefined();
 
             // Should reference country groups
-            expect(nodeSelectLine).toContain('[]🇭🇰 Hong Kong');
-            expect(nodeSelectLine).toContain('[]🇯🇵 Japan');
+            expect(nodeSelectLine).toContain('[]🇭🇰 香港');
+            expect(nodeSelectLine).toContain('[]🇯🇵 日本');
 
             // Should NOT end with .*  (individual node matching)
             expect(nodeSelectLine).not.toMatch(/\.\*$/);
@@ -237,8 +246,8 @@ describe('GET /subconverter', () => {
 
             const googleLine = text.split('\n').find(l => l.includes('谷歌服务') && l.includes('`select`'));
             expect(googleLine).toBeDefined();
-            expect(googleLine).toContain('[]🇭🇰 Hong Kong');
-            expect(googleLine).toContain('[]🇺🇸 United States');
+            expect(googleLine).toContain('[]🇭🇰 香港');
+            expect(googleLine).toContain('[]🇺🇸 美国');
             expect(googleLine).not.toMatch(/`\.\*/);
         });
 
@@ -257,13 +266,13 @@ describe('GET /subconverter', () => {
             expect(nodeSelectLine).not.toContain('自动选择');
         });
 
-        it('generates all 30 country groups', async () => {
+        it('generates all 249 ISO country/region groups', async () => {
             const app = createTestApp();
             const res = await app.request('http://localhost/subconverter?selectedRules=minimal&group_by_country=true');
             const text = await res.text();
 
             const countryGroupCount = (text.match(/custom_proxy_group=.+`url-test`\(\?i\)\(.+\)`http/g) || []).length;
-            expect(countryGroupCount).toBe(30);
+            expect(countryGroupCount).toBe(249);
         });
 
         it('uses English group names with lang=en', async () => {
@@ -275,6 +284,7 @@ describe('GET /subconverter', () => {
             expect(text).toContain('Node Select');
             // Country groups should still appear
             expect(text).toContain('🇯🇵 Japan');
+            expect(text).toContain('🇫🇮 Finland');
         });
     });
 

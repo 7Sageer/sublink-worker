@@ -5,7 +5,7 @@
 
 import { createTranslator } from '../i18n/index.js';
 import { generateRules } from './ruleGenerators.js';
-import { COUNTRY_DATA } from '../utils.js';
+import { COUNTRY_DATA, formatCountryGroupName } from '../utils.js';
 import { DIRECT_DEFAULT_RULES } from './rules.js';
 
 // Rule names that should default to REJECT
@@ -111,7 +111,7 @@ export function generateSubconverterConfig({ selectedRules = [], customRules = [
 
 	if (groupByCountry) {
 		Object.values(COUNTRY_DATA).forEach(country => {
-			const groupName = `${country.emoji} ${country.name}`;
+			const groupName = formatCountryGroupName(country, lang);
 			countryGroupNames.push(groupName);
 			const regex = country.aliases.map(a => {
 				const escaped = escapeRegex(a);

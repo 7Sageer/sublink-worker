@@ -84,6 +84,7 @@ export const formLogicFn = (t) => {
             selectedPredefinedRule: 'balanced',
             subconverterCopied: false,
             groupByCountry: false,
+            showFlags: false,
             includeAutoSelect: true,
             enableClashUI: false,
             externalController: '',
@@ -131,6 +132,7 @@ export const formLogicFn = (t) => {
                 this.input = localStorage.getItem('inputTextarea') || '';
                 this.showAdvanced = localStorage.getItem('advancedToggle') === 'true';
                 this.groupByCountry = localStorage.getItem('groupByCountry') === 'true';
+                this.showFlags = localStorage.getItem('showFlags') === 'true';
                 this.includeAutoSelect = localStorage.getItem('includeAutoSelect') !== 'false';
                 this.enableClashUI = localStorage.getItem('enableClashUI') === 'true';
                 this.externalController = localStorage.getItem('externalController') || '';
@@ -162,6 +164,7 @@ export const formLogicFn = (t) => {
                 });
                 this.$watch('showAdvanced', val => localStorage.setItem('advancedToggle', val));
                 this.$watch('groupByCountry', val => localStorage.setItem('groupByCountry', val));
+                this.$watch('showFlags', val => localStorage.setItem('showFlags', val));
                 this.$watch('includeAutoSelect', val => localStorage.setItem('includeAutoSelect', val));
                 this.$watch('enableClashUI', val => localStorage.setItem('enableClashUI', val));
                 this.$watch('externalController', val => localStorage.setItem('externalController', val));
@@ -221,11 +224,9 @@ export const formLogicFn = (t) => {
                     params.append('group_by_country', 'true');
                 }
 
-                // Include lang parameter so subconverter gets correct group names
+                // Include lang parameter so downloaded configs keep the page language.
                 const appLang = window.APP_LANG || 'zh-CN';
-                if (appLang !== 'zh-CN') {
-                    params.append('lang', appLang);
-                }
+                params.append('lang', appLang);
 
                 const queryString = params.toString();
                 return origin + '/subconverter' + (queryString ? '?' + queryString : '');
@@ -377,8 +378,10 @@ export const formLogicFn = (t) => {
                     params.append('ua', this.customUA);
                     params.append('selectedRules', JSON.stringify(this.selectedRules));
                     params.append('customRules', JSON.stringify(customRules));
+                    params.append('lang', window.APP_LANG || 'zh-CN');
 
                     if (this.groupByCountry) params.append('group_by_country', 'true');
+                    if (this.showFlags) params.append('show_flags', 'true');
                     if (!this.includeAutoSelect) params.append('include_auto_select', 'false');
                     if (this.enableClashUI) params.append('enable_clash_ui', 'true');
                     if (this.externalController) params.append('external_controller', this.externalController);
@@ -621,6 +624,7 @@ export const formLogicFn = (t) => {
 
                 // Extract other parameters
                 this.groupByCountry = params.get('group_by_country') === 'true';
+                this.showFlags = params.get('show_flags') === 'true';
                 this.includeAutoSelect = params.get('include_auto_select') !== 'false';
                 this.enableClashUI = params.get('enable_clash_ui') === 'true';
 
@@ -646,7 +650,7 @@ export const formLogicFn = (t) => {
                 }
 
                 // Expand advanced options if any advanced settings are present
-                if (selectedRules || customRules || this.groupByCountry || this.enableClashUI ||
+                if (selectedRules || customRules || this.groupByCountry || this.showFlags || this.enableClashUI ||
                     externalController || externalUiDownloadUrl || ua || configId) {
                     this.showAdvanced = true;
                 }
