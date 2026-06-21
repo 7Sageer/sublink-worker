@@ -14,8 +14,7 @@ export function parseVless(url) {
     }
     const transport = params.type !== 'tcp' ? createTransportConfig(params) : undefined;
 
-    // Parse UDP setting - primarily used for Clash output
-    // In sing-box, UDP is controlled by 'network' field, but we preserve this for Clash compatibility
+    // `udp` is a Clash-only flag; ClashConfigBuilder reads it, SingboxConfigBuilder strips it.
     const udp = params.udp !== undefined ? parseBool(params.udp) : undefined;
 
     return {
@@ -27,10 +26,7 @@ export function parseVless(url) {
         tcp_fast_open: false,
         tls,
         transport,
-        network: 'tcp',
         flow: params.flow ?? undefined,
-        // Include udp if explicitly specified - will be used for Clash output
-        // SingBoxConfigBuilder will strip this field for sing-box output
         ...(udp !== undefined ? { udp } : {})
     };
 }
