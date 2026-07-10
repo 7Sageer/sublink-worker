@@ -7,9 +7,9 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true, useGhProxy = true) {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect, useGhProxy);
 
         this.selectedRules = selectedRules;
         this.customRules = customRules;
@@ -487,7 +487,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
-        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules, this.useGhProxy);
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
 

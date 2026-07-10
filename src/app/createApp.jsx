@@ -81,6 +81,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const useGhProxy = c.req.query('use_gh_proxy') !== 'false';
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -112,7 +113,8 @@ export function createApp(bindings = {}) {
                 externalController,
                 externalUiDownloadUrl,
                 singboxConfigVersion,
-                includeAutoSelect
+                includeAutoSelect,
+                useGhProxy
             );
             await builder.build();
             const userinfo = builder.getSubscriptionUserinfo();
@@ -137,6 +139,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const useGhProxy = c.req.query('use_gh_proxy') !== 'false';
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -160,7 +163,8 @@ export function createApp(bindings = {}) {
                 enableClashUI,
                 externalController,
                 externalUiDownloadUrl,
-                includeAutoSelect
+                includeAutoSelect,
+                useGhProxy
             );
             await builder.build();
             const userinfo = builder.getSubscriptionUserinfo();
@@ -186,6 +190,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const useGhProxy = c.req.query('use_gh_proxy') !== 'false';
             const configId = c.req.query('configId');
             const lang = c.get('lang');
 
@@ -203,7 +208,8 @@ export function createApp(bindings = {}) {
                 lang,
                 ua,
                 groupByCountry,
-                includeAutoSelect
+                includeAutoSelect,
+                useGhProxy
             );
             builder.setSubscriptionUrl(c.req.url);
             await builder.build();
@@ -230,6 +236,7 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const useGhProxy = c.req.query('use_gh_proxy') !== 'false';
             const configId = c.req.query('configId');
             const lang = c.get('lang');
 
@@ -247,7 +254,8 @@ export function createApp(bindings = {}) {
                 lang,
                 ua,
                 groupByCountry,
-                includeAutoSelect
+                includeAutoSelect,
+                useGhProxy
             );
             const loonConfig = await builder.build();
 

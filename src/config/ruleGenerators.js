@@ -4,7 +4,7 @@
  */
 
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS, SITE_RULE_SETS, IP_RULE_SETS, CLASH_SITE_RULE_SETS, CLASH_IP_RULE_SETS } from './rules.js';
-import { SITE_RULE_SET_BASE_URL, IP_RULE_SET_BASE_URL, CLASH_SITE_RULE_SET_BASE_URL, CLASH_IP_RULE_SET_BASE_URL } from './ruleUrls.js';
+import { SITE_RULE_SET_BASE_URL, IP_RULE_SET_BASE_URL, CLASH_SITE_RULE_SET_BASE_URL, CLASH_IP_RULE_SET_BASE_URL, resolveRuleSetUrl } from './ruleUrls.js';
 
 function toStringArray(value) {
 	if (Array.isArray(value)) {
@@ -69,7 +69,7 @@ export function generateRules(selectedRules = [], customRules = []) {
 	return rules;
 }
 
-export function generateRuleSets(selectedRules = [], customRules = []) {
+export function generateRuleSets(selectedRules = [], customRules = [], useGhProxy = true) {
 	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
 		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
 	}
@@ -96,14 +96,14 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 		tag: rule,
 		type: 'remote',
 		format: 'binary',
-		url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
+		url: resolveRuleSetUrl(`${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`, useGhProxy),
 	}));
 
 	const ip_rule_sets = Array.from(ipRuleSets).map(rule => ({
 		tag: `${rule}-ip`,
 		type: 'remote',
 		format: 'binary',
-		url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
+		url: resolveRuleSetUrl(`${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`, useGhProxy),
 	}));
 
 	if (!selectedRules.includes('Non-China')) {
@@ -111,7 +111,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 			tag: 'geolocation-!cn',
 			type: 'remote',
 			format: 'binary',
-			url: `${SITE_RULE_SET_BASE_URL}geolocation-!cn.srs`,
+			url: resolveRuleSetUrl(`${SITE_RULE_SET_BASE_URL}geolocation-!cn.srs`, useGhProxy),
 		});
 	}
 
@@ -122,7 +122,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					tag: site,
 					type: 'remote',
 					format: 'binary',
-					url: `${SITE_RULE_SET_BASE_URL}${site}.srs`,
+					url: resolveRuleSetUrl(`${SITE_RULE_SET_BASE_URL}${site}.srs`, useGhProxy),
 				});
 			});
 			toStringArray(rule.ip).forEach(ip => {
@@ -130,7 +130,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 					tag: `${ip}-ip`,
 					type: 'remote',
 					format: 'binary',
-					url: `${IP_RULE_SET_BASE_URL}${ip}.srs`,
+					url: resolveRuleSetUrl(`${IP_RULE_SET_BASE_URL}${ip}.srs`, useGhProxy),
 				});
 			});
 		});
@@ -142,7 +142,7 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 }
 
 // Generate rule sets for Clash using .mrs format
-export function generateClashRuleSets(selectedRules = [], customRules = [], useMrs = true) {
+export function generateClashRuleSets(selectedRules = [], customRules = [], useMrs = true, useGhProxy = true) {
 	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
 		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
 	}
@@ -175,7 +175,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = [], useM
 			type: 'http',
 			format: format,
 			behavior: 'domain',
-			url: `${CLASH_SITE_RULE_SET_BASE_URL}${rule}${ext}`,
+			url: resolveRuleSetUrl(`${CLASH_SITE_RULE_SET_BASE_URL}${rule}${ext}`, useGhProxy),
 			path: `./ruleset/${rule}${ext}`,
 			interval: 86400
 		};
@@ -186,7 +186,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = [], useM
 			type: 'http',
 			format: format,
 			behavior: 'ipcidr',
-			url: `${CLASH_IP_RULE_SET_BASE_URL}${rule}${ext}`,
+			url: resolveRuleSetUrl(`${CLASH_IP_RULE_SET_BASE_URL}${rule}${ext}`, useGhProxy),
 			path: `./ruleset/${rule}-ip${ext}`,
 			interval: 86400
 		};
@@ -198,7 +198,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = [], useM
 			type: 'http',
 			format: format,
 			behavior: 'domain',
-			url: `${CLASH_SITE_RULE_SET_BASE_URL}geolocation-!cn${ext}`,
+			url: resolveRuleSetUrl(`${CLASH_SITE_RULE_SET_BASE_URL}geolocation-!cn${ext}`, useGhProxy),
 			path: `./ruleset/geolocation-!cn${ext}`,
 			interval: 86400
 		};
@@ -212,7 +212,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = [], useM
 					type: 'http',
 					format: format,
 					behavior: 'domain',
-					url: `${CLASH_SITE_RULE_SET_BASE_URL}${site}${ext}`,
+					url: resolveRuleSetUrl(`${CLASH_SITE_RULE_SET_BASE_URL}${site}${ext}`, useGhProxy),
 					path: `./ruleset/${site}${ext}`,
 					interval: 86400
 				};
@@ -222,7 +222,7 @@ export function generateClashRuleSets(selectedRules = [], customRules = [], useM
 					type: 'http',
 					format: format,
 					behavior: 'ipcidr',
-					url: `${CLASH_IP_RULE_SET_BASE_URL}${ip}${ext}`,
+					url: resolveRuleSetUrl(`${CLASH_IP_RULE_SET_BASE_URL}${ip}${ext}`, useGhProxy),
 					path: `./ruleset/${ip}-ip${ext}`,
 					interval: 86400
 				};

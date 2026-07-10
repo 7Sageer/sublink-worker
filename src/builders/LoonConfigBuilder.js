@@ -3,7 +3,8 @@ import {
     LOON_CONFIG,
     SURGE_SITE_RULE_SET_BASEURL,
     SURGE_IP_RULE_SET_BASEURL,
-    generateRules
+    generateRules,
+    resolveRuleSetUrl
 } from '../config/index.js';
 import { InvalidPayloadError } from '../services/errors.js';
 
@@ -72,7 +73,7 @@ function formatVmessSecurity(security) {
 }
 
 export class LoonConfigBuilder extends SurgeConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true, useGhProxy = true) {
         super(
             inputString,
             selectedRules,
@@ -81,7 +82,8 @@ export class LoonConfigBuilder extends SurgeConfigBuilder {
             lang,
             userAgent,
             groupByCountry,
-            includeAutoSelect
+            includeAutoSelect,
+            useGhProxy
         );
     }
 
@@ -214,10 +216,12 @@ export class LoonConfigBuilder extends SurgeConfigBuilder {
         rules.forEach(rule => {
             const policy = this.t(`outboundNames.${rule.outbound}`);
             (rule.site_rules || []).filter(Boolean).forEach(site => {
-                remoteRules.push(`${SURGE_SITE_RULE_SET_BASEURL}${site}.conf, ${policy}`);
+                const url = resolveRuleSetUrl(`${SURGE_SITE_RULE_SET_BASEURL}${site}.conf`, this.useGhProxy);
+                remoteRules.push(`${url}, ${policy}`);
             });
             (rule.ip_rules || []).filter(Boolean).forEach(ip => {
-                remoteRules.push(`${SURGE_IP_RULE_SET_BASEURL}${ip}.txt, ${policy}`);
+                const url = resolveRuleSetUrl(`${SURGE_IP_RULE_SET_BASEURL}${ip}.txt`, this.useGhProxy);
+                remoteRules.push(`${url}, ${policy}`);
             });
         });
         if (remoteRules.length > 0) {
