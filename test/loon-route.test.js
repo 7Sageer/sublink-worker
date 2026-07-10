@@ -25,6 +25,19 @@ describe('Loon routes', () => {
         expect(await response.text()).toContain('Loon-Trojan = trojan, trojan.example.com, 443, "secret"');
     });
 
+    it('builds policy groups when auto select is disabled', async () => {
+        const app = createTestApp();
+        const input = 'ss://YWVzLTEyOC1nY206c2VjcmV0@ss.example.com:443#Loon-SS';
+        const response = await app.request(
+            `http://localhost/loon?include_auto_select=false&config=${encodeURIComponent(input)}`
+        );
+
+        expect(response.status).toBe(200);
+        const config = await response.text();
+        expect(config).toContain('🚀 节点选择 = select, Loon-SS, DIRECT, REJECT');
+        expect(config).not.toContain('⚡ 自动选择 = url-test');
+    });
+
     it('rejects input without a Loon-compatible proxy', async () => {
         const app = createTestApp();
         const input = 'tuic://uuid:password@tuic.example.com:443#TUIC';

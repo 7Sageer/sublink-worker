@@ -252,8 +252,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     addAutoSelectGroup(proxyList) {
-        if (!this.includeAutoSelect) return;
         this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+        if (!this.includeAutoSelect) return;
         const name = this.t('outboundNames.Auto Select');
         if (this.hasProxyGroup(name)) return;
         this.config['proxy-groups'].push(
