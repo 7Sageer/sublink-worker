@@ -6,7 +6,7 @@ export const GITHUB_API_RELEASES = 'https://api.github.com/repos/7Sageer/sublink
 export const DOCS_URL = 'https://sublink.works';
 
 // SEO and metadata
-export const APP_KEYWORDS = 'clash, singbox, surge, subscription, converter, sublink';
+export const APP_KEYWORDS = 'clash, singbox, surge, loon, subscription, converter, sublink';
 
 // Subtitles for different languages
 export const APP_SUBTITLE = {

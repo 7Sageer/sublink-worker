@@ -252,7 +252,7 @@ export const formLogicFn = (t) => {
                 }
 
                 let payloadContent = this.configEditor;
-                if (this.configType === 'surge') {
+                if (this.configType === 'surge' || this.configType === 'loon') {
                     try {
                         const { configObject } = parseSurgeConfigInput(this.configEditor);
                         payloadContent = JSON.stringify(configObject);
@@ -314,7 +314,7 @@ export const formLogicFn = (t) => {
                         this.configValidationState = 'success';
                         this.configValidationMessage =
                             window.APP_TRANSLATIONS.validYamlConfig || 'YAML config is valid';
-                    } else if (this.configType === 'surge') {
+                    } else if (this.configType === 'surge' || this.configType === 'loon') {
                         parseSurgeConfigInput(this.configEditor);
                         this.configValidationState = 'success';
                         this.configValidationMessage =
@@ -397,7 +397,8 @@ export const formLogicFn = (t) => {
                         xray: origin + '/xray?' + queryString,
                         singbox: origin + '/singbox?' + queryString,
                         clash: origin + '/clash?' + queryString,
-                        surge: origin + '/surge?' + queryString
+                        surge: origin + '/surge?' + queryString,
+                        loon: origin + '/loon?' + queryString
                     };
 
                     // Scroll to results
@@ -465,7 +466,8 @@ export const formLogicFn = (t) => {
                                 xray: 'x',
                                 singbox: 'b',
                                 clash: 'c',
-                                surge: 's'
+                                surge: 's',
+                                loon: 'l'
                             };
 
                             shortened[type] = `${origin}/${prefixMap[type]}/${returnedCode}`;
