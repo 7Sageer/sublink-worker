@@ -6,16 +6,29 @@ export function parseVless(url) {
     const { host, port } = parseServerInfo(serverInfo);
 
     const tls = createTlsConfig(params);
-    if (tls.reality) {
-        tls.utls = {
-            enabled: true,
-            fingerprint: 'chrome'
-        };
+    // Prefer explicit fp; fall back to chrome for reality (common client default).
+    if (tls.enabled) {
+        const fingerprint = params.fp || params.fingerprint || (tls.reality ? 'chrome' : undefined);
+        if (fingerprint) {
+            tls.utls = {
+                enabled: true,
+                fingerprint
+            };
+        }
     }
-    const transport = params.type !== 'tcp' ? createTransportConfig(params) : undefined;
+    // type=tcp means no transport object; xhttp/ws/grpc/h2/http keep transport.
+    const transport = params.type && params.type !== 'tcp'
+        ? createTransportConfig(params)
+        : undefined;
 
     // `udp` is a Clash-only flag; ClashConfigBuilder reads it, SingboxConfigBuilder strips it.
     const udp = params.udp !== undefined ? parseBool(params.udp) : undefined;
+
+    // VLESS post-quantum encryption (e.g. mlkem768x25519plus.native.0rtt.<keys...>)
+    // Must be preserved as-is for mihomo / xray clients.
+    const encryption = params.encryption && params.encryption !== 'none'
+        ? params.encryption
+        : undefined;
 
     return {
         type: 'vless',
@@ -27,6 +40,7 @@ export function parseVless(url) {
         tls,
         transport,
         flow: params.flow ?? undefined,
+        ...(encryption ? { encryption } : {}),
         ...(udp !== undefined ? { udp } : {})
     };
 }
