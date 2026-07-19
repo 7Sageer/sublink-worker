@@ -411,3 +411,24 @@ export function parseCountryFromNodeName(nodeName) {
 
 	return null;
 }
+
+// Build a mihomo proxy-group `filter` regex matching node names of one country.
+// Mirrors the classification patterns in parseCountryFromNodeName (same escaping
+// and \b rules) so runtime filtering agrees with build-time grouping; the flag
+// emoji is added because mihomo filters raw names, which often carry it.
+export function buildCountryNameFilter({ emoji, aliases } = {}) {
+	const patterns = (aliases || []).map(alias => {
+		const escaped = alias.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+		if (alias.length <= 3 && /^[A-Za-z]+$/.test(alias)) {
+			return `\\b${escaped}\\b`;
+		}
+		return escaped;
+	});
+	if (emoji) {
+		patterns.push(emoji);
+	}
+	if (patterns.length === 0) {
+		return null;
+	}
+	return `(?i)${patterns.join('|')}`;
+}
