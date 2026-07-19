@@ -106,6 +106,9 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 if (proxy.tls?.insecure) {
                     surgeProxy += ', skip-cert-verify=true';
                 }
+                if (proxy.tls?.pinSHA256) {
+                    surgeProxy += `, server-cert-fingerprint-sha256=${proxy.tls.pinSHA256}`;
+                }
                 if (proxy.tls?.alpn) {
                     surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
                 }

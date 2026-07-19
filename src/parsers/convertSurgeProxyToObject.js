@@ -177,7 +177,8 @@ export function convertSurgeProxyToObject(line) {
                     enabled: true,
                     server_name: params.sni || params['server-name'] || server,
                     insecure: parseBool(params['skip-cert-verify']),
-                    alpn: params.alpn ? params.alpn.split(',').map(a => a.trim()) : undefined
+                    alpn: params.alpn ? params.alpn.split(',').map(a => a.trim()) : undefined,
+                    ...(params['server-cert-fingerprint-sha256'] ? { pinSHA256: params['server-cert-fingerprint-sha256'].toLowerCase() } : {})
                 },
                 obfs: params['obfs-password'] ? {
                     type: params.obfs || 'salamander',

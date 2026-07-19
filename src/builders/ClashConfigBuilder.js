@@ -232,6 +232,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'recv-window-conn': proxy.recv_window_conn,
                     sni: proxy.tls?.server_name || '',
                     'skip-cert-verify': !!proxy.tls?.insecure,
+                    ...(proxy.tls?.pinSHA256 ? { fingerprint: proxy.tls.pinSHA256 } : {}),
                     ...(proxy.hop_interval !== undefined ? { 'hop-interval': proxy.hop_interval } : {}),
                     ...(proxy.alpn ? { alpn: proxy.alpn } : {}),
                     ...(proxy.fast_open !== undefined ? { 'fast-open': proxy.fast_open } : {}),

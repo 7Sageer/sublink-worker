@@ -124,6 +124,12 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // xudp is default in newer versions
         delete sanitized.packet_encoding;
 
+        if (sanitized.tls?.pinSHA256) {
+            const colonHex = sanitized.tls.pinSHA256.toUpperCase().match(/.{2}/g).join(':');
+            sanitized.tls = { ...sanitized.tls, certificate_hash: [colonHex] };
+            delete sanitized.tls.pinSHA256;
+        }
+
         return sanitized;
     }
 

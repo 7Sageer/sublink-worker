@@ -182,7 +182,8 @@ export function convertYamlProxyToObject(p) {
             const tls = {
                 enabled: true,
                 server_name: p.sni,
-                insecure: !!p['skip-cert-verify']
+                insecure: !!p['skip-cert-verify'],
+                ...(p.fingerprint ? { pinSHA256: p.fingerprint.toLowerCase() } : {})
             };
             const obfs = {};
             if (p.obfs) {
