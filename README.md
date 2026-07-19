@@ -52,12 +52,12 @@
 ShadowSocks • VMess • VLESS • Hysteria2 • Trojan • TUIC
 
 ### Client Support
-Sing-Box • Clash • Xray/V2Ray • Surge
+Sing-Box • Clash • Xray/V2Ray • Surge • Loon
 
 ### Input Support
 - Base64 subscriptions
 - HTTP/HTTPS subscriptions
-- Full configs (Sing-Box JSON, Clash YAML, Surge INI)
+- Full configs (Sing-Box JSON, Clash YAML, Surge/Loon INI)
 
 ### Core Capabilities
 - Import subscriptions from multiple sources

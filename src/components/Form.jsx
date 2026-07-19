@@ -10,7 +10,8 @@ const LINK_FIELDS = [
   { key: 'xray', labelKey: 'xrayLink' },
   { key: 'singbox', labelKey: 'singboxLink' },
   { key: 'clash', labelKey: 'clashLink' },
-  { key: 'surge', labelKey: 'surgeLink' }
+  { key: 'surge', labelKey: 'surgeLink' },
+  { key: 'loon', labelKey: 'loonLink' }
 ];
 
 export const Form = (props) => {
@@ -155,6 +156,17 @@ export const Form = (props) => {
     ))}
   </div>
 
+  <label class="mt-4 flex items-center justify-between gap-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
+    <span>
+      <span class="block font-medium text-gray-700 dark:text-gray-300">{t('useGhProxy')}</span>
+      <span class="block mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t('useGhProxyTip')}</span>
+    </span>
+    <span class="relative inline-flex items-center cursor-pointer shrink-0">
+      <input type="checkbox" x-model="useGhProxy" class="sr-only peer" />
+      <span class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></span>
+    </span>
+  </label>
+
           </div>
 
   {/* Custom Rules Component */ }
@@ -250,6 +262,7 @@ export const Form = (props) => {
                 <option value="singbox">SingBox (JSON)</option>
                 <option value="clash">Clash (YAML)</option>
                 <option value="surge">Surge (JSON/INI)</option>
+                <option value="loon">Loon (JSON/INI)</option>
               </select>
           </div>
             

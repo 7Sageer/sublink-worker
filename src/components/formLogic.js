@@ -85,6 +85,7 @@ export const formLogicFn = (t) => {
             subconverterCopied: false,
             groupByCountry: false,
             includeAutoSelect: true,
+            useGhProxy: true,
             enableClashUI: false,
             externalController: '',
             externalUiDownloadUrl: '',
@@ -132,6 +133,7 @@ export const formLogicFn = (t) => {
                 this.showAdvanced = localStorage.getItem('advancedToggle') === 'true';
                 this.groupByCountry = localStorage.getItem('groupByCountry') === 'true';
                 this.includeAutoSelect = localStorage.getItem('includeAutoSelect') !== 'false';
+                this.useGhProxy = localStorage.getItem('useGhProxy') !== 'false';
                 this.enableClashUI = localStorage.getItem('enableClashUI') === 'true';
                 this.externalController = localStorage.getItem('externalController') || '';
                 this.externalUiDownloadUrl = localStorage.getItem('externalUiDownloadUrl') || '';
@@ -163,6 +165,7 @@ export const formLogicFn = (t) => {
                 this.$watch('showAdvanced', val => localStorage.setItem('advancedToggle', val));
                 this.$watch('groupByCountry', val => localStorage.setItem('groupByCountry', val));
                 this.$watch('includeAutoSelect', val => localStorage.setItem('includeAutoSelect', val));
+                this.$watch('useGhProxy', val => localStorage.setItem('useGhProxy', val));
                 this.$watch('enableClashUI', val => localStorage.setItem('enableClashUI', val));
                 this.$watch('externalController', val => localStorage.setItem('externalController', val));
                 this.$watch('externalUiDownloadUrl', val => localStorage.setItem('externalUiDownloadUrl', val));
@@ -252,7 +255,7 @@ export const formLogicFn = (t) => {
                 }
 
                 let payloadContent = this.configEditor;
-                if (this.configType === 'surge') {
+                if (this.configType === 'surge' || this.configType === 'loon') {
                     try {
                         const { configObject } = parseSurgeConfigInput(this.configEditor);
                         payloadContent = JSON.stringify(configObject);
@@ -314,7 +317,7 @@ export const formLogicFn = (t) => {
                         this.configValidationState = 'success';
                         this.configValidationMessage =
                             window.APP_TRANSLATIONS.validYamlConfig || 'YAML config is valid';
-                    } else if (this.configType === 'surge') {
+                    } else if (this.configType === 'surge' || this.configType === 'loon') {
                         parseSurgeConfigInput(this.configEditor);
                         this.configValidationState = 'success';
                         this.configValidationMessage =
@@ -380,6 +383,7 @@ export const formLogicFn = (t) => {
 
                     if (this.groupByCountry) params.append('group_by_country', 'true');
                     if (!this.includeAutoSelect) params.append('include_auto_select', 'false');
+                    if (!this.useGhProxy) params.append('use_gh_proxy', 'false');
                     if (this.enableClashUI) params.append('enable_clash_ui', 'true');
                     if (this.externalController) params.append('external_controller', this.externalController);
                     if (this.externalUiDownloadUrl) params.append('external_ui_download_url', this.externalUiDownloadUrl);
@@ -397,7 +401,8 @@ export const formLogicFn = (t) => {
                         xray: origin + '/xray?' + queryString,
                         singbox: origin + '/singbox?' + queryString,
                         clash: origin + '/clash?' + queryString,
-                        surge: origin + '/surge?' + queryString
+                        surge: origin + '/surge?' + queryString,
+                        loon: origin + '/loon?' + queryString
                     };
 
                     // Scroll to results
@@ -465,7 +470,8 @@ export const formLogicFn = (t) => {
                                 xray: 'x',
                                 singbox: 'b',
                                 clash: 'c',
-                                surge: 's'
+                                surge: 's',
+                                loon: 'l'
                             };
 
                             shortened[type] = `${origin}/${prefixMap[type]}/${returnedCode}`;
@@ -622,6 +628,7 @@ export const formLogicFn = (t) => {
                 // Extract other parameters
                 this.groupByCountry = params.get('group_by_country') === 'true';
                 this.includeAutoSelect = params.get('include_auto_select') !== 'false';
+                this.useGhProxy = params.get('use_gh_proxy') !== 'false';
                 this.enableClashUI = params.get('enable_clash_ui') === 'true';
 
                 const externalController = params.get('external_controller');
@@ -646,7 +653,7 @@ export const formLogicFn = (t) => {
                 }
 
                 // Expand advanced options if any advanced settings are present
-                if (selectedRules || customRules || this.groupByCountry || this.enableClashUI ||
+                if (selectedRules || customRules || this.groupByCountry || !this.useGhProxy || this.enableClashUI ||
                     externalController || externalUiDownloadUrl || ua || configId) {
                     this.showAdvanced = true;
                 }
