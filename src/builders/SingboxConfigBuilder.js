@@ -7,6 +7,11 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 const RULE_SET_HTTP_CLIENT_TAG = 'rule-set-download';
+const ANYTLS_OPTION_KEYS = {
+    'idle-session-check-interval': 'idle_session_check_interval',
+    'idle-session-timeout': 'idle_session_timeout',
+    'min-idle-session': 'min_idle_session'
+};
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
@@ -99,6 +104,17 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     convertProxy(proxy) {
         // Create a shallow copy to avoid mutating the original
         const sanitized = { ...proxy };
+
+        // URI and Clash inputs use Mihomo's kebab-case names, while sing-box
+        // rejects those keys and requires its native snake_case options.
+        if (sanitized.type === 'anytls') {
+            Object.entries(ANYTLS_OPTION_KEYS).forEach(([sourceKey, targetKey]) => {
+                if (sanitized[sourceKey] !== undefined && sanitized[targetKey] === undefined) {
+                    sanitized[targetKey] = sanitized[sourceKey];
+                }
+                delete sanitized[sourceKey];
+            });
+        }
 
         // Strip Clash-only / mis-typed fields that conflict with sing-box semantics.
         // `udp` is Clash-only. Top-level `network` in sing-box is a TCP/UDP allowlist
