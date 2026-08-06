@@ -13,6 +13,15 @@ const LINK_FIELDS = [
   { key: 'surge', labelKey: 'surgeLink' }
 ];
 
+const PROTOCOL_FILTERS = [
+  { value: 'shadowsocks', label: 'ShadowSocks' },
+  { value: 'vmess', label: 'VMess' },
+  { value: 'vless', label: 'VLESS' },
+  { value: 'hysteria2', label: 'Hysteria2' },
+  { value: 'trojan', label: 'Trojan' },
+  { value: 'tuic', label: 'TUIC' }
+];
+
 export const Form = (props) => {
   const { t, lang } = props;
 
@@ -215,6 +224,40 @@ export const Form = (props) => {
               </div>
           </div>
           </div>
+
+  {/* Protocol Filters */ }
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+      <i class="fas fa-filter text-gray-400"></i>
+      {t('protocolFilter')}
+    </h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('protocolFilterTooltip')}</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {PROTOCOL_FILTERS.map(({ value, label }) => (
+        <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
+          <input
+            type="checkbox"
+            value={value}
+            x-model="excludedProtocols"
+            class="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+        </label>
+      ))}
+    </div>
+    <div class="mt-4">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {t('ssMethodFilter')}
+      </label>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('ssMethodFilterTooltip')}</p>
+      <input
+        type="text"
+        x-model="excludedSSMethods"
+        class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        placeholder={t('ssMethodPlaceholder')}
+      />
+    </div>
+  </div>
 
   {/* Subconverter External Config */}
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">

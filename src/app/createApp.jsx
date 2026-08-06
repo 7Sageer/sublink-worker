@@ -17,6 +17,7 @@ import { ConfigStorageService } from '../services/configStorageService.js';
 import { ServiceError, MissingDependencyError } from '../services/errors.js';
 import { normalizeRuntime } from '../runtime/runtimeConfig.js';
 import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11, generateSubconverterConfig } from '../config/index.js';
+import { filterProxyUris, normalizeExcludedProtocols, normalizeExcludedSSMethods } from '../utils/proxyFilter.js';
 
 const DEFAULT_USER_AGENT = 'curl/7.74.0';
 
@@ -80,6 +81,8 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const excludedProtocols = normalizeExcludedProtocols(c.req.query('excludedProtocols'));
+            const excludedSSMethods = normalizeExcludedSSMethods(c.req.query('excludedSSMethods'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -111,7 +114,9 @@ export function createApp(bindings = {}) {
                 externalController,
                 externalUiDownloadUrl,
                 singboxConfigVersion,
-                includeAutoSelect
+                includeAutoSelect,
+                excludedProtocols,
+                excludedSSMethods
             );
             await builder.build();
             const userinfo = builder.getSubscriptionUserinfo();
@@ -136,6 +141,8 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const excludedProtocols = normalizeExcludedProtocols(c.req.query('excludedProtocols'));
+            const excludedSSMethods = normalizeExcludedSSMethods(c.req.query('excludedSSMethods'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
             const externalUiDownloadUrl = c.req.query('external_ui_download_url');
@@ -159,7 +166,9 @@ export function createApp(bindings = {}) {
                 enableClashUI,
                 externalController,
                 externalUiDownloadUrl,
-                includeAutoSelect
+                includeAutoSelect,
+                excludedProtocols,
+                excludedSSMethods
             );
             await builder.build();
             const userinfo = builder.getSubscriptionUserinfo();
@@ -185,6 +194,8 @@ export function createApp(bindings = {}) {
             const ua = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const excludedProtocols = normalizeExcludedProtocols(c.req.query('excludedProtocols'));
+            const excludedSSMethods = normalizeExcludedSSMethods(c.req.query('excludedSSMethods'));
             const configId = c.req.query('configId');
             const lang = c.get('lang');
 
@@ -202,7 +213,9 @@ export function createApp(bindings = {}) {
                 lang,
                 ua,
                 groupByCountry,
-                includeAutoSelect
+                includeAutoSelect,
+                excludedProtocols,
+                excludedSSMethods
             );
             builder.setSubscriptionUrl(c.req.url);
             await builder.build();
@@ -270,6 +283,8 @@ export function createApp(bindings = {}) {
         const finalProxyList = [];
         let subscriptionUserinfo;
         const userAgent = c.req.query('ua') || getRequestHeader(c.req, 'User-Agent') || DEFAULT_USER_AGENT;
+        const excludedProtocols = normalizeExcludedProtocols(c.req.query('excludedProtocols'));
+        const excludedSSMethods = normalizeExcludedSSMethods(c.req.query('excludedSSMethods'));
         const headers = { 'User-Agent': userAgent };
 
         for (const proxy of proxylist) {
@@ -286,14 +301,14 @@ export function createApp(bindings = {}) {
                     const text = await response.text();
                     let processed = tryDecodeSubscriptionLines(text, { decodeUriComponent: true });
                     if (!Array.isArray(processed)) processed = [processed];
-                    finalProxyList.push(...processed.filter(item => typeof item === 'string' && item.trim() !== ''));
+                    finalProxyList.push(...filterProxyUris(processed, excludedProtocols, excludedSSMethods));
                 } catch (e) {
                     runtime.logger.warn('Failed to fetch the proxy', e);
                 }
             } else {
                 let processed = tryDecodeSubscriptionLines(trimmedProxy);
                 if (!Array.isArray(processed)) processed = [processed];
-                finalProxyList.push(...processed.filter(item => typeof item === 'string' && item.trim() !== ''));
+                finalProxyList.push(...filterProxyUris(processed, excludedProtocols, excludedSSMethods));
             }
         }
 

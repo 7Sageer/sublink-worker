@@ -2,9 +2,10 @@ import { ProxyParser } from '../parsers/index.js';
 import { createStableProviderName, deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
+import { filterProxyItems, normalizeExcludedProtocols, normalizeExcludedSSMethods } from '../utils/proxyFilter.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true, excludedProtocols = [], excludedSSMethods = []) {
         this.inputString = inputString;
         this.config = deepCopy(baseConfig);
         this.customRules = [];
@@ -14,6 +15,8 @@ export class BaseConfigBuilder {
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
         this.includeAutoSelect = includeAutoSelect;
+        this.excludedProtocols = normalizeExcludedProtocols(excludedProtocols);
+        this.excludedSSMethods = normalizeExcludedSSMethods(excludedSSMethods);
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
         this.providerNodeNames = [];  // node names from provider subscriptions, for country enumeration only
         this.autoProviderDescriptors = undefined;
@@ -101,7 +104,7 @@ export class BaseConfigBuilder {
                             }
 
                             // If format is compatible with target client, use as provider
-                            if (this.isCompatibleProviderFormat(format)) {
+                            if (!this.hasProxyFilters() && this.isCompatibleProviderFormat(format)) {
                                 this.providerUrls.push(originalUrl);
                                 // Content is already fetched; keep node names so country
                                 // groups can be built over provider members later.
@@ -381,7 +384,11 @@ export class BaseConfigBuilder {
     }
 
     addCustomItems(customItems) {
-        const validItems = customItems.filter(item => item != null);
+        const validItems = filterProxyItems(
+            customItems,
+            this.excludedProtocols,
+            this.excludedSSMethods
+        );
         validItems.forEach(item => {
             if (item?.tag) {
                 const convertedProxy = this.convertProxy(item);
@@ -390,6 +397,10 @@ export class BaseConfigBuilder {
                 }
             }
         });
+    }
+
+    hasProxyFilters() {
+        return this.excludedProtocols.length > 0 || this.excludedSSMethods.length > 0;
     }
 
     addSelectors() {
