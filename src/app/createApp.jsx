@@ -474,14 +474,31 @@ function isSingboxLegacyConfig(version) {
     return version.minor < 12;
 }
 
+// 1.14 swaps rule-set download_detour for http_client, which older clients
+// reject as an unknown field, so it needs its own config tier.
+function isSingboxModernConfig(version) {
+    if (!version || Number.isNaN(version.major) || Number.isNaN(version.minor)) {
+        return false;
+    }
+    if (version.major !== 1) {
+        return version.major > 1;
+    }
+    return version.minor >= 14;
+}
+
+function resolveSingboxConfigTier(version) {
+    if (isSingboxLegacyConfig(version)) return '1.11';
+    return isSingboxModernConfig(version) ? '1.14' : '1.12';
+}
+
 function resolveSingboxConfigVersion(requestedVersion, userAgent) {
     const normalizedRequested = typeof requestedVersion === 'string' ? requestedVersion.trim().toLowerCase() : '';
     if (normalizedRequested && normalizedRequested !== 'auto') {
         if (normalizedRequested === 'legacy') return '1.11';
-        if (normalizedRequested === 'latest') return '1.12';
+        if (normalizedRequested === 'latest') return '1.14';
         const parsed = parseSemverLike(normalizedRequested);
         if (parsed) {
-            return isSingboxLegacyConfig(parsed) ? '1.11' : '1.12';
+            return resolveSingboxConfigTier(parsed);
         }
     }
 
@@ -490,7 +507,7 @@ function resolveSingboxConfigVersion(requestedVersion, userAgent) {
         const versionString = uaMatch?.[1];
         const parsed = versionString ? parseSemverLike(versionString) : null;
         if (parsed) {
-            return isSingboxLegacyConfig(parsed) ? '1.11' : '1.12';
+            return resolveSingboxConfigTier(parsed);
         }
     }
 

@@ -15,6 +15,7 @@ export class BaseConfigBuilder {
         this.groupByCountry = groupByCountry;
         this.includeAutoSelect = includeAutoSelect;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
+        this.providerNodeNames = [];  // node names from provider subscriptions, for country enumeration only
         this.autoProviderDescriptors = undefined;
         this.subscriptionUserinfo = undefined;
     }
@@ -102,6 +103,9 @@ export class BaseConfigBuilder {
                             // If format is compatible with target client, use as provider
                             if (this.isCompatibleProviderFormat(format)) {
                                 this.providerUrls.push(originalUrl);
+                                // Content is already fetched; keep node names so country
+                                // groups can be built over provider members later.
+                                await this.collectProviderNodeNames(content);
                                 continue;  // Skip parsing, will be used as provider
                             }
 
@@ -184,6 +188,25 @@ export class BaseConfigBuilder {
      */
     isCompatibleProviderFormat(format) {
         return false;  // Default: no provider support
+    }
+
+    /**
+     * Extract node names from an already-fetched provider subscription.
+     * Names are only used to enumerate countries for group filters; the nodes
+     * themselves stay remote. Best-effort: provider mode must not fail here.
+     */
+    async collectProviderNodeNames(content) {
+        try {
+            const { parseSubscriptionContent } = await import('../parsers/subscription/subscriptionContentParser.js');
+            const result = parseSubscriptionContent(content);
+            const proxies = Array.isArray(result?.proxies) ? result.proxies : [];
+            proxies.forEach(proxy => {
+                const name = proxy?.tag ?? proxy?.name;
+                if (typeof name === 'string' && name.trim()) {
+                    this.providerNodeNames.push(name.trim());
+                }
+            });
+        } catch (_) { }
     }
 
     getAutoProviderDescriptors(reservedNames = []) {
