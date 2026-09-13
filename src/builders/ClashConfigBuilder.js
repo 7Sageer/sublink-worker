@@ -283,7 +283,10 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     ...(proxy.reduce_rtt !== undefined ? { 'reduce-rtt': proxy.reduce_rtt } : {}),
                     ...(proxy.fast_open !== undefined ? { 'fast-open': proxy.fast_open } : {}),
                 };
-            case 'anytls':
+            case 'anytls': {
+                const idleSessionCheckInterval = proxy['idle-session-check-interval'] ?? proxy.idle_session_check_interval;
+                const idleSessionTimeout = proxy['idle-session-timeout'] ?? proxy.idle_session_timeout;
+                const minIdleSession = proxy['min-idle-session'] ?? proxy.min_idle_session;
                 return {
                     name: proxy.tag,
                     type: 'anytls',
@@ -295,10 +298,11 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     ...(proxy.tls?.server_name ? { sni: proxy.tls.server_name } : {}),
                     ...(proxy.tls?.insecure !== undefined ? { 'skip-cert-verify': !!proxy.tls.insecure } : {}),
                     ...(proxy.tls?.alpn ? { alpn: proxy.tls.alpn } : {}),
-                    ...(proxy['idle-session-check-interval'] !== undefined ? { 'idle-session-check-interval': proxy['idle-session-check-interval'] } : {}),
-                    ...(proxy['idle-session-timeout'] !== undefined ? { 'idle-session-timeout': proxy['idle-session-timeout'] } : {}),
-                    ...(proxy['min-idle-session'] !== undefined ? { 'min-idle-session': proxy['min-idle-session'] } : {}),
+                    ...(idleSessionCheckInterval !== undefined ? { 'idle-session-check-interval': idleSessionCheckInterval } : {}),
+                    ...(idleSessionTimeout !== undefined ? { 'idle-session-timeout': idleSessionTimeout } : {}),
+                    ...(minIdleSession !== undefined ? { 'min-idle-session': minIdleSession } : {}),
                 };
+            }
             default:
                 return proxy; // Return as-is if no specific conversion is defined
         }
