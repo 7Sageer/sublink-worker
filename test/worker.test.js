@@ -36,6 +36,19 @@ describe('Worker', () => {
         expect(json).toHaveProperty('outbounds');
     });
 
+    it('GET /singbox ignores a Clash base config ID', async () => {
+        const kv = new MemoryKVAdapter();
+        await kv.put('clash_test', JSON.stringify({
+            'proxy-groups': [{ name: 'Custom', type: 'select', proxies: ['DIRECT'] }]
+        }));
+        const app = createTestApp({ kv });
+        const config = 'vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogInRlc3QiLA0KICAiYWRkIjogIjEuMS4xLjEiLA0KICAicG9ydCI6ICI0NDMiLA0KICAiaWQiOiAiYWRkNjY2NjYtODg4OC04ODg4LTg4ODgtODg4ODg4ODg4ODg4IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ3cyIsDQogICJ0eXBlIjogIm5vbmUiLA0KICAiaG9zdCI6ICIiLA0KICAicGF0aCI6ICIvIiwNCiAgInRscyI6ICJ0bHMiDQp9';
+        const res = await app.request(`http://localhost/singbox?config=${encodeURIComponent(config)}&configId=clash_test`);
+
+        expect(res.status).toBe(200);
+        expect(await res.json()).toHaveProperty('route.rule_set');
+    });
+
     it('GET /singbox returns legacy config for sing-box 1.11 UA', async () => {
         const app = createTestApp();
         const config = 'vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogInRlc3QiLA0KICAiYWRkIjogIjEuMS4xLjEiLA0KICAicG9ydCI6ICI0NDMiLA0KICAiaWQiOiAiYWRkNjY2NjYtODg4OC04ODg4LTg4ODgtODg4ODg4ODg4ODg4IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ3cyIsDQogICJ0eXBlIjogIm5vbmUiLA0KICAiaG9zdCI6ICIiLA0KICAicGF0aCI6ICIvIiwNCiAgInRscyI6ICJ0bHMiDQp9';
