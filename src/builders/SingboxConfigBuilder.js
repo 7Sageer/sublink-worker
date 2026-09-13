@@ -114,6 +114,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
                 }
                 delete sanitized[sourceKey];
             });
+            // sing-box types the two idle intervals as Duration strings ("30s"),
+            // while share links and Mihomo carry plain seconds
+            ['idle_session_check_interval', 'idle_session_timeout'].forEach((key) => {
+                if (typeof sanitized[key] === 'number') {
+                    sanitized[key] = `${sanitized[key]}s`;
+                }
+            });
         }
 
         // Strip Clash-only / mis-typed fields that conflict with sing-box semantics.
