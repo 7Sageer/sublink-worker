@@ -124,6 +124,34 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // xudp is default in newer versions
         delete sanitized.packet_encoding;
 
+        if (sanitized.type === 'hysteria2') {
+            // sing-box names port-hopping/bandwidth fields differently from the
+            // share-link shape, and rejects unknown fields outright
+            if (sanitized.ports) {
+                const ranges = String(sanitized.ports).split(',')
+                    .map(range => range.trim().replace('-', ':'))
+                    .filter(Boolean);
+                if (ranges.length > 0) {
+                    sanitized.server_ports = ranges;
+                }
+                delete sanitized.ports;
+            }
+            if (typeof sanitized.hop_interval === 'number') {
+                sanitized.hop_interval = `${sanitized.hop_interval}s`;
+            }
+            if (sanitized.up !== undefined) {
+                sanitized.up_mbps = sanitized.up;
+                delete sanitized.up;
+            }
+            if (sanitized.down !== undefined) {
+                sanitized.down_mbps = sanitized.down;
+                delete sanitized.down;
+            }
+            delete sanitized.auth;
+            delete sanitized.recv_window_conn;
+            delete sanitized.fast_open;
+        }
+
         return sanitized;
     }
 

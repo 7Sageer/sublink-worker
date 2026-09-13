@@ -203,7 +203,7 @@ export function convertYamlProxyToObject(p) {
                 recv_window_conn: p['recv-window-conn'],
                 up: p.up,
                 down: p.down,
-                ports: p.ports,
+                ports: p.mport || p.ports,
                 hop_interval: Number.isNaN(hopInterval) ? hopIntervalRaw : hopInterval,
                 alpn: toArray(p.alpn),
                 fast_open: typeof p['fast-open'] !== 'undefined' ? !!p['fast-open'] : undefined
