@@ -8,6 +8,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_KEY_PREFIX: sublink
+      # Set to 0 to keep stored configs without automatic expiration.
       CONFIG_TTL_SECONDS: 2592000
     depends_on:
       - redis

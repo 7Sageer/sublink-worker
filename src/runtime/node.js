@@ -10,7 +10,7 @@ export function createNodeRuntime(env = process.env) {
         assetFetcher: createFileAssetFetcher(env.STATIC_DIR || 'public'),
         logger: console,
         config: {
-            configTtlSeconds: parseNumber(env.CONFIG_TTL_SECONDS) || undefined,
+            configTtlSeconds: parseNumber(env.CONFIG_TTL_SECONDS) ?? undefined,
             shortLinkTtlSeconds: parseNumber(env.SHORT_LINK_TTL_SECONDS) || null
         }
     };
