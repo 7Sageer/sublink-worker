@@ -24,7 +24,7 @@ export const CLASH_CONFIG = {
 	},
 	'dns': {
 		'enable': true,
-		'ipv6': true,
+		'ipv6': false,
 		'respect-rules': true,
 		'enhanced-mode': 'fake-ip',
 		'nameserver': [
@@ -45,6 +45,18 @@ export const CLASH_CONFIG = {
 				'https://dns.google/dns-query'
 			]
 		}
+	},
+	'tun': {
+		'enable': true,
+		'stack': 'mixed',
+		'dns-hijack': [
+			'any:53',
+			'tcp://any:53'
+		],
+		'auto-route': true,
+		'auto-redirect': true,
+		'auto-detect-interface': true,
+		'strict-route': true
 	},
 	'proxies': [],
 	'proxy-groups': []
