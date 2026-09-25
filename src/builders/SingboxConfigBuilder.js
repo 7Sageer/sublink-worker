@@ -14,9 +14,9 @@ const ANYTLS_OPTION_KEYS = {
 };
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true, mergeUserGroups = true) {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect, mergeUserGroups);
 
         this.selectedRules = selectedRules;
         this.customRules = customRules;

@@ -263,6 +263,66 @@ FINAL,DIRECT
             expect(configText).toContain('[Proxy Group]');
             expect(configText).not.toContain('[object Object]');
         });
+
+        it('ClashConfigBuilder should not preserve custom proxy-group from Clash input when mergeUserGroups is disabled', async () => {
+            const builder = new ClashConfigBuilder(clashInput, 'minimal', [], null, 'zh-CN', 'test-agent', false, false, undefined, undefined, true, false);
+            const yamlText = await builder.build();
+            const built = yaml.load(yamlText);
+
+            const customGroup = (built['proxy-groups'] || []).find(g => g && g.name === '自定义选择');
+            expect(customGroup).toBeUndefined();
+        });
+
+        it('ClashConfigBuilder should not preserve custom proxy-group from Sing-Box input when mergeUserGroups is disabled', async () => {
+            const builder = new ClashConfigBuilder(singboxInput, 'minimal', [], null, 'zh-CN', 'test-agent', false, false, undefined, undefined, true, false);
+            const yamlText = await builder.build();
+            const built = yaml.load(yamlText);
+
+            const customGroup = (built['proxy-groups'] || []).find(g => g && g.name === '自定义选择');
+            expect(customGroup).toBeUndefined();
+        });
+
+        it('ClashConfigBuilder should not preserve custom proxy-group from Surge input when mergeUserGroups is disabled', async () => {
+            const builder = new ClashConfigBuilder(surgeInput, 'minimal', [], null, 'zh-CN', 'test-agent', false, false, undefined, undefined, true, false);
+            const yamlText = await builder.build();
+            const built = yaml.load(yamlText);
+
+            const customGroup = (built['proxy-groups'] || []).find(g => g && g.name === '自定义选择');
+            expect(customGroup).toBeUndefined();
+        });
+
+        it('SingboxConfigBuilder should not preserve custom outbound from Sing-Box input when mergeUserGroups is disabled', async () => {
+            const builder = new SingboxConfigBuilder(singboxInput, 'minimal', [], null, 'zh-CN', 'test-agent', false, false, undefined, undefined, '1.12', true, false);
+            const config = await builder.build();
+
+            const proxyNode = (config.outbounds || []).find(o => o && o.tag === 'HK-Node');
+            expect(proxyNode).toBeDefined();
+
+            const customOutbound = (config.outbounds || []).find(o => o && o.tag === '自定义选择');
+            expect(customOutbound).toBeUndefined();
+        });
+
+        it('SingboxConfigBuilder should not preserve custom outbound from Clash input when mergeUserGroups is disabled', async () => {
+            const builder = new SingboxConfigBuilder(clashInput, 'minimal', [], null, 'zh-CN', 'test-agent', false, false, undefined, undefined, '1.12', true, false);
+            const config = await builder.build();
+
+            const customOutbound = (config.outbounds || []).find(o => o && o.tag === '自定义选择');
+            expect(customOutbound).toBeUndefined();
+
+            const proxyNode = (config.outbounds || []).find(o => o && o.tag === 'HK-Node');
+            expect(proxyNode).toBeDefined();
+        });
+
+        it('SingboxConfigBuilder should not preserve custom outbound from Surge input when mergeUserGroups is disabled', async () => {
+            const builder = new SingboxConfigBuilder(surgeInput, 'minimal', [], null, 'zh-CN', 'test-agent', false, false, undefined, undefined, '1.12', true, false);
+            const config = await builder.build();
+
+            const customOutbound = (config.outbounds || []).find(o => o && o.tag === '自定义选择');
+            expect(customOutbound).toBeUndefined();
+
+            const proxyNode = (config.outbounds || []).find(o => o && o.tag === 'HK-Node');
+            expect(proxyNode).toBeDefined();
+        });
     });
 
     describe('Issue #277 - Proxy Group Merge and Validation', () => {
