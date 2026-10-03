@@ -289,15 +289,23 @@ export function parseUrlParams(url) {
 export function createTlsConfig(params) {
 	let tls = { enabled: false };
 	if (params.security && params.security !== 'none') {
+		// Share links use insecure=0/1/true/false; must use parseBool, not !!string.
+		const insecure = parseBool(
+			params.allowInsecure ?? params.insecure ?? params.allow_insecure ?? params['skip-cert-verify'],
+			false
+		);
 		tls = {
 			enabled: true,
 			server_name: params.sni || params.host,
-			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
-			// utls: {
-			//   enabled: true,
-			//   fingerprint: "chrome"
-			// },
+			insecure: !!insecure,
 		};
+		const fingerprint = params.fp || params.fingerprint;
+		if (fingerprint) {
+			tls.utls = {
+				enabled: true,
+				fingerprint
+			};
+		}
 		if (params.security === 'reality') {
 			tls.reality = {
 				enabled: true,
@@ -309,13 +317,35 @@ export function createTlsConfig(params) {
 	return tls;
 }
 
+function normalizeTransportPath(path) {
+	if (path === undefined || path === null || path === '') return undefined;
+	const value = String(path);
+	// Share links sometimes omit the leading slash; Clash/mihomo usually expects "/path".
+	if (value.startsWith('/')) return value;
+	return `/${value}`;
+}
+
 export function createTransportConfig(params) {
+	const type = params.type;
+	const path = normalizeTransportPath(params.path);
+	const hostHeader = params.host || params.sni;
+
+	if (type === 'xhttp' || type === 'splithttp') {
+		return {
+			// Normalize alias used by some share links
+			type: 'xhttp',
+			path,
+			mode: params.mode || 'auto',
+			...(hostHeader ? { host: hostHeader, headers: { host: hostHeader } } : {}),
+		};
+	}
+
 	return {
-		type: params.type,
-		path: params.path ?? undefined,
-		...(params.host && { 'headers': { 'host': params.host } }),
-		...(params.type === 'grpc' && {
-			service_name: params.serviceName ?? undefined,
+		type,
+		path,
+		...(hostHeader && { headers: { host: hostHeader } }),
+		...(type === 'grpc' && {
+			service_name: params.serviceName ?? params.service_name ?? undefined,
 		})
 	};
 }
