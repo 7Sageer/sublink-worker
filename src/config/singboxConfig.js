@@ -41,7 +41,9 @@ export const SING_BOX_CONFIG = {
 				],
 				server: "dns_direct"
 			},
+			// Unclassified domains need real IPs so private/custom CIDR routing can match.
 			{
+				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
 					"AAAA"
@@ -49,7 +51,7 @@ export const SING_BOX_CONFIG = {
 				server: "dns_fakeip"
 			},
 			{
-				query_type: "CNAME",
+				query_type: ["A", "AAAA", "CNAME"],
 				server: "dns_proxy"
 			},
 			{
@@ -132,7 +134,9 @@ export const SING_BOX_CONFIG_V1_11 = {
 				],
 				server: "dns_direct"
 			},
+			// Unclassified domains need real IPs so private/custom CIDR routing can match.
 			{
+				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
 					"AAAA"
@@ -140,7 +144,7 @@ export const SING_BOX_CONFIG_V1_11 = {
 				server: "dns_fakeip"
 			},
 			{
-				query_type: "CNAME",
+				query_type: ["A", "AAAA", "CNAME"],
 				server: "dns_proxy"
 			},
 			{

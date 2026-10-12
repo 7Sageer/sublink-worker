@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 import { SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from '../src/config/singboxConfig.js';
+import { generateRuleSets } from '../src/config/ruleGenerators.js';
+import { SITE_RULE_SET_BASE_URL, IP_RULE_SET_BASE_URL } from '../src/config/ruleUrls.js';
 
 const sampleInput = JSON.stringify({
     outbounds: [
@@ -16,19 +18,20 @@ const sampleInput = JSON.stringify({
 });
 
 const versions = [
+    { version: '1.14', baseConfig: SING_BOX_CONFIG },
     { version: '1.12', baseConfig: SING_BOX_CONFIG },
     { version: '1.11', baseConfig: SING_BOX_CONFIG_V1_11 }
 ];
 
-function buildConfig(version, baseConfig, selectedRules = []) {
+function buildConfig(version, baseConfig, selectedRules = [], customRules = []) {
     return new SingboxConfigBuilder(
-        sampleInput, selectedRules, [], baseConfig, 'zh-CN', null,
+        sampleInput, selectedRules, customRules, baseConfig, 'zh-CN', null,
         false, false, null, null, version
     ).build();
 }
 
 describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ version, baseConfig }) => {
-    it('uses direct DNS only for China and fake IP for all other address queries', async () => {
+    it('keeps fake IP scoped to known foreign domains and resolves unknown domains through the proxy', async () => {
         const config = await buildConfig(version, baseConfig);
 
         expect(config.dns.rules.slice(0, 3)).toEqual([
@@ -38,15 +41,19 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
                 server: 'dns_direct'
             },
             {
+                rule_set: 'geolocation-!cn',
                 query_type: ['A', 'AAAA'],
                 server: 'dns_fakeip'
             },
             {
-                query_type: 'CNAME',
+                query_type: ['A', 'AAAA', 'CNAME'],
                 server: 'dns_proxy'
             }
         ]);
         expect(config.dns.rules).toHaveLength(4);
+        expect(config.dns.servers.find(server => server.tag === 'dns_proxy').detour).toBe('🚀 节点选择');
+        expect(config.dns.final).toBe('dns_direct');
+        expect(config.dns.rules[3]).toEqual(baseConfig.dns.rules[3]);
     });
 
     it('includes every required DNS rule set without Location:CN selected', async () => {
@@ -64,5 +71,53 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
             'geolocation-!cn'
         ]));
         expect(new Set(availableTags).size).toBe(availableTags.length);
+    });
+
+    it('deduplicates DNS dependencies also referenced by custom rules without Location:CN', async () => {
+        const config = await buildConfig(version, baseConfig, ['Private'], [
+            { name: 'CustomCN', site: 'cn,geolocation-cn,cn', ip: 'private,cn,cn' },
+            { name: 'OtherCN', site: ['geolocation-cn', 'cn'], ip: ['cn'] }
+        ]);
+        const tags = config.route.rule_set.map(ruleSet => ruleSet.tag);
+
+        expect(tags).toEqual(['geolocation-cn', 'cn', 'geolocation-!cn', 'private-ip', 'cn-ip']);
+        expect(config.route.rules).toContainEqual({
+            rule_set: ['geolocation-cn', 'cn'],
+            outbound: 'OtherCN'
+        });
+    });
+});
+
+describe('sing-box rule-set collection', () => {
+    it('deduplicates all sources while preserving first-seen order and custom URLs', () => {
+        const customRules = [
+            { site: 'google,custom-site,cn,custom-site', ip: ['google', 'custom-net'] },
+            { site: ['custom-site', 'second-site'], ip: 'custom-net,second-net' }
+        ];
+        const originalRules = structuredClone(customRules);
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(['Google'], customRules);
+
+        expect(site_rule_sets.map(rule => rule.tag)).toEqual([
+            'google', 'geolocation-cn', 'cn', 'geolocation-!cn', 'custom-site', 'second-site'
+        ]);
+        expect(ip_rule_sets.map(rule => rule.tag)).toEqual(['google-ip', 'custom-net-ip', 'second-net-ip']);
+        expect(site_rule_sets.map(rule => rule.url)).toEqual(site_rule_sets.map(rule => `${SITE_RULE_SET_BASE_URL}${rule.tag}.srs`));
+        expect(ip_rule_sets.map(rule => rule.url)).toEqual([
+            `${IP_RULE_SET_BASE_URL}google.srs`,
+            `${IP_RULE_SET_BASE_URL}custom-net.srs`,
+            `${IP_RULE_SET_BASE_URL}second-net.srs`
+        ]);
+        expect(customRules).toEqual(originalRules);
+    });
+
+    it('continues to reject unsafe custom identifiers before collecting rule sets', () => {
+        const unsafeIds = ['../cn', '.hidden', 'a..b', 'https://evil.example/rule', 'cn?x=1', 'cn#fragment', 'a/b', 42, null];
+        const { site_rule_sets, ip_rule_sets } = generateRuleSets(['Private'], [{
+            site: [...unsafeIds, ' safe-site.example '],
+            ip: [...unsafeIds, 'safe-net']
+        }]);
+
+        expect(site_rule_sets.map(rule => rule.tag)).toEqual(['geolocation-cn', 'cn', 'geolocation-!cn', 'safe-site.example']);
+        expect(ip_rule_sets.map(rule => rule.tag)).toEqual(['private-ip', 'safe-net-ip']);
     });
 });
