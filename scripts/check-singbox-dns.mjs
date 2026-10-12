@@ -1,4 +1,5 @@
-// Run with: node --test scripts/check-singbox-dns.mjs (requires sing-box 1.14 and curl).
+// Run with: SING_BOX_BINARY=/path/to/sing-box node --test scripts/check-singbox-dns.mjs
+// Requires sing-box 1.11, 1.12 or 1.14 and curl; all fixtures use loopback addresses.
 import assert from 'node:assert/strict';
 import { execFile, execFileSync, spawn } from 'node:child_process';
 import dgram from 'node:dgram';
@@ -11,13 +12,11 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
+import { SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from '../src/config/singboxConfig.js';
 
 const execute = promisify(execFile);
 const binary = process.env.SING_BOX_BINARY || 'sing-box';
-const input = JSON.stringify({ outbounds: [{
-    type: 'vless', tag: 'test-proxy', server: '127.0.0.1', server_port: 1,
-    uuid: '00000000-0000-0000-0000-000000000000'
-}] });
+const proxyUUID = '00000000-0000-0000-0000-000000000000';
 
 function encodeName(name) {
     return Buffer.concat([...name.split('.').map(label => Buffer.concat([
@@ -118,9 +117,29 @@ async function startSingbox(t, path) {
     return () => output;
 }
 
-test('generated DNS policy preserves real-IP routing', async t => {
-    const version = execFileSync(binary, ['version'], { encoding: 'utf8' });
-    assert.match(version, /sing-box version 1\.14\./);
+async function proxyFixture(t, directory, name) {
+    const port = await unusedPort();
+    const path = join(directory, `${name}-proxy.json`);
+    await writeFile(path, JSON.stringify({
+        inbounds: [{
+            type: 'vless', tag: 'proxy-in', listen: '127.0.0.1', listen_port: port,
+            users: [{ uuid: proxyUUID }]
+        }],
+        outbounds: [{ type: 'direct', tag: 'DIRECT' }],
+        route: { rules: [
+            { ip_cidr: ['127.0.0.0/8'], outbound: 'DIRECT' },
+            { action: 'reject' }
+        ] }
+    }));
+    await startSingbox(t, path);
+    return port;
+}
+
+test('generated DNS policy preserves bootstrap and real-IP routing', async t => {
+    const versionOutput = execFileSync(binary, ['version'], { encoding: 'utf8' });
+    const version = versionOutput.match(/sing-box version (1\.(?:11|12|14))\./)?.[1];
+    assert.ok(version, `Expected sing-box 1.11, 1.12 or 1.14; got ${versionOutput}`);
+    const baseConfig = version === '1.11' ? SING_BOX_CONFIG_V1_11 : SING_BOX_CONFIG;
     const directory = await mkdtemp(join(tmpdir(), 'sublink-dns-'));
     t.after(() => rm(directory, { recursive: true, force: true }));
 
@@ -131,6 +150,12 @@ test('generated DNS policy preserves real-IP routing', async t => {
         await t.test(scenario.name, async t => {
             const direct = await dnsFixture(t);
             const proxy = await dnsFixture(t);
+            const bootstrap = await dnsFixture(t);
+            const proxyPort = await proxyFixture(t, directory, scenario.name);
+            const input = JSON.stringify({ outbounds: [{
+                type: 'vless', tag: 'test-proxy', server: 'node.example', server_port: proxyPort,
+                uuid: proxyUUID
+            }] });
             const server = http.createServer((_request, response) => response.end('LOCAL-DIRECT-OK'));
             server.listen(0, '127.0.0.1');
             await once(server, 'listening');
@@ -138,8 +163,8 @@ test('generated DNS policy preserves real-IP routing', async t => {
             const socksPort = await unusedPort();
             const dnsPort = await unusedPort(true);
             const builder = new SingboxConfigBuilder(
-                input, scenario.selected, scenario.custom, null, 'en-US', null,
-                false, false, null, null, '1.14', false
+                input, scenario.selected, scenario.custom, baseConfig, 'en-US', null,
+                false, false, null, null, version, false
             );
             const config = await builder.build();
             const path = join(directory, `${scenario.name}.json`);
@@ -152,8 +177,13 @@ test('generated DNS policy preserves real-IP routing', async t => {
                 { type: 'mixed', tag: 'mixed-in', listen: '127.0.0.1', listen_port: socksPort },
                 { type: 'direct', tag: 'dns-in', listen: '127.0.0.1', listen_port: dnsPort, network: 'udp' }
             ];
-            config.dns.servers = config.dns.servers.map(s => s.type === 'fakeip' ? s : {
-                type: 'udp', tag: s.tag, server: '127.0.0.1', server_port: s.tag === 'dns_proxy' ? proxy.port : direct.port
+            config.dns.servers = config.dns.servers.map(s => {
+                if (s.tag === 'dns_fakeip') return s;
+                const port = s.tag === 'dns_proxy' ? proxy.port : s.tag === 'dns_resolver' ? bootstrap.port : direct.port;
+                // Keep detours so proxy DNS must bootstrap a real domain-addressed node.
+                return version === '1.11'
+                    ? { ...s, address: `udp://127.0.0.1:${port}` }
+                    : { ...s, type: 'udp', server: '127.0.0.1', server_port: port };
             });
             config.route.rule_set = config.route.rule_set.map(s => ({
                 type: 'inline', tag: s.tag, rules: [s.tag === 'private-ip' ? { ip_cidr: ['127.0.0.0/8'] }
@@ -167,11 +197,18 @@ test('generated DNS policy preserves real-IP routing', async t => {
             await writeFile(path, JSON.stringify(config));
             const logs = await startSingbox(t, path);
 
+            assert.equal(bootstrap.queries.length, 0, 'the first DNS request must start with a cold node cache');
             for (const type of [1, 28, 5]) {
-                const response = await query(dnsPort, 'unknown.example', type);
+                const response = await query(dnsPort, 'unknown.example', type).catch(error => {
+                    throw new Error(`${error.message}\n${logs()}`, { cause: error });
+                });
                 assert.equal(response.readUInt16BE(2) & 15, 0);
                 assert.ok(proxy.queries.some(q => q.domain === 'unknown.example' && q.type === type));
             }
+            assert.ok(bootstrap.queries.some(q => q.domain === 'node.example' && q.type === 1));
+            assert.ok(bootstrap.queries.every(q => q.domain === 'node.example'));
+            assert.ok(!proxy.queries.some(q => q.domain === 'node.example'));
+            assert.ok(!logs().includes('DNS query loopback'), logs());
             assert.equal(direct.queries.length, 0, 'unclassified queries must not reach direct DNS');
             const foreign = await query(dnsPort, 'foreign.example', 1);
             assert.equal(foreign.subarray(-4, -2).toString('hex'), 'c612', 'known foreign domains still use FakeIP');
@@ -183,14 +220,16 @@ test('generated DNS policy preserves real-IP routing', async t => {
             assert.equal(address, '127.0.0.1', 'unknown domains need real IPs for CIDR routing');
             assert.ok(proxy.queries.some(q => q.domain === 'nas.example'));
             assert.ok(!direct.queries.some(q => q.domain === 'nas.example'));
+            const requestLogOffset = logs().length;
             const { stdout } = await execute('curl', [
                 '--silent', '--show-error', '--noproxy', '', '--max-time', '3',
                 '--socks5', `127.0.0.1:${socksPort}`, `http://${address}:${server.address().port}/`
             ]);
             assert.equal(stdout, 'LOCAL-DIRECT-OK');
-            assert.ok(logs().includes(`route(${target})`), logs());
-            assert.ok(logs().includes('outbound/direct[DIRECT]'), logs());
-            assert.ok(!logs().includes('outbound/vless[test-proxy]'), logs());
+            const requestLogs = logs().slice(requestLogOffset);
+            assert.ok(requestLogs.includes(`route(${target})`), requestLogs);
+            assert.ok(requestLogs.includes('outbound/direct[DIRECT]'), requestLogs);
+            assert.ok(!requestLogs.includes('outbound/vless[test-proxy]'), requestLogs);
         });
     }
 });

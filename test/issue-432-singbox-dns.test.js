@@ -33,8 +33,9 @@ function buildConfig(version, baseConfig, selectedRules = [], customRules = []) 
 describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ version, baseConfig }) => {
     it('keeps fake IP scoped to known foreign domains and resolves unknown domains through the proxy', async () => {
         const config = await buildConfig(version, baseConfig);
+        const policyRules = version === '1.11' ? config.dns.rules.slice(1) : config.dns.rules;
 
-        expect(config.dns.rules.slice(0, 3)).toEqual([
+        expect(policyRules.slice(0, 3)).toEqual([
             {
                 rule_set: ['geolocation-cn', 'cn'],
                 query_type: ['A', 'AAAA', 'CNAME'],
@@ -50,10 +51,28 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
                 server: 'dns_proxy'
             }
         ]);
-        expect(config.dns.rules).toHaveLength(4);
+        expect(policyRules).toHaveLength(4);
         expect(config.dns.servers.find(server => server.tag === 'dns_proxy').detour).toBe('🚀 节点选择');
         expect(config.dns.final).toBe('dns_direct');
-        expect(config.dns.rules[3]).toEqual(baseConfig.dns.rules[3]);
+        expect(policyRules[3]).toEqual(version === '1.11' ? {
+            query_type: ['A', 'AAAA', 'CNAME'], invert: true, server: 'dns_direct', disable_cache: true
+        } : {
+            query_type: ['A', 'AAAA', 'CNAME'], invert: true, action: 'predefined', rcode: 'REFUSED'
+        });
+    });
+
+    it('resolves outbound server domains independently of proxied DNS queries', async () => {
+        const config = await buildConfig(version, baseConfig);
+
+        if (version === '1.11') {
+            expect(config.dns.rules[0]).toEqual({ outbound: 'any', server: 'dns_resolver' });
+            expect(config.dns.servers.find(server => server.tag === 'dns_resolver')).toEqual({
+                tag: 'dns_resolver', address: '223.5.5.5', detour: 'DIRECT'
+            });
+        } else {
+            expect(config.route.default_domain_resolver).toBe('dns_resolver');
+            expect(config.dns.rules.some(rule => rule.outbound)).toBe(false);
+        }
     });
 
     it('includes every required DNS rule set without Location:CN selected', async () => {

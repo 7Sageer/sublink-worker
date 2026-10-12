@@ -125,6 +125,11 @@ export const SING_BOX_CONFIG_V1_11 = {
 			}
 		],
 		rules: [
+			// Node bootstrap must not recurse through the proxy DNS that depends on it.
+			{
+				outbound: "any",
+				server: "dns_resolver"
+			},
 			{
 				rule_set: ["geolocation-cn", "cn"],
 				query_type: [
