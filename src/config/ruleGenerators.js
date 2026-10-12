@@ -117,14 +117,17 @@ export function generateRuleSets(selectedRules = [], customRules = []) {
 		url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
 	}));
 
-	if (!selectedRules.includes('Non-China')) {
-		site_rule_sets.push({
-			tag: 'geolocation-!cn',
-			type: 'remote',
-			format: 'binary',
-			url: `${SITE_RULE_SET_BASE_URL}geolocation-!cn.srs`,
-		});
-	}
+	// DNS rules require these sets even when their routing rules are not selected.
+	['geolocation-cn', 'cn', 'geolocation-!cn'].forEach(rule => {
+		if (!siteRuleSets.has(rule)) {
+			site_rule_sets.push({
+				tag: rule,
+				type: 'remote',
+				format: 'binary',
+				url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
+			});
+		}
+	});
 
 	if (customRules) {
 		customRules.forEach(rule => {
