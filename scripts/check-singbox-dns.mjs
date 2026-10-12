@@ -208,15 +208,30 @@ test('generated DNS policy preserves bootstrap and real-IP routing', async t => 
         { name: 'private', selected: ['Private'], custom: [{ name: 'CustomCN', site: 'cn,geolocation-cn,cn' }], group: 'Private' },
         { name: 'custom-cidr', selected: ['Location:CN'], custom: [{ name: 'CustomCIDR', ip_cidr: '127.0.0.1/32' }], group: 'CustomCIDR' },
         { name: 'private-route-override', selected: ['Private'], custom: [], group: 'Private', routeOverride: true },
-        { name: 'custom-cidr-route-override', selected: ['Location:CN'], custom: [{ name: 'CustomCIDR', ip_cidr: '127.0.0.1/32' }], group: 'CustomCIDR', routeOverride: true }
+        { name: 'custom-cidr-route-override', selected: ['Location:CN'], custom: [{ name: 'CustomCIDR', ip_cidr: '127.0.0.1/32' }], group: 'CustomCIDR', routeOverride: true },
+        { name: 'direct-bootstrap-route-override', selected: ['Private'], custom: [], group: 'Private', routeOverride: true, directBootstrap: true }
     ]) {
         await t.test(scenario.name, async t => {
             const direct = await dnsFixture(t);
             const proxy = await dnsFixture(t);
             const bootstrap = await dnsFixture(t);
             const proxyPort = await proxyFixture(t, directory, scenario.name);
+            const scenarioBase = structuredClone(baseConfig);
+            if (scenario.directBootstrap && version !== '1.11') {
+                // Modern sing-box rejects DNS detours to an empty direct outbound.
+                scenarioBase.outbounds.find(outbound => outbound.tag === 'DIRECT').domain_resolver = 'dns_resolver';
+            }
             const input = JSON.stringify({
                 ...(scenario.routeOverride ? { route: { rules: [] } } : {}),
+                ...(scenario.directBootstrap ? {
+                    dns: {
+                        servers: baseConfig.dns.servers.map(server => {
+                            if (server.tag === 'dns_resolver') return { ...server, detour: 'DIRECT' };
+                            if (server.tag === 'dns_proxy') return { ...server, detour: '🚀 Node Select' };
+                            return server;
+                        })
+                    }
+                } : {}),
                 outbounds: [{
                     type: 'vless', tag: 'test-proxy', server: 'node.example', server_port: proxyPort,
                     uuid: proxyUUID
@@ -229,10 +244,13 @@ test('generated DNS policy preserves bootstrap and real-IP routing', async t => 
             const socksPort = await unusedPort();
             const dnsPort = await unusedPort(true);
             const builder = new SingboxConfigBuilder(
-                input, scenario.selected, scenario.custom, baseConfig, 'en-US', null,
+                input, scenario.selected, scenario.custom, scenarioBase, 'en-US', null,
                 false, false, null, null, version, false
             );
             const config = await builder.build();
+            if (scenario.directBootstrap && version !== '1.11') {
+                assert.equal(config.route.default_domain_resolver, 'dns_resolver');
+            }
             const path = join(directory, `${scenario.name}.json`);
             await writeFile(path, JSON.stringify(config));
             await execute(binary, ['check', '-c', path]);
