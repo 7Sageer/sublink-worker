@@ -39,5 +39,11 @@ export { generateSubconverterConfig } from './subconverterConfig.js';
 
 // Platform Configs
 export { SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from './singboxConfig.js';
-export { CLASH_CONFIG } from './clashConfig.js';
+export {
+	CLASH_CONFIG,
+	CLASH_DOMESTIC_DNS_SERVERS,
+	CLASH_FOREIGN_DNS_SERVERS,
+	CLASH_DEFAULT_NAMESERVERS,
+	normalizeClashDnsConfig
+} from './clashConfig.js';
 export { SURGE_CONFIG } from './surgeConfig.js';
