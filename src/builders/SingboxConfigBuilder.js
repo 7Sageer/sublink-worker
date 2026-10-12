@@ -13,6 +13,15 @@ const ANYTLS_OPTION_KEYS = {
     'min-idle-session': 'min_idle_session'
 };
 
+function isDirectDnsServer(server, outbounds = []) {
+    if (!server?.tag || server.type === 'fakeip') return false;
+    if (!server.detour) return true;
+
+    // A detour is proxy-independent only when its actual target is direct.
+    const target = outbounds.find(outbound => outbound?.tag === server.detour);
+    return target?.type === 'direct' && !target.detour;
+}
+
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
@@ -578,7 +587,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         if (target?.type !== 'direct') return;
         const hasDialFields = Object.keys(target).some(key => key !== 'type' && key !== 'tag');
         if (hasDialFields) return;
-        const candidates = (this.config.dns?.servers || []).filter(server => server?.tag && server.type !== 'fakeip' && !server.detour);
+        const candidates = (this.config.dns?.servers || []).filter(server => isDirectDnsServer(server, this.config.outbounds));
         const resolver = typeof this.config.route.default_domain_resolver === 'string'
             ? this.config.route.default_domain_resolver
             : (candidates.find(server => server.type === 'udp') || candidates[0])?.tag;
@@ -590,6 +599,16 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
         const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
+
+        // Subscription route overrides must not make node bootstrap depend on proxy DNS.
+        if (this.singboxVersion !== '1.11' && !this.config.route.default_domain_resolver) {
+            const bootstrapResolver = (this.config.dns?.servers || []).find(server =>
+                server?.tag === 'dns_resolver' && isDirectDnsServer(server, this.config.outbounds)
+            );
+            if (bootstrapResolver) {
+                this.config.route.default_domain_resolver = bootstrapResolver.tag;
+            }
+        }
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
         this.configureRuleSetDownload();
