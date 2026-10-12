@@ -23,9 +23,9 @@ const versions = [
     { version: '1.11', baseConfig: SING_BOX_CONFIG_V1_11 }
 ];
 
-function buildConfig(version, baseConfig, selectedRules = [], customRules = []) {
+function buildConfig(version, baseConfig, selectedRules = [], customRules = [], input = sampleInput) {
     return new SingboxConfigBuilder(
-        sampleInput, selectedRules, customRules, baseConfig, 'zh-CN', null,
+        input, selectedRules, customRules, baseConfig, 'zh-CN', null,
         false, false, null, null, version
     ).build();
 }
@@ -80,6 +80,23 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
         }
     });
 
+    it('preserves bootstrap isolation after a complete subscription overrides route', async () => {
+        const routeRule = { domain_suffix: ['internal.example'], outbound: 'DIRECT' };
+        const input = JSON.stringify({
+            ...JSON.parse(sampleInput),
+            route: { rules: [routeRule] }
+        });
+        const config = await buildConfig(version, baseConfig, ['Private'], [], input);
+
+        expect(config.route.rules).toContainEqual(routeRule);
+        if (version === '1.11') {
+            expect(config.route).not.toHaveProperty('default_domain_resolver');
+            expect(config.dns.rules[0]).toEqual({ outbound: 'any', server: 'dns_resolver' });
+        } else {
+            expect(config.route.default_domain_resolver).toBe('dns_resolver');
+        }
+    });
+
     it('includes every required DNS rule set without Location:CN selected', async () => {
         const config = await buildConfig(version, baseConfig, ['Private']);
         const availableTags = config.route.rule_set.map(ruleSet => ruleSet.tag);
@@ -109,6 +126,64 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
             rule_set: ['geolocation-cn', 'cn'],
             outbound: 'OtherCN'
         });
+    });
+});
+
+describe.each(versions.filter(({ version }) => version !== '1.11'))('sing-box $version bootstrap resolver', ({ version, baseConfig }) => {
+    it.each([
+        'dns_direct',
+        { server: 'dns_direct', strategy: 'ipv4_only' }
+    ])('preserves an explicit route resolver: %j', async resolver => {
+        const input = JSON.stringify({
+            ...JSON.parse(sampleInput),
+            route: { rules: [], default_domain_resolver: resolver }
+        });
+        const config = await buildConfig(version, baseConfig, ['Private'], [], input);
+
+        expect(config.route.default_domain_resolver).toEqual(resolver);
+    });
+
+    it('preserves an explicit outbound resolver while restoring the route default', async () => {
+        const subscription = JSON.parse(sampleInput);
+        subscription.outbounds[0].domain_resolver = { server: 'dns_direct', strategy: 'ipv4_only' };
+        subscription.route = { rules: [] };
+        const config = await buildConfig(version, baseConfig, ['Private'], [], JSON.stringify(subscription));
+
+        expect(config.route.default_domain_resolver).toBe('dns_resolver');
+        expect(config.outbounds.find(outbound => outbound.tag === 'test-proxy').domain_resolver)
+            .toEqual(subscription.outbounds[0].domain_resolver);
+    });
+
+    it('does not reference a bootstrap server removed by a DNS override', async () => {
+        const input = JSON.stringify({
+            ...JSON.parse(sampleInput),
+            route: { rules: [] },
+            dns: {
+                servers: [{ type: 'udp', tag: 'custom-dns', server: '127.0.0.1' }],
+                rules: [],
+                final: 'custom-dns'
+            }
+        });
+        const config = await buildConfig(version, baseConfig, ['Private'], [], input);
+
+        expect(config.route).not.toHaveProperty('default_domain_resolver');
+        expect(config.dns.servers.map(server => server.tag)).toEqual(['custom-dns']);
+    });
+
+    it.each([
+        { type: 'udp', tag: 'dns_resolver', server: '223.5.5.5', detour: 'test-proxy' },
+        { type: 'fakeip', tag: 'dns_resolver', inet4_range: '198.18.0.0/15' }
+    ])('does not choose an unsafe bootstrap server: %j', async resolver => {
+        const input = JSON.stringify({
+            ...JSON.parse(sampleInput),
+            route: { rules: [] },
+            dns: {
+                servers: baseConfig.dns.servers.map(server => server.tag === 'dns_resolver' ? resolver : server)
+            }
+        });
+        const config = await buildConfig(version, baseConfig, ['Private'], [], input);
+
+        expect(config.route).not.toHaveProperty('default_domain_resolver');
     });
 });
 

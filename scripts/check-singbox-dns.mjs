@@ -206,17 +206,22 @@ test('generated DNS policy preserves bootstrap and real-IP routing', async t => 
 
     for (const scenario of [
         { name: 'private', selected: ['Private'], custom: [{ name: 'CustomCN', site: 'cn,geolocation-cn,cn' }], group: 'Private' },
-        { name: 'custom-cidr', selected: ['Location:CN'], custom: [{ name: 'CustomCIDR', ip_cidr: '127.0.0.1/32' }], group: 'CustomCIDR' }
+        { name: 'custom-cidr', selected: ['Location:CN'], custom: [{ name: 'CustomCIDR', ip_cidr: '127.0.0.1/32' }], group: 'CustomCIDR' },
+        { name: 'private-route-override', selected: ['Private'], custom: [], group: 'Private', routeOverride: true },
+        { name: 'custom-cidr-route-override', selected: ['Location:CN'], custom: [{ name: 'CustomCIDR', ip_cidr: '127.0.0.1/32' }], group: 'CustomCIDR', routeOverride: true }
     ]) {
         await t.test(scenario.name, async t => {
             const direct = await dnsFixture(t);
             const proxy = await dnsFixture(t);
             const bootstrap = await dnsFixture(t);
             const proxyPort = await proxyFixture(t, directory, scenario.name);
-            const input = JSON.stringify({ outbounds: [{
-                type: 'vless', tag: 'test-proxy', server: 'node.example', server_port: proxyPort,
-                uuid: proxyUUID
-            }] });
+            const input = JSON.stringify({
+                ...(scenario.routeOverride ? { route: { rules: [] } } : {}),
+                outbounds: [{
+                    type: 'vless', tag: 'test-proxy', server: 'node.example', server_port: proxyPort,
+                    uuid: proxyUUID
+                }]
+            });
             const server = http.createServer((_request, response) => response.end('LOCAL-DIRECT-OK'));
             server.listen(0, '127.0.0.1');
             await once(server, 'listening');

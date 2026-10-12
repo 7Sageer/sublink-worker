@@ -591,6 +591,16 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         const rules = generateRules(this.selectedRules, this.customRules);
         const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
 
+        // Subscription route overrides must not make node bootstrap depend on proxy DNS.
+        if (this.singboxVersion !== '1.11' && !this.config.route.default_domain_resolver) {
+            const bootstrapResolver = (this.config.dns?.servers || []).find(server =>
+                server?.tag === 'dns_resolver' && server.type !== 'fakeip' && !server.detour
+            );
+            if (bootstrapResolver) {
+                this.config.route.default_domain_resolver = bootstrapResolver.tag;
+            }
+        }
+
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
         this.configureRuleSetDownload();
 
