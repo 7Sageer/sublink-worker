@@ -310,9 +310,10 @@ export function createApp(bindings = {}) {
         return c.text(encodeBase64(finalString), 200, responseHeaders);
     });
 
-    app.get('/shorten-v2', async (c) => {
+    app.post('/shorten-v2', async (c) => {
         try {
-            const url = c.req.query('url');
+            const body = await c.req.json();
+            const url = body.url;
             if (!url) {
                 return c.text('Missing URL parameter', 400);
             }
@@ -325,7 +326,7 @@ export function createApp(bindings = {}) {
             const queryString = parsedUrl.search;
 
             const shortLinks = requireShortLinkService(services.shortLinks);
-            const code = await shortLinks.createShortLink(queryString, c.req.query('shortCode'));
+            const code = await shortLinks.createShortLink(queryString, body.shortCode);
             return c.text(code);
         } catch (error) {
             return handleError(c, error, runtime.logger);
