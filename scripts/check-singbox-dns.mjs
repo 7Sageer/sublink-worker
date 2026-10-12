@@ -135,6 +135,67 @@ async function proxyFixture(t, directory, name) {
     return port;
 }
 
+test('direct mode bypasses proxy DNS when the node is unavailable', async t => {
+    const versionOutput = execFileSync(binary, ['version'], { encoding: 'utf8' });
+    const version = versionOutput.match(/sing-box version (1\.(?:11|12|14))\./)?.[1];
+    assert.ok(version, `Expected sing-box 1.11, 1.12 or 1.14; got ${versionOutput}`);
+    const baseConfig = version === '1.11' ? SING_BOX_CONFIG_V1_11 : SING_BOX_CONFIG;
+    const directory = await mkdtemp(join(tmpdir(), 'sublink-dns-direct-'));
+    t.after(() => rm(directory, { recursive: true, force: true }));
+
+    const direct = await dnsFixture(t);
+    const proxy = await dnsFixture(t);
+    const bootstrap = await dnsFixture(t);
+    const unavailableProxyPort = await unusedPort(true);
+    const dnsPort = await unusedPort(true);
+    const input = JSON.stringify({ outbounds: [{
+        type: 'vless', tag: 'test-proxy', server: 'node.example',
+        server_port: unavailableProxyPort, uuid: proxyUUID
+    }] });
+    const builder = new SingboxConfigBuilder(
+        input, ['Private'], [], baseConfig, 'en-US', null,
+        false, false, null, null, version, false
+    );
+    const config = await builder.build();
+
+    config.log = { level: 'debug', disabled: false };
+    config.inbounds = [
+        { type: 'direct', tag: 'dns-in', listen: '127.0.0.1', listen_port: dnsPort, network: 'udp' }
+    ];
+    config.dns.servers = config.dns.servers.map(server => {
+        if (server.tag === 'dns_fakeip') return server;
+        const port = server.tag === 'dns_proxy'
+            ? proxy.port
+            : server.tag === 'dns_resolver' ? bootstrap.port : direct.port;
+        return version === '1.11'
+            ? { ...server, address: `udp://127.0.0.1:${port}` }
+            : { ...server, type: 'udp', server: '127.0.0.1', server_port: port };
+    });
+    config.route.rule_set = config.route.rule_set.map(ruleSet => ({
+        type: 'inline',
+        tag: ruleSet.tag,
+        rules: [ruleSet.tag.endsWith('-ip')
+            ? { ip_cidr: ['192.0.2.0/24'] }
+            : { domain: ['china.example'] }]
+    }));
+    // The DNS rule must honor the Clash mode even when the proxy node cannot dial.
+    config.experimental = { clash_api: { default_mode: 'direct' } };
+    delete config.ntp;
+
+    const path = join(directory, 'direct-mode.json');
+    await writeFile(path, JSON.stringify(config));
+    await execute(binary, ['check', '-c', path]);
+    const logs = await startSingbox(t, path);
+    const response = await query(dnsPort, 'unknown.example', 1).catch(error => {
+        throw new Error(`${error.message}\n${logs()}`, { cause: error });
+    });
+
+    assert.equal(response.readUInt16BE(2) & 15, 0);
+    assert.ok(direct.queries.some(query => query.domain === 'unknown.example' && query.type === 1));
+    assert.equal(proxy.queries.length, 0, 'direct mode must not query the proxy DNS');
+    assert.equal(bootstrap.queries.length, 0, 'direct mode must not bootstrap the proxy node');
+});
+
 test('generated DNS policy preserves bootstrap and real-IP routing', async t => {
     const versionOutput = execFileSync(binary, ['version'], { encoding: 'utf8' });
     const version = versionOutput.match(/sing-box version (1\.(?:11|12|14))\./)?.[1];

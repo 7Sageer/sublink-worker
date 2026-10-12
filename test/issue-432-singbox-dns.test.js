@@ -35,7 +35,12 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
         const config = await buildConfig(version, baseConfig);
         const policyRules = version === '1.11' ? config.dns.rules.slice(1) : config.dns.rules;
 
-        expect(policyRules.slice(0, 3)).toEqual([
+        expect(policyRules.slice(0, 4)).toEqual([
+            {
+                clash_mode: 'direct',
+                query_type: ['A', 'AAAA', 'CNAME'],
+                server: 'dns_direct'
+            },
             {
                 rule_set: ['geolocation-cn', 'cn'],
                 query_type: ['A', 'AAAA', 'CNAME'],
@@ -51,10 +56,10 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
                 server: 'dns_proxy'
             }
         ]);
-        expect(policyRules).toHaveLength(4);
+        expect(policyRules).toHaveLength(5);
         expect(config.dns.servers.find(server => server.tag === 'dns_proxy').detour).toBe('🚀 节点选择');
         expect(config.dns.final).toBe('dns_direct');
-        expect(policyRules[3]).toEqual(version === '1.11' ? {
+        expect(policyRules[4]).toEqual(version === '1.11' ? {
             query_type: ['A', 'AAAA', 'CNAME'], invert: true, server: 'dns_direct', disable_cache: true
         } : {
             query_type: ['A', 'AAAA', 'CNAME'], invert: true, action: 'predefined', rcode: 'REFUSED'

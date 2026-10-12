@@ -32,6 +32,16 @@ export const SING_BOX_CONFIG = {
 			}
 		],
 		rules: [
+			// Direct mode must not depend on a proxy node for DNS resolution.
+			{
+				clash_mode: "direct",
+				query_type: [
+					"A",
+					"AAAA",
+					"CNAME"
+				],
+				server: "dns_direct"
+			},
 			{
 				rule_set: ["geolocation-cn", "cn"],
 				query_type: [
@@ -129,6 +139,16 @@ export const SING_BOX_CONFIG_V1_11 = {
 			{
 				outbound: "any",
 				server: "dns_resolver"
+			},
+			// Direct mode must not depend on a proxy node for DNS resolution.
+			{
+				clash_mode: "direct",
+				query_type: [
+					"A",
+					"AAAA",
+					"CNAME"
+				],
+				server: "dns_direct"
 			},
 			{
 				rule_set: ["geolocation-cn", "cn"],
