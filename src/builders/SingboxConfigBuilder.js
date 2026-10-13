@@ -712,9 +712,14 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // currently selected node does, which is fragile).
         this.config.route.rules.unshift(
             { action: 'sniff' },
+            // The TUN resolver address is also hijacked by address, so a query
+            // cannot escape when protocol sniffing fails to label it as DNS.
+            { ip_cidr: ['172.19.0.2'], action: 'hijack-dns' },
             { protocol: 'dns', action: 'hijack-dns' },
             { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: this.t('outboundNames.Node Select') }
+            { clash_mode: 'global', outbound: this.t('outboundNames.Node Select') },
+            // Private destinations never leave the device.
+            { ip_is_private: true, outbound: 'DIRECT' }
         );
 
         this.config.route.auto_detect_interface = true;

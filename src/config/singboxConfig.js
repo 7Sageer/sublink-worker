@@ -54,17 +54,18 @@ export const SING_BOX_CONFIG = {
 				],
 				server: "dns_direct"
 			},
-			// Unclassified domains need real IPs so private/custom CIDR routing can match.
-			// Fake IP is only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
+			// Fake IP for every TUN query: the client then never dials a real
+			// address, so IP-based rules cannot send a proxied destination DIRECT.
+			// Only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
 			{
 				inbound: ["tun-in"],
-				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
 					"AAAA"
 				],
 				server: "dns_fakeip"
 			},
+			// Unclassified domains need real IPs so private/custom CIDR routing can match.
 			{
 				query_type: ["A", "AAAA", "CNAME"],
 				server: "dns_proxy"
@@ -165,17 +166,18 @@ export const SING_BOX_CONFIG_V1_11 = {
 				],
 				server: "dns_direct"
 			},
-			// Unclassified domains need real IPs so private/custom CIDR routing can match.
-			// Fake IP is only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
+			// Fake IP for every TUN query: the client then never dials a real
+			// address, so IP-based rules cannot send a proxied destination DIRECT.
+			// Only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
 			{
 				inbound: ["tun-in"],
-				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
 					"AAAA"
 				],
 				server: "dns_fakeip"
 			},
+			// Unclassified domains need real IPs so private/custom CIDR routing can match.
 			{
 				query_type: ["A", "AAAA", "CNAME"],
 				server: "dns_proxy"

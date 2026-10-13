@@ -31,7 +31,7 @@ function buildConfig(version, baseConfig, selectedRules = [], customRules = [], 
 }
 
 describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ version, baseConfig }) => {
-    it('keeps fake IP scoped to known foreign domains and resolves unknown domains through the proxy', async () => {
+    it('hands every TUN A/AAAA query to Fake IP and resolves the rest through the proxy', async () => {
         const config = await buildConfig(version, baseConfig);
         const policyRules = version === '1.11' ? config.dns.rules.slice(1) : config.dns.rules;
 
@@ -48,7 +48,6 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
             },
             {
                 inbound: ['tun-in'],
-                rule_set: 'geolocation-!cn',
                 query_type: ['A', 'AAAA'],
                 server: 'dns_fakeip'
             },

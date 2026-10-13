@@ -36,4 +36,20 @@ describe('sing-box route.rules: hijack-dns precedes clash_mode rules', () => {
         expect(sniffIdx).toBeGreaterThanOrEqual(0);
         expect(sniffIdx).toBeLessThan(dnsHijackIdx);
     });
+
+    it('hijacks the TUN resolver address and keeps private destinations local', async () => {
+        const builder = new SingboxConfigBuilder(vlessUrl, [], [], null, 'zh-CN', null, false);
+        const result = await builder.build();
+        const rules = result.route.rules;
+
+        const addressHijackIdx = rules.findIndex(r => r.action === 'hijack-dns' && Array.isArray(r.ip_cidr));
+        const firstClashModeIdx = rules.findIndex(r => r.clash_mode);
+
+        expect(addressHijackIdx).toBeGreaterThanOrEqual(0);
+        expect(addressHijackIdx).toBeLessThan(firstClashModeIdx);
+        expect(rules[addressHijackIdx].ip_cidr).toEqual(['172.19.0.2']);
+
+        // BPB parity: private destinations never leave the device.
+        expect(rules).toContainEqual({ ip_is_private: true, outbound: 'DIRECT' });
+    });
 });
