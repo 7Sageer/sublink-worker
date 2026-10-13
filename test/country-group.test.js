@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import yaml from 'js-yaml';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
+import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 import { createTranslator } from '../src/i18n/index.js';
 import { groupProxiesByCountry, parseCountryFromNodeName } from '../src/utils.js';
 
@@ -82,6 +83,32 @@ vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJ0dzEubm9kZS5jb20iLAogICJhZGQiOiAidHcxLm5v
         expect(grouped['Hong Kong'].proxies).toHaveLength(2);
         expect(grouped['United States'].proxies).toHaveLength(1);
         expect(grouped['Taiwan'].proxies).toHaveLength(1);
+    });
+
+    describe('sing-box Auto Select members', () => {
+        const input = `
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:443#HK-Node-1
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:444#香港节点2
+trojan://password@example.com:443?sni=example.com#美国节点2
+        `;
+
+        it('lists only the country groups when group_by_country is on', async () => {
+            const builder = new SingboxConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent', true);
+            const config = await builder.build();
+
+            const autoSelect = config.outbounds.find(o => o.tag === t('outboundNames.Auto Select'));
+            expect(autoSelect).toBeDefined();
+
+            const countryGroups = config.outbounds
+                .filter(o => o.type === 'urltest' && o.tag !== autoSelect.tag)
+                .map(o => o.tag);
+            expect(countryGroups.length).toBeGreaterThan(0);
+            expect([...autoSelect.outbounds].sort()).toEqual([...countryGroups].sort());
+
+            const nodeTags = config.outbounds.filter(o => o.server !== undefined).map(o => o.tag);
+            expect(nodeTags.length).toBeGreaterThan(0);
+            nodeTags.forEach(tag => expect(autoSelect.outbounds).not.toContain(tag));
+        });
     });
 
     describe('parseCountryFromNodeName word boundary handling', () => {

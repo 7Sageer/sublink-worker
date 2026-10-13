@@ -397,6 +397,17 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.countryGroupNames = countryGroupNames;
         this.manualGroupName = manualGroupName;
+
+        // With country grouping the automatic urltest follows the country groups
+        // instead of listing every node, so its members stay readable.
+        if (this.groupByCountry && countryGroupNames.length > 0) {
+            const autoSelectGroup = this.config.outbounds.find(o =>
+                normalizeGroupName(o?.tag) === normalizeGroupName(this.t('outboundNames.Auto Select'))
+            );
+            if (autoSelectGroup) {
+                autoSelectGroup.outbounds = [...countryGroupNames];
+            }
+        }
     }
 
     /**
