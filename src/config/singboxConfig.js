@@ -5,6 +5,9 @@
 
 export const SING_BOX_CONFIG = {
 	dns: {
+		// The TUN only carries IPv4, so returning a real AAAA lets the client
+		// connect over its own IPv6 stack and bypass the tunnel.
+		strategy: 'ipv4_only',
 		servers: [
 			{
 				type: "tcp",
@@ -52,7 +55,9 @@ export const SING_BOX_CONFIG = {
 				server: "dns_direct"
 			},
 			// Unclassified domains need real IPs so private/custom CIDR routing can match.
+			// Fake IP is only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
 			{
+				inbound: ["tun-in"],
 				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
@@ -75,7 +80,8 @@ export const SING_BOX_CONFIG = {
 				rcode: "REFUSED"
 			}
 		],
-		final: "dns_direct"
+		// Unmatched queries must not fall back to a direct resolver.
+		final: "dns_proxy"
 	},
 	ntp: {
 		enabled: true,
@@ -160,7 +166,9 @@ export const SING_BOX_CONFIG_V1_11 = {
 				server: "dns_direct"
 			},
 			// Unclassified domains need real IPs so private/custom CIDR routing can match.
+			// Fake IP is only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
 			{
+				inbound: ["tun-in"],
 				rule_set: "geolocation-!cn",
 				query_type: [
 					"A",
@@ -183,8 +191,9 @@ export const SING_BOX_CONFIG_V1_11 = {
 				disable_cache: true
 			}
 		],
-		final: "dns_direct",
-		strategy: "prefer_ipv4",
+		// Unmatched queries must not fall back to a direct resolver.
+		final: "dns_proxy",
+		strategy: "ipv4_only",
 		independent_cache: true,
 		fakeip: {
 			enabled: true,

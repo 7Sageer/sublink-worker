@@ -47,6 +47,7 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
                 server: 'dns_direct'
             },
             {
+                inbound: ['tun-in'],
                 rule_set: 'geolocation-!cn',
                 query_type: ['A', 'AAAA'],
                 server: 'dns_fakeip'
@@ -58,7 +59,9 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
         ]);
         expect(policyRules).toHaveLength(5);
         expect(config.dns.servers.find(server => server.tag === 'dns_proxy').detour).toBe('🚀 节点选择');
-        expect(config.dns.final).toBe('dns_direct');
+        // The TUN only carries IPv4: a real AAAA would bypass it over the client's own stack.
+        expect(config.dns.strategy).toBe('ipv4_only');
+        expect(config.dns.final).toBe('dns_proxy');
         expect(policyRules[4]).toEqual(version === '1.11' ? {
             query_type: ['A', 'AAAA', 'CNAME'], invert: true, server: 'dns_direct', disable_cache: true
         } : {
