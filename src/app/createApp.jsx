@@ -486,16 +486,32 @@ function isSingboxModernConfig(version) {
     return version.minor >= 14;
 }
 
+// 1.15 makes the TUN stack built-in and deprecates the `stack` option, so it
+// needs a tier of its own (removed in 1.17.0).
+function isSingboxBuiltinTunStack(version) {
+    if (!version || Number.isNaN(version.major) || Number.isNaN(version.minor)) {
+        return false;
+    }
+    if (version.major !== 1) {
+        return version.major > 1;
+    }
+    return version.minor >= 15;
+}
+
+// Newest known tier; also what clients we cannot identify are served.
+const LATEST_SINGBOX_TIER = '1.15';
+
 function resolveSingboxConfigTier(version) {
     if (isSingboxLegacyConfig(version)) return '1.11';
-    return isSingboxModernConfig(version) ? '1.14' : '1.12';
+    if (!isSingboxModernConfig(version)) return '1.12';
+    return isSingboxBuiltinTunStack(version) ? LATEST_SINGBOX_TIER : '1.14';
 }
 
 function resolveSingboxConfigVersion(requestedVersion, userAgent) {
     const normalizedRequested = typeof requestedVersion === 'string' ? requestedVersion.trim().toLowerCase() : '';
     if (normalizedRequested && normalizedRequested !== 'auto') {
         if (normalizedRequested === 'legacy') return '1.11';
-        if (normalizedRequested === 'latest') return '1.14';
+        if (normalizedRequested === 'latest') return LATEST_SINGBOX_TIER;
         const parsed = parseSemverLike(normalizedRequested);
         if (parsed) {
             return resolveSingboxConfigTier(parsed);
@@ -511,7 +527,11 @@ function resolveSingboxConfigVersion(requestedVersion, userAgent) {
         }
     }
 
-    return '1.12';
+    // Unknown clients (third-party GUIs mostly send no sing-box version) get the
+    // newest shape: 1.16 removes download_detour and the implicit rule-set HTTP
+    // client, so the legacy shape would break them, while clients older than 1.14
+    // can pin the legacy shape with singbox_version=1.12.
+    return LATEST_SINGBOX_TIER;
 }
 
 function getRequestHeader(request, name) {
