@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import yaml from 'js-yaml';
 
 // Mock the httpSubscriptionFetcher module
@@ -14,7 +14,7 @@ vi.mock('../src/parsers/subscription/httpSubscriptionFetcher.js', async (importO
 import { fetchSubscriptionWithFormat } from '../src/parsers/subscription/httpSubscriptionFetcher.js';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
-import { CLASH_CONFIG, SING_BOX_CONFIG } from '../src/config/index.js';
+import { CLASH_CONFIG, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from '../src/config/index.js';
 
 // Mock Clash subscription content
 const mockClashYaml = `
@@ -110,37 +110,92 @@ describe('Auto Proxy Providers Detection', () => {
     });
 
     describe('Sing-Box Builder', () => {
-        it('should use Sing-Box URL as outbound_provider when format is Sing-Box JSON', async () => {
-            // Mock fetchSubscriptionWithFormat to return Sing-Box format
+        it.each(['1.11', '1.12', '1.14'])('should inline Sing-Box subscriptions for version %s (issue #435)', async (version) => {
             fetchSubscriptionWithFormat.mockResolvedValue({
                 content: mockSingboxJson,
                 format: 'singbox',
-                url: 'https://example.com/singbox-sub?token=xxx'
+                url: 'https://example.com/singbox-sub',
+                subscriptionUserinfo: 'upload=1; download=2; total=100'
             });
 
             const builder = new SingboxConfigBuilder(
-                'https://example.com/singbox-sub?token=xxx',
+                'https://example.com/singbox-sub',
                 [],
                 [],
-                null,
+                version === '1.11' ? SING_BOX_CONFIG_V1_11 : SING_BOX_CONFIG,
                 'zh-CN',
-                'test-agent'
+                'test-agent',
+                false,
+                false,
+                null,
+                null,
+                version
             );
-            await builder.build();
-            const config = builder.config;
+            const config = await builder.build();
 
-            // Should have outbound_providers
-            expect(config.outbound_providers).toBeDefined();
-            expect(config.outbound_providers).toHaveLength(1);
-            const provider = config.outbound_providers[0];
-            expect(provider.tag).toMatch(/^_auto_provider_[a-z0-9]+$/);
-            expect(provider.download_url).toBe('https://example.com/singbox-sub?token=xxx');
-            expect(provider.type).toBe('http');
-            expect(provider.path).toBe(`./providers/${provider.tag}.json`);
+            expect(config).not.toHaveProperty('outbound_providers');
+            config.outbounds.forEach(outbound => expect(outbound).not.toHaveProperty('providers'));
+            expect(config.outbounds.filter(outbound => outbound.server)).toEqual(JSON.parse(mockSingboxJson).outbounds);
+            expect(builder.getSubscriptionUserinfo()).toBe('upload=1; download=2; total=100');
 
-            // outbounds should have 'providers' field
             const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
-            expect(nodeSelect.providers).toContain(provider.tag);
+            const autoSelect = config.outbounds.find(o => o.type === 'urltest');
+            expect(nodeSelect.outbounds).toEqual(expect.arrayContaining(['SS-HK', 'SS-JP']));
+            expect(autoSelect.outbounds).toEqual(['SS-HK', 'SS-JP']);
+        });
+
+        it.each(['1.11', '1.12', '1.14'])('should accept a remote route without rules for version %s', async (version) => {
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: JSON.stringify({
+                    ...JSON.parse(mockSingboxJson),
+                    route: { final: 'service' },
+                    outbounds: [
+                        ...JSON.parse(mockSingboxJson).outbounds,
+                        { type: 'selector', tag: 'service', outbounds: ['SS-HK'] }
+                    ]
+                }),
+                format: 'singbox',
+                url: 'https://example.com/singbox-sub'
+            });
+            const builder = new SingboxConfigBuilder(
+                'https://example.com/singbox-sub', [], [],
+                version === '1.11' ? SING_BOX_CONFIG_V1_11 : SING_BOX_CONFIG,
+                'zh-CN', 'test-agent', false, false, null, null, version
+            );
+            const config = await builder.build();
+
+            expect(Array.isArray(config.route.rules)).toBe(true);
+            expect(config.outbounds.find(outbound => outbound.tag === 'service').outbounds).toEqual(['SS-HK']);
+        });
+
+        it.each([false, true])('should preserve nested remote groups regardless of input order (reversed: %s)', async (reversed) => {
+            const groups = [
+                { type: 'selector', tag: 'entry', outbounds: ['service'] },
+                { type: 'selector', tag: 'service', outbounds: ['latency'] },
+                {
+                    type: 'urltest', tag: 'latency', outbounds: ['SS-HK', 'SS-JP'],
+                    url: 'https://latency.example.test/check', interval: '10m'
+                }
+            ];
+            const routeRule = { domain_suffix: ['example.test'], outbound: 'entry' };
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: JSON.stringify({
+                    route: { rules: [routeRule] },
+                    outbounds: [...JSON.parse(mockSingboxJson).outbounds, ...(reversed ? groups.reverse() : groups)]
+                }),
+                format: 'singbox',
+                url: 'https://example.com/singbox-sub'
+            });
+            const builder = new SingboxConfigBuilder('https://example.com/singbox-sub', [], [], null, 'zh-CN', 'test-agent');
+            const config = await builder.build();
+
+            expect(config.route.rules).toContainEqual(routeRule);
+            expect(config.outbounds.find(outbound => outbound.tag === 'entry').outbounds).toEqual(['service']);
+            expect(config.outbounds.find(outbound => outbound.tag === 'service').outbounds).toEqual(['latency']);
+            expect(config.outbounds.find(outbound => outbound.tag === 'latency')).toMatchObject({
+                type: 'urltest', outbounds: ['SS-HK', 'SS-JP'],
+                url: 'https://latency.example.test/check', interval: '600s'
+            });
         });
 
         it('should parse and convert Clash URL (incompatible format)', async () => {
@@ -166,39 +221,6 @@ describe('Auto Proxy Providers Detection', () => {
             expect(config.outbound_providers).toBeUndefined();
 
             // Should have parsed outbounds from Clash YAML
-            const proxyOutbounds = config.outbounds.filter(o => o.server);
-            expect(proxyOutbounds.length).toBeGreaterThan(0);
-        });
-
-        it('should NOT use outbound_providers for Sing-Box 1.11 (not supported)', async () => {
-            // Mock fetchSubscriptionWithFormat to return Sing-Box format
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockSingboxJson,
-                format: 'singbox',
-                url: 'https://example.com/singbox-sub'
-            });
-
-            // Use version 1.11 - providers NOT supported
-            const builder = new SingboxConfigBuilder(
-                'https://example.com/singbox-sub',
-                [],
-                [],
-                null,
-                'zh-CN',
-                'test-agent',
-                false,  // groupByCountry
-                false,  // enableClashUI
-                null,   // externalController
-                null,   // externalUiDownloadUrl
-                '1.11'  // singboxVersion - 1.11 does NOT support providers
-            );
-            await builder.build();
-            const config = builder.config;
-
-            // Should NOT have outbound_providers (1.11 doesn't support it)
-            expect(config.outbound_providers).toBeUndefined();
-
-            // Should have parsed outbounds instead
             const proxyOutbounds = config.outbounds.filter(o => o.server);
             expect(proxyOutbounds.length).toBeGreaterThan(0);
         });
@@ -300,23 +322,21 @@ describe('Auto Proxy Providers Detection', () => {
             expect(first).toBe(second);
         });
 
-        it('should generate distinct stable Sing-Box provider paths across separate builds', async () => {
+        it('should inline and merge nodes from multiple Sing-Box subscriptions', async () => {
             fetchSubscriptionWithFormat.mockImplementation((url) => Promise.resolve({
-                content: mockSingboxJson,
+                content: JSON.stringify({
+                    outbounds: [{
+                        ...JSON.parse(mockSingboxJson).outbounds[0],
+                        tag: new URL(url).hostname,
+                        server: new URL(url).hostname
+                    }]
+                }),
                 format: 'singbox',
                 url
             }));
 
-            const firstBuilder = new SingboxConfigBuilder(
-                'https://provider-a.example.com/singbox?token=aaa',
-                [],
-                [],
-                null,
-                'zh-CN',
-                'test-agent'
-            );
-            const secondBuilder = new SingboxConfigBuilder(
-                'https://provider-b.example.com/singbox?token=bbb',
+            const builder = new SingboxConfigBuilder(
+                'https://provider-a.example.com/singbox\nhttps://provider-b.example.com/singbox',
                 [],
                 [],
                 null,
@@ -324,15 +344,12 @@ describe('Auto Proxy Providers Detection', () => {
                 'test-agent'
             );
 
-            const firstConfig = await firstBuilder.build();
-            const secondConfig = await secondBuilder.build();
-            const firstProvider = firstConfig.outbound_providers[0];
-            const secondProvider = secondConfig.outbound_providers[0];
-
-            expect(firstProvider.tag).not.toBe(secondProvider.tag);
-            expect(firstProvider.path).not.toBe(secondProvider.path);
-            expect(firstProvider.path).toBe(`./providers/${firstProvider.tag}.json`);
-            expect(secondProvider.path).toBe(`./providers/${secondProvider.tag}.json`);
+            const config = await builder.build();
+            expect(config).not.toHaveProperty('outbound_providers');
+            expect(config.outbounds.filter(outbound => outbound.server).map(outbound => outbound.tag))
+                .toEqual(['provider-a.example.com', 'provider-b.example.com']);
+            const autoSelect = config.outbounds.find(outbound => outbound.type === 'urltest');
+            expect(autoSelect.outbounds).toEqual(['provider-a.example.com', 'provider-b.example.com']);
         });
     });
 
@@ -376,26 +393,32 @@ describe('Auto Proxy Providers Detection', () => {
             expect(nodeSelect.use).toContain(autoProviderName);
         });
 
-        it('should merge user-defined Sing-Box outbound_providers with auto providers', async () => {
-            fetchSubscriptionWithFormat.mockResolvedValue({
-                content: mockSingboxJson,
-                format: 'singbox',
-                url: 'https://auto.example.com/singbox-sub'
-            });
-
-            const baseConfig = JSON.parse(JSON.stringify(SING_BOX_CONFIG));
-            baseConfig.outbound_providers = [
-                {
+        it.each(['base', 'subscription', 'inline'])('should strip fork-only Sing-Box provider fields from %s configs', async (source) => {
+            const providerConfig = {
+                outbound_providers: [{
                     tag: 'user-provider',
                     type: 'http',
                     download_url: 'https://user.example.com/sub',
                     path: './providers/user.json',
                     download_interval: '24h'
-                }
-            ];
+                }],
+                outbounds: [
+                    ...JSON.parse(mockSingboxJson).outbounds,
+                    { type: 'selector', tag: 'custom-selector', outbounds: ['SS-HK'], providers: ['user-provider'] },
+                    { type: 'urltest', tag: 'custom-urltest', outbounds: ['SS-JP'], providers: ['user-provider'] }
+                ]
+            };
+            const baseConfig = JSON.parse(JSON.stringify(SING_BOX_CONFIG));
+            const content = source === 'base' ? mockSingboxJson : JSON.stringify(providerConfig);
+            if (source === 'base') Object.assign(baseConfig, providerConfig);
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content,
+                format: 'singbox',
+                url: 'https://auto.example.com/singbox-sub'
+            });
 
             const builder = new SingboxConfigBuilder(
-                'https://auto.example.com/singbox-sub',
+                source === 'inline' ? content : 'https://auto.example.com/singbox-sub',
                 [],
                 [],
                 baseConfig,
@@ -404,16 +427,30 @@ describe('Auto Proxy Providers Detection', () => {
             );
             const config = await builder.build();
 
-            expect(config.outbound_providers).toBeDefined();
-            expect(config.outbound_providers).toHaveLength(2);
-            expect(config.outbound_providers.map(p => p.tag)).toContain('user-provider');
-            const autoProvider = config.outbound_providers
-                .find(provider => provider.tag.startsWith('_auto_provider_'));
-            expect(autoProvider.download_url).toBe('https://auto.example.com/singbox-sub');
+            expect(config).not.toHaveProperty('outbound_providers');
+            config.outbounds.forEach(outbound => expect(outbound).not.toHaveProperty('providers'));
+            expect(config.outbounds.filter(outbound => outbound.server)).toHaveLength(2);
+            expect(config.outbounds.find(outbound => outbound.tag === 'custom-selector').outbounds).toContain('SS-HK');
+            expect(config.outbounds.find(outbound => outbound.tag === 'custom-urltest').outbounds).toContain('SS-JP');
+            expect(providerConfig.outbound_providers).toHaveLength(1);
+            expect(providerConfig.outbounds.at(-1).providers).toEqual(['user-provider']);
+        });
 
-            const nodeSelect = config.outbounds.find(o => o.tag === '🚀 节点选择');
-            expect(nodeSelect.providers).toContain('user-provider');
-            expect(nodeSelect.providers).toContain(autoProvider.tag);
+        it('should ignore Clash provider references when merging Sing-Box groups', async () => {
+            const content = yaml.dump({
+                ...yaml.load(mockClashYaml),
+                'proxy-groups': [
+                    { name: '🚀 节点选择', type: 'select', proxies: ['HK-Node'], use: ['clash-provider'] },
+                    { name: 'custom-group', type: 'select', proxies: ['JP-Node', 'provider-only-group'], use: ['clash-provider'] },
+                    { name: 'provider-only-group', type: 'select', use: ['clash-provider'] }
+                ]
+            });
+            const builder = new SingboxConfigBuilder(content, [], [], null, 'zh-CN', 'test-agent');
+            const config = await builder.build();
+
+            config.outbounds.forEach(outbound => expect(outbound).not.toHaveProperty('providers'));
+            expect(config.outbounds.find(outbound => outbound.tag === 'custom-group').outbounds).toEqual(['JP-Node']);
+            expect(config.outbounds.some(outbound => outbound.tag === 'provider-only-group')).toBe(false);
         });
     });
 });
