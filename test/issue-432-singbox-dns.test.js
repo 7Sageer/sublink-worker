@@ -31,7 +31,7 @@ function buildConfig(version, baseConfig, selectedRules = [], customRules = [], 
 }
 
 describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ version, baseConfig }) => {
-    it('keeps fake IP scoped to known foreign domains and resolves unknown domains through the proxy', async () => {
+    it('hands every TUN A/AAAA query to Fake IP and resolves the rest through the proxy', async () => {
         const config = await buildConfig(version, baseConfig);
         const policyRules = version === '1.11' ? config.dns.rules.slice(1) : config.dns.rules;
 
@@ -47,7 +47,7 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
                 server: 'dns_direct'
             },
             {
-                rule_set: 'geolocation-!cn',
+                inbound: ['tun-in'],
                 query_type: ['A', 'AAAA'],
                 server: 'dns_fakeip'
             },
@@ -58,7 +58,9 @@ describe.each(versions)('sing-box $version DNS fallback (issue #432)', ({ versio
         ]);
         expect(policyRules).toHaveLength(5);
         expect(config.dns.servers.find(server => server.tag === 'dns_proxy').detour).toBe('🚀 节点选择');
-        expect(config.dns.final).toBe('dns_direct');
+        // The TUN only carries IPv4: a real AAAA would bypass it over the client's own stack.
+        expect(config.dns.strategy).toBe('ipv4_only');
+        expect(config.dns.final).toBe('dns_proxy');
         expect(policyRules[4]).toEqual(version === '1.11' ? {
             query_type: ['A', 'AAAA', 'CNAME'], invert: true, server: 'dns_direct', disable_cache: true
         } : {

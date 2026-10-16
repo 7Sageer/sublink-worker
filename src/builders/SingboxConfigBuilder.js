@@ -7,11 +7,18 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 const RULE_SET_HTTP_CLIENT_TAG = 'rule-set-download';
+// Config tiers, oldest first; each tier is the oldest client the emitted shape
+// stays valid for. '1.14' adds http_clients, '1.15' drops the TUN stack option.
+const TIER_ORDER = ['1.11', '1.12', '1.14', '1.15'];
 const ANYTLS_OPTION_KEYS = {
     'idle-session-check-interval': 'idle_session_check_interval',
     'idle-session-timeout': 'idle_session_timeout',
     'min-idle-session': 'min_idle_session'
 };
+
+function tierAtLeast(tier, floor) {
+    return TIER_ORDER.indexOf(tier) >= TIER_ORDER.indexOf(floor);
+}
 
 function isDirectDnsServer(server, outbounds = []) {
     if (!server?.tag || server.type === 'fakeip') return false;
@@ -23,7 +30,7 @@ function isDirectDnsServer(server, outbounds = []) {
 }
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.15', includeAutoSelect = true) {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
         super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, includeAutoSelect);
 
@@ -34,7 +41,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.enableClashUI = enableClashUI;
         this.externalController = externalController;
         this.externalUiDownloadUrl = externalUiDownloadUrl;
-        this.singboxVersion = singboxVersion;  // '1.11', '1.12' or '1.14'
+        this.singboxVersion = singboxVersion;  // '1.11', '1.12', '1.14' or '1.15'
 
         if (this.config?.dns?.servers?.length > 0) {
             this.config.dns.servers[0].detour = this.t('outboundNames.Node Select');
@@ -317,6 +324,17 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         this.countryGroupNames = countryGroupNames;
         this.manualGroupName = manualGroupName;
+
+        // With country grouping the automatic urltest follows the country groups
+        // instead of listing every node, so its members stay readable.
+        if (this.groupByCountry && countryGroupNames.length > 0) {
+            const autoSelectGroup = this.config.outbounds.find(o =>
+                normalizeGroupName(o?.tag) === normalizeGroupName(this.t('outboundNames.Auto Select'))
+            );
+            if (autoSelectGroup) {
+                autoSelectGroup.outbounds = [...countryGroupNames];
+            }
+        }
     }
 
     /**
@@ -447,6 +465,21 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     /**
+     * Since 1.15.0 sing-tun uses its own TCP/IP stack and the `stack` option is
+     * deprecated (removed in 1.17.0), so >=1.15 tiers drop it. Dropping a field
+     * is valid on every version, hence base configs supplied by a subscription
+     * are cleaned here too instead of only the bundled templates.
+     */
+    sanitizeTunStack() {
+        if (!tierAtLeast(this.singboxVersion, '1.15')) return;
+        (this.config.inbounds || []).forEach(inbound => {
+            if (inbound?.type === 'tun') {
+                delete inbound.stack;
+            }
+        });
+    }
+
+    /**
      * Pin remote rule-set downloads to DIRECT so fetching never depends on a
      * proxy that may not be up yet (issue #408). sing-box 1.14 deprecates both
      * the implicit default HTTP client and the download_detour field (removed
@@ -454,7 +487,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
      * while older versions get the legacy per-rule-set field.
      */
     configureRuleSetDownload() {
-        if (this.singboxVersion === '1.14') {
+        if (tierAtLeast(this.singboxVersion, '1.14')) {
             if (!this.config.route.default_http_client) {
                 if (!Array.isArray(this.config.http_clients) || this.config.http_clients.length === 0) {
                     this.config.http_clients = [{ tag: RULE_SET_HTTP_CLIENT_TAG, detour: 'DIRECT' }];
@@ -525,6 +558,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // Validate outbounds: fill empty urltest groups with all proxies
         this.validateOutbounds();
         this.sanitizeLegacySpecialOutbounds();
+        this.sanitizeTunStack();
 
         const attachProtocolIfNeeded = (entry, rule) => {
             if (Array.isArray(rule?.protocol) && rule.protocol.length > 0) {
@@ -591,9 +625,14 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // currently selected node does, which is fragile).
         this.config.route.rules.unshift(
             { action: 'sniff' },
+            // The TUN resolver address is also hijacked by address, so a query
+            // cannot escape when protocol sniffing fails to label it as DNS.
+            { ip_cidr: ['172.19.0.2'], action: 'hijack-dns' },
             { protocol: 'dns', action: 'hijack-dns' },
             { clash_mode: 'direct', outbound: 'DIRECT' },
-            { clash_mode: 'global', outbound: this.t('outboundNames.Node Select') }
+            { clash_mode: 'global', outbound: this.t('outboundNames.Node Select') },
+            // Private destinations never leave the device.
+            { ip_is_private: true, outbound: 'DIRECT' }
         );
 
         this.config.route.auto_detect_interface = true;

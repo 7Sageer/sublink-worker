@@ -10,7 +10,8 @@ import { MemoryKVAdapter } from '../src/adapters/kv/memoryKv.js';
  * should go DIRECT so fetching never depends on a proxy that is not up yet.
  * <1.14 keeps the legacy download_detour field (http_client is an unknown
  * field there and would fail config validation); >=1.14 gets an explicit
- * shared http_clients entry + route.default_http_client.
+ * shared http_clients entry + route.default_http_client. Clients we cannot
+ * identify are served the newest tier, since 1.16 removes the legacy fields.
  */
 describe('sing-box rule-set download detour', () => {
     const vlessUrl = 'vless://12345678-1234-1234-1234-123456789abc@example.com:443?security=tls&sni=example.com#TestVless';
@@ -57,6 +58,17 @@ describe('sing-box rule-set download detour', () => {
         });
         expect(result.http_clients).toEqual([{ tag: 'rule-set-download', detour: 'DIRECT' }]);
         expect(result.route.default_http_client).toBe('rule-set-download');
+    });
+
+    it('uses a shared http_client instead of download_detour on the 1.15 tier', async () => {
+        const result = await buildWithVersion('1.15');
+        result.route.rule_set.forEach(rs => {
+            expect(rs).not.toHaveProperty('download_detour');
+            expect(rs).not.toHaveProperty('http_client');
+        });
+        expect(result.http_clients).toEqual([{ tag: 'rule-set-download', detour: 'DIRECT' }]);
+        expect(result.route.default_http_client).toBe('rule-set-download');
+        expect(result.outbounds.find(o => o.tag === 'DIRECT').domain_resolver).toBe('dns_resolver');
     });
 
     it('keeps the DIRECT detour target non-empty on the 1.14 tier', async () => {
@@ -146,15 +158,33 @@ describe('sing-box version tier resolution', () => {
         });
     });
 
-    it('falls back to the safe 1.12 tier when no version is detectable', async () => {
+    it('falls back to the newest tier when no version is detectable', async () => {
         const res = await fetchConfig();
         expect(res.status).toBe(200);
         const json = await res.json();
-        expect(json).not.toHaveProperty('http_clients');
+        expect(json.route.default_http_client).toBe('rule-set-download');
+        expect(json.inbounds.find(inbound => inbound.type === 'tun')).not.toHaveProperty('stack');
         json.route.rule_set.forEach(rs => {
-            if (rs.type === 'remote') {
-                expect(rs.download_detour).toBe('DIRECT');
-            }
+            expect(rs).not.toHaveProperty('download_detour');
         });
+    });
+
+    it('maps a sing-box 1.15 user-agent to the newest tier', async () => {
+        const res = await fetchConfig('', {
+            'User-Agent': 'SFA/1.15.0 (100; sing-box 1.15.0; language zh_Hans_CN)'
+        });
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.route.default_http_client).toBe('rule-set-download');
+        expect(json.inbounds.find(inbound => inbound.type === 'tun')).not.toHaveProperty('stack');
+    });
+
+    it('keeps the TUN stack for a sing-box 1.14 user-agent', async () => {
+        const res = await fetchConfig('', {
+            'User-Agent': 'SFA/1.14.0 (100; sing-box 1.14.0; language zh_Hans_CN)'
+        });
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.inbounds.find(inbound => inbound.type === 'tun').stack).toBe('mixed');
     });
 });

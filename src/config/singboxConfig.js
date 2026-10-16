@@ -5,6 +5,9 @@
 
 export const SING_BOX_CONFIG = {
 	dns: {
+		// The TUN only carries IPv4, so returning a real AAAA lets the client
+		// connect over its own IPv6 stack and bypass the tunnel.
+		strategy: 'ipv4_only',
 		servers: [
 			{
 				type: "tcp",
@@ -51,15 +54,18 @@ export const SING_BOX_CONFIG = {
 				],
 				server: "dns_direct"
 			},
-			// Unclassified domains need real IPs so private/custom CIDR routing can match.
+			// Fake IP for every TUN query: the client then never dials a real
+			// address, so IP-based rules cannot send a proxied destination DIRECT.
+			// Only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
 			{
-				rule_set: "geolocation-!cn",
+				inbound: ["tun-in"],
 				query_type: [
 					"A",
 					"AAAA"
 				],
 				server: "dns_fakeip"
 			},
+			// Unclassified domains need real IPs so private/custom CIDR routing can match.
 			{
 				query_type: ["A", "AAAA", "CNAME"],
 				server: "dns_proxy"
@@ -75,7 +81,8 @@ export const SING_BOX_CONFIG = {
 				rcode: "REFUSED"
 			}
 		],
-		final: "dns_direct"
+		// Unmatched queries must not fall back to a direct resolver.
+		final: "dns_proxy"
 	},
 	ntp: {
 		enabled: true,
@@ -159,15 +166,18 @@ export const SING_BOX_CONFIG_V1_11 = {
 				],
 				server: "dns_direct"
 			},
-			// Unclassified domains need real IPs so private/custom CIDR routing can match.
+			// Fake IP for every TUN query: the client then never dials a real
+			// address, so IP-based rules cannot send a proxied destination DIRECT.
+			// Only usable from the TUN: 198.18.0.0/15 is routed nowhere else.
 			{
-				rule_set: "geolocation-!cn",
+				inbound: ["tun-in"],
 				query_type: [
 					"A",
 					"AAAA"
 				],
 				server: "dns_fakeip"
 			},
+			// Unclassified domains need real IPs so private/custom CIDR routing can match.
 			{
 				query_type: ["A", "AAAA", "CNAME"],
 				server: "dns_proxy"
@@ -183,8 +193,9 @@ export const SING_BOX_CONFIG_V1_11 = {
 				disable_cache: true
 			}
 		],
-		final: "dns_direct",
-		strategy: "prefer_ipv4",
+		// Unmatched queries must not fall back to a direct resolver.
+		final: "dns_proxy",
+		strategy: "ipv4_only",
 		independent_cache: true,
 		fakeip: {
 			enabled: true,
