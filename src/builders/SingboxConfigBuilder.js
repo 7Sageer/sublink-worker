@@ -340,47 +340,48 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         proxyList.forEach(n => validRefs.add(n));
         groupTags.forEach(n => validRefs.add(n));
 
+        // Resolve forward references without retaining groups backed only by unsupported providers.
+        let resolvedGroup = true;
+        while (resolvedGroup) {
+            resolvedGroup = false;
+            userGroups.forEach(group => {
+                if (group?.name && !validRefs.has(group.name) &&
+                    Array.isArray(group.proxies) && group.proxies.some(name => validRefs.has(name))) {
+                    validRefs.add(group.name);
+                    resolvedGroup = true;
+                }
+            });
+        }
+
         userGroups.forEach(userGroup => {
             if (!userGroup?.name) return;
 
-            // Find existing outbound by normalized tag/name
             const existingIndex = (this.config.outbounds || []).findIndex(o =>
                 normalizeGroupName(o?.tag) === normalizeGroupName(userGroup.name)
             );
+            const outbound = existingIndex >= 0 ? this.config.outbounds[existingIndex] : {
+                type: userGroup.type === 'url-test' ? 'urltest' : 'selector',
+                tag: userGroup.name,
+                outbounds: []
+            };
 
-            if (existingIndex >= 0) {
-                // Merge with existing system group
-                const existing = this.config.outbounds[existingIndex];
+            if (Array.isArray(userGroup.proxies)) {
+                const validUserOutbounds = userGroup.proxies.filter(p => validRefs.has(p));
+                outbound.outbounds = [...new Set([
+                    ...(outbound.outbounds || []),
+                    ...validUserOutbounds
+                ])];
+            }
 
-                // Merge 'outbounds' field (equivalent to Clash 'proxies')
-                if (Array.isArray(userGroup.proxies) && userGroup.proxies.length > 0) {
-                    const validUserOutbounds = userGroup.proxies.filter(p => validRefs.has(p));
-                    existing.outbounds = [...new Set([
-                        ...(existing.outbounds || []),
-                        ...validUserOutbounds
-                    ])];
-                }
-
-                // Preserve user's custom settings
-                if (userGroup.url) existing.url = userGroup.url;
+            if (outbound.type === 'urltest') {
+                if (userGroup.url) outbound.url = userGroup.url;
                 if (typeof userGroup.interval === 'number') {
-                    existing.interval = `${userGroup.interval}s`;
+                    outbound.interval = `${userGroup.interval}s`;
                 }
-            } else {
-                // New user-defined group - convert from Clash format and add
-                const newOutbound = {
-                    type: userGroup.type === 'url-test' ? 'urltest' : 'selector',
-                    tag: userGroup.name
-                };
+            }
 
-                // Validate outbounds references
-                if (Array.isArray(userGroup.proxies)) {
-                    newOutbound.outbounds = userGroup.proxies.filter(p => validRefs.has(p));
-                }
-
-                if (newOutbound.outbounds?.length > 0) {
-                    this.config.outbounds.push(newOutbound);
-                }
+            if (existingIndex < 0 && outbound.outbounds?.length > 0) {
+                this.config.outbounds.push(outbound);
             }
         });
     }
@@ -497,6 +498,10 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
         const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
+
+        // Upstream configs can define route options without supplying any rules.
+        this.config.route ??= {};
+        this.config.route.rules ??= [];
 
         // Subscription route overrides must not make node bootstrap depend on proxy DNS.
         if (this.singboxVersion !== '1.11' && !this.config.route.default_domain_resolver) {

@@ -144,6 +144,60 @@ describe('Auto Proxy Providers Detection', () => {
             expect(autoSelect.outbounds).toEqual(['SS-HK', 'SS-JP']);
         });
 
+        it.each(['1.11', '1.12', '1.14'])('should accept a remote route without rules for version %s', async (version) => {
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: JSON.stringify({
+                    ...JSON.parse(mockSingboxJson),
+                    route: { final: 'service' },
+                    outbounds: [
+                        ...JSON.parse(mockSingboxJson).outbounds,
+                        { type: 'selector', tag: 'service', outbounds: ['SS-HK'] }
+                    ]
+                }),
+                format: 'singbox',
+                url: 'https://example.com/singbox-sub'
+            });
+            const builder = new SingboxConfigBuilder(
+                'https://example.com/singbox-sub', [], [],
+                version === '1.11' ? SING_BOX_CONFIG_V1_11 : SING_BOX_CONFIG,
+                'zh-CN', 'test-agent', false, false, null, null, version
+            );
+            const config = await builder.build();
+
+            expect(Array.isArray(config.route.rules)).toBe(true);
+            expect(config.outbounds.find(outbound => outbound.tag === 'service').outbounds).toEqual(['SS-HK']);
+        });
+
+        it.each([false, true])('should preserve nested remote groups regardless of input order (reversed: %s)', async (reversed) => {
+            const groups = [
+                { type: 'selector', tag: 'entry', outbounds: ['service'] },
+                { type: 'selector', tag: 'service', outbounds: ['latency'] },
+                {
+                    type: 'urltest', tag: 'latency', outbounds: ['SS-HK', 'SS-JP'],
+                    url: 'https://latency.example.test/check', interval: '10m'
+                }
+            ];
+            const routeRule = { domain_suffix: ['example.test'], outbound: 'entry' };
+            fetchSubscriptionWithFormat.mockResolvedValue({
+                content: JSON.stringify({
+                    route: { rules: [routeRule] },
+                    outbounds: [...JSON.parse(mockSingboxJson).outbounds, ...(reversed ? groups.reverse() : groups)]
+                }),
+                format: 'singbox',
+                url: 'https://example.com/singbox-sub'
+            });
+            const builder = new SingboxConfigBuilder('https://example.com/singbox-sub', [], [], null, 'zh-CN', 'test-agent');
+            const config = await builder.build();
+
+            expect(config.route.rules).toContainEqual(routeRule);
+            expect(config.outbounds.find(outbound => outbound.tag === 'entry').outbounds).toEqual(['service']);
+            expect(config.outbounds.find(outbound => outbound.tag === 'service').outbounds).toEqual(['latency']);
+            expect(config.outbounds.find(outbound => outbound.tag === 'latency')).toMatchObject({
+                type: 'urltest', outbounds: ['SS-HK', 'SS-JP'],
+                url: 'https://latency.example.test/check', interval: '600s'
+            });
+        });
+
         it('should parse and convert Clash URL (incompatible format)', async () => {
             // Mock fetchSubscriptionWithFormat to return Clash format
             fetchSubscriptionWithFormat.mockResolvedValue({
@@ -387,7 +441,7 @@ describe('Auto Proxy Providers Detection', () => {
                 ...yaml.load(mockClashYaml),
                 'proxy-groups': [
                     { name: '🚀 节点选择', type: 'select', proxies: ['HK-Node'], use: ['clash-provider'] },
-                    { name: 'custom-group', type: 'select', proxies: ['JP-Node'], use: ['clash-provider'] },
+                    { name: 'custom-group', type: 'select', proxies: ['JP-Node', 'provider-only-group'], use: ['clash-provider'] },
                     { name: 'provider-only-group', type: 'select', use: ['clash-provider'] }
                 ]
             });
