@@ -6,6 +6,7 @@ import { parseTrojan } from './protocols/trojanParser.js';
 import { parseTuic } from './protocols/tuicParser.js';
 import { parseAnytls } from './protocols/anytlsParser.js';
 import { fetchSubscription } from './subscription/httpSubscriptionFetcher.js';
+import { stripInvisibleChars } from '../utils.js';
 
 const protocolParsers = {
     ss: parseShadowsocks,
@@ -26,7 +27,7 @@ export class ProxyParser {
         if (!url || typeof url !== 'string') {
             return undefined;
         }
-        const trimmed = url.trim();
+        const trimmed = stripInvisibleChars(url).trim();
         const type = trimmed.split('://')[0].toLowerCase();
         const parser = protocolParsers[type];
         if (!parser) {

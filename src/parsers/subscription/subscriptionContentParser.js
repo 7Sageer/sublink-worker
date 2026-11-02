@@ -2,6 +2,7 @@ import yaml from 'js-yaml';
 import { deepCopy } from '../../utils.js';
 import { convertYamlProxyToObject } from '../convertYamlProxyToObject.js';
 import { convertSurgeProxyToObject } from '../convertSurgeProxyToObject.js';
+import { convertQuanxProxyToObject, QUANX_PROXY_LINE } from '../convertQuanxProxyToObject.js';
 import { convertSurgeIniToJson } from '../../utils/surgeConfigParser.js';
 
 /**
@@ -250,6 +251,21 @@ function parseSurgeProxyGroupLine(line) {
  * @param {string} content - The decoded subscription content
  * @returns {object|string[]} - Parsed config object or array of lines
  */
+/**
+ * Quantumult X node lists (e.g. Sub-Store / miaomiaowu `?t=qx` output) or a full QX profile
+ * @param {string} content
+ * @returns {object|null} - { type: 'quanxConfig', config: null, proxies } or null if not QX
+ */
+export function parseQuanxNodes(content) {
+    const lines = content.split(/\r?\n/).map(line => line.trim()).filter(line => QUANX_PROXY_LINE.test(line));
+    if (lines.length === 0) return null;
+    return {
+        type: 'quanxConfig',
+        config: null,
+        proxies: lines.map(convertQuanxProxyToObject).filter(Boolean)
+    };
+}
+
 export function parseSubscriptionContent(content) {
     if (!content || typeof content !== 'string') {
         return [];
@@ -276,6 +292,11 @@ export function parseSubscriptionContent(content) {
     const surgeResult = parseSurgeIni(trimmed);
     if (surgeResult) {
         return surgeResult;
+    }
+
+    const quanxResult = parseQuanxNodes(trimmed);
+    if (quanxResult) {
+        return quanxResult;
     }
 
     // Fallback: split by lines (for URI lists)

@@ -124,7 +124,8 @@ export function convertYamlProxyToObject(p) {
             };
         }
         case 'trojan': {
-            const tlsEnabled = !!p.tls;
+            // Clash/mihomo trojan has no tls key because TLS is mandatory; only an explicit false disables it
+            const tlsEnabled = p.tls !== false;
             const reality = p['reality-opts'];
             const tls = tlsEnabled
                 ? {
