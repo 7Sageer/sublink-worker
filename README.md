@@ -51,10 +51,6 @@
 ### Supported Protocols
 ShadowSocks • VMess • VLESS • Hysteria2 • Trojan • TUIC
 
-VLESS Reality URI inputs preserve explicit `support-x25519mlkem768` values
-(`true`/`false` or `1`/`0`) as booleans in Mihomo/Clash `reality-opts`.
-Omitted values keep the existing behavior; this Mihomo-only option is excluded from sing-box output.
-
 ### Client Support
 Sing-Box • Clash • Xray/V2Ray • Surge
 
