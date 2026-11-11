@@ -92,6 +92,21 @@ export function base64ToBinary(base64String) {
 	return binaryString;
 }
 
+// Zero-width/format characters ride along when links are copied from phones or chat apps;
+// String#trim keeps U+200B and U+2060, so `\u200bvless://` would silently match no parser.
+const INVISIBLE_CHARS = /[\u200B-\u200D\u2060\uFEFF]/g;
+
+export function stripInvisibleChars(value) {
+	return typeof value === 'string' ? value.replace(INVISIBLE_CHARS, '') : value;
+}
+
+// Short, escaped preview of user input for diagnostics, so hidden characters become visible
+export function previewInput(value, max = 60) {
+	const str = String(value ?? '').trim();
+	const clipped = str.length > max ? `${str.slice(0, max)}…` : str;
+	return clipped.replace(/[\p{Cf}\p{Cc}]/gu, ch => `\\u${ch.codePointAt(0).toString(16).padStart(4, '0')}`);
+}
+
 export function tryDecodeSubscriptionLines(input, { decodeUriComponent = false } = {}) {
 	if (typeof input !== 'string') {
 		return input;

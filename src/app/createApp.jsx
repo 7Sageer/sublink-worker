@@ -9,6 +9,7 @@ import { UpdateChecker } from '../components/UpdateChecker.jsx';
 import { SingboxConfigBuilder } from '../builders/SingboxConfigBuilder.js';
 import { ClashConfigBuilder } from '../builders/ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from '../builders/SurgeConfigBuilder.js';
+import { QuanxConfigBuilder } from '../builders/QuanxConfigBuilder.js';
 import { createTranslator, resolveLanguage } from '../i18n/index.js';
 import { encodeBase64, tryDecodeSubscriptionLines } from '../utils.js';
 import { APP_NAME, APP_SUBTITLE } from '../constants.js';
@@ -19,6 +20,7 @@ import { normalizeRuntime } from '../runtime/runtimeConfig.js';
 import { PREDEFINED_RULE_SETS, SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11, generateSubconverterConfig } from '../config/index.js';
 
 const DEFAULT_USER_AGENT = 'curl/7.74.0';
+const QUANX_UPSTREAM_USER_AGENT = 'clash.meta';
 
 export function createApp(bindings = {}) {
     const runtime = normalizeRuntime(bindings);
@@ -217,6 +219,55 @@ export function createApp(bindings = {}) {
         }
     });
 
+    app.get('/quanx', async (c) => {
+        try {
+            const config = c.req.query('config');
+            if (!config) {
+                return c.text('Missing config parameter', 400);
+            }
+
+            const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
+            const customRules = parseJsonArray(c.req.query('customRules'));
+            // Panels pick the response format from the UA; curl often gets an empty/HTML answer and
+            // the QX app's own UA gets QX lines. A Clash UA yields the most widely served and most
+            // completely parsed format (Clash YAML); UA-agnostic sources (e.g. 3x-ui) are unaffected.
+            const ua = c.req.query('ua') || QUANX_UPSTREAM_USER_AGENT;
+            const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
+            const includeAutoSelect = c.req.query('include_auto_select') !== 'false';
+            const configId = c.req.query('configId');
+            const lang = c.get('lang');
+
+            let baseConfig;
+            if (configId?.startsWith('quanx_')) {
+                const storage = requireConfigStorage(services.configStorage);
+                baseConfig = await storage.getConfigById(configId);
+            }
+
+            const builder = new QuanxConfigBuilder(
+                config,
+                selectedRules,
+                customRules,
+                baseConfig,
+                lang,
+                ua,
+                groupByCountry,
+                includeAutoSelect
+            );
+            // list=true serves only node lines, for use as a QX node resource ([server_remote])
+            const output = parseBooleanFlag(c.req.query('list'))
+                ? await builder.buildNodeList()
+                : await builder.build();
+
+            const userinfo = builder.getSubscriptionUserinfo();
+            if (userinfo) {
+                c.header('subscription-userinfo', userinfo);
+            }
+            return c.text(output);
+        } catch (error) {
+            return handleError(c, error, runtime.logger);
+        }
+    });
+
     app.get('/subconverter', (c) => {
         try {
             const rawSelectedRules = c.req.query('selectedRules');
@@ -350,6 +401,7 @@ export function createApp(bindings = {}) {
     app.get('/b/:code', redirectHandler('singbox'));
     app.get('/c/:code', redirectHandler('clash'));
     app.get('/x/:code', redirectHandler('xray'));
+    app.get('/q/:code', redirectHandler('quanx'));
 
     app.post('/config', async (c) => {
         try {
@@ -382,13 +434,13 @@ export function createApp(bindings = {}) {
 
             const prefix = pathParts[1];
             const shortCode = pathParts[2];
-            if (!['b', 'c', 'x', 's'].includes(prefix)) return c.text(t('invalidShortUrl'), 400);
+            if (!['b', 'c', 'x', 's', 'q'].includes(prefix)) return c.text(t('invalidShortUrl'), 400);
 
             const shortLinks = requireShortLinkService(services.shortLinks);
             const originalParam = await shortLinks.resolveShortCode(shortCode);
             if (!originalParam) return c.text(t('shortUrlNotFound'), 404);
 
-            const mapping = { b: 'singbox', c: 'clash', x: 'xray', s: 'surge' };
+            const mapping = { b: 'singbox', c: 'clash', x: 'xray', s: 'surge', q: 'quanx' };
             const originalUrl = `${urlObj.origin}/${mapping[prefix]}${originalParam}`;
             return c.json({ originalUrl });
         } catch (error) {
