@@ -116,4 +116,25 @@ ss://YWVzLTEyOC1nY206dGVzdA@example.com:444#US-Node-1
     expect(fallbackGroup).toBeDefined();
     expect(fallbackGroup.proxies[0]).not.toBe('DIRECT');
   });
+
+  it('should enable local TUN-compatible defaults in Clash config', async () => {
+    const input = `
+ss://YWVzLTEyOC1nY206dGVzdA@example.com:443#HK-Node-1
+    `;
+
+    const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'zh-CN', 'test-agent');
+    const yamlText = await builder.build();
+    const built = yaml.load(yamlText);
+
+    expect(built.dns.ipv6).toBe(false);
+    expect(built.tun).toEqual({
+      enable: true,
+      stack: 'mixed',
+      'dns-hijack': ['any:53', 'tcp://any:53'],
+      'auto-route': true,
+      'auto-redirect': true,
+      'auto-detect-interface': true,
+      'strict-route': true,
+    });
+  });
 });
