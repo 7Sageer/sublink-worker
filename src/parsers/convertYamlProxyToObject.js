@@ -77,7 +77,7 @@ export function convertYamlProxyToObject(p) {
                     server_name: p.servername || p.sni,
                     insecure: !!p['skip-cert-verify'],
                     ...(reality
-                        ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'] } }
+                        ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'], ...(reality['support-x25519mlkem768'] && { support_x25519mlkem768: true }) } }
                         : {})
                 }
                 : { enabled: false };
@@ -132,7 +132,7 @@ export function convertYamlProxyToObject(p) {
                     server_name: p.servername || p.sni,
                     insecure: !!p['skip-cert-verify'],
                     ...(reality
-                        ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'] } }
+                        ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'], ...(reality['support-x25519mlkem768'] && { support_x25519mlkem768: true }) } }
                         : {})
                 }
                 : { enabled: false };

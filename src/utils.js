@@ -303,6 +303,9 @@ export function createTlsConfig(params) {
 				enabled: true,
 				public_key: params.pbk,
 				short_id: params.sid,
+				// mihomo-only flag carried by newer 3x-ui share links: keep
+				// X25519MLKEM768 in the REALITY ClientHello key share
+				...(params['support-x25519mlkem768'] === 'true' && { support_x25519mlkem768: true }),
 			};
 		}
 	}
