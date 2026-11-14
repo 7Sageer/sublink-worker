@@ -95,6 +95,14 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // xudp is default in newer versions
         delete sanitized.packet_encoding;
 
+        // mihomo-only REALITY flag; sing-box rejects unknown fields and enables
+        // X25519MLKEM768 in its default curve list since 1.13
+        if (sanitized.tls?.reality?.support_x25519mlkem768) {
+            // shallow copy top, so rebuild tls/reality instead of deleting in place
+            const { support_x25519mlkem768, ...reality } = sanitized.tls.reality;
+            sanitized.tls = { ...sanitized.tls, reality };
+        }
+
         if (sanitized.type === 'hysteria2') {
             // sing-box names port-hopping/bandwidth fields differently from the
             // share-link shape, and rejects unknown fields outright
