@@ -1,7 +1,17 @@
 import { ProxyParser } from '../parsers/index.js';
-import { createStableProviderName, deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
+import { createStableProviderName, deepCopy, tryDecodeSubscriptionLines, decodeBase64, stripInvisibleChars, previewInput } from '../utils.js';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
+
+// Share links without a `#name` fragment parse with an empty tag and were silently dropped;
+// name them after their endpoint so they still reach the output.
+function withFallbackTag(item) {
+    if (item?.tag || !item?.type || !item?.server) return item;
+    return { ...item, tag: `${item.type} ${item.server}:${item.server_port}` };
+}
+
+// Subscription-level parser results that carry a proxies array (see subscriptionContentParser)
+const CONFIG_RESULT_TYPES = new Set(['yamlConfig', 'singboxConfig', 'surgeConfig', 'quanxConfig']);
 
 export class BaseConfigBuilder {
     constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, includeAutoSelect = true) {
@@ -18,6 +28,8 @@ export class BaseConfigBuilder {
         this.providerNodeNames = [];  // node names from provider subscriptions, for country enumeration only
         this.autoProviderDescriptors = undefined;
         this.subscriptionUserinfo = undefined;
+        // Input lines that yielded no proxy, kept so callers can explain an empty result
+        this.inputDiagnostics = [];
     }
 
     async build() {
@@ -28,7 +40,7 @@ export class BaseConfigBuilder {
     }
 
     async parseCustomItems() {
-        const input = this.inputString || '';
+        const input = stripInvisibleChars(this.inputString || '');
         const parsedItems = [];
 
         // Import the content parser for direct input parsing
@@ -93,8 +105,18 @@ export class BaseConfigBuilder {
 
                     try {
                         const fetchResult = await fetchSubscriptionWithFormat(trimmedUrl, this.userAgent);
+                        if (!fetchResult) {
+                            this.inputDiagnostics.push(`failed to fetch subscription: ${previewInput(trimmedUrl)}`);
+                        }
                         if (fetchResult) {
                             const { content, format, url: originalUrl, subscriptionUserinfo } = fetchResult;
+                            const parsedBefore = parsedItems.length;
+                            // A fetched-but-unusable subscription is otherwise indistinguishable from empty input
+                            const noteIfEmpty = () => {
+                                if (parsedItems.length === parsedBefore) {
+                                    this.inputDiagnostics.push(`subscription returned no usable nodes: ${previewInput(trimmedUrl)} (content starts with: ${previewInput(content, 40)})`);
+                                }
+                            };
 
                             if (subscriptionUserinfo && !this.subscriptionUserinfo) {
                                 this.subscriptionUserinfo = subscriptionUserinfo;
@@ -111,7 +133,7 @@ export class BaseConfigBuilder {
 
                             // Otherwise parse the content as usual
                             const result = parseSubscriptionContent(content);
-                            if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
+                            if (result && typeof result === 'object' && CONFIG_RESULT_TYPES.has(result.type)) {
                                 if (result.config) {
                                     this.applyConfigOverrides(result.config);
                                 }
@@ -122,6 +144,7 @@ export class BaseConfigBuilder {
                                         }
                                     });
                                 }
+                                noteIfEmpty();
                                 continue;
                             }
                             // Handle array of URIs or other formats
@@ -137,17 +160,18 @@ export class BaseConfigBuilder {
                                     }
                                 }
                             }
+                            noteIfEmpty();
                         }
                     } catch (error) {
                         console.error('Error processing HTTP subscription:', error);
+                        this.inputDiagnostics.push(`error processing subscription: ${previewInput(trimmedUrl)} (${previewInput(error?.message, 80)})`);
                     }
                     continue;
                 }
 
                 // Non-HTTP URLs (protocol URIs like ss://, vmess://, etc.)
                 const result = await ProxyParser.parse(processedUrl, this.userAgent);
-                // Handle yamlConfig, singboxConfig, and surgeConfig types (they have the same structure)
-                if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
+                if (result && typeof result === 'object' && CONFIG_RESULT_TYPES.has(result.type)) {
                     if (result.config) {
                         this.applyConfigOverrides(result.config);
                     }
@@ -173,6 +197,8 @@ export class BaseConfigBuilder {
                     }
                 } else if (result) {
                     parsedItems.push(result);
+                } else if (trimmedUrl) {
+                    this.inputDiagnostics.push(`unrecognized input: ${previewInput(processedUrl)}`);
                 }
             }
         }
@@ -381,7 +407,7 @@ export class BaseConfigBuilder {
     }
 
     addCustomItems(customItems) {
-        const validItems = customItems.filter(item => item != null);
+        const validItems = customItems.filter(item => item != null).map(withFallbackTag);
         validItems.forEach(item => {
             if (item?.tag) {
                 const convertedProxy = this.convertProxy(item);

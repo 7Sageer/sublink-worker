@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
 import { generateWebPath } from '../utils.js';
+import { normalizeQuanxConfig } from '../utils/quanxConfigParser.js';
 import { InvalidPayloadError, MissingDependencyError } from './errors.js';
 
 export class ConfigStorageService {
@@ -51,6 +52,14 @@ export class ConfigStorageService {
                 return JSON.stringify(yamlConfig);
             }
             return typeof content === 'object' ? JSON.stringify(content) : content;
+        }
+
+        if (type === 'quanx') {
+            const parsed = normalizeQuanxConfig(content);
+            if (!parsed) {
+                throw new InvalidPayloadError('Invalid Quantumult X config: expected INI content with [section] headers');
+            }
+            return JSON.stringify(parsed);
         }
 
         if (typeof content === 'object') {

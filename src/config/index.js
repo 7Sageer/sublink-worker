@@ -41,3 +41,4 @@ export { generateSubconverterConfig } from './subconverterConfig.js';
 export { SING_BOX_CONFIG, SING_BOX_CONFIG_V1_11 } from './singboxConfig.js';
 export { CLASH_CONFIG } from './clashConfig.js';
 export { SURGE_CONFIG } from './surgeConfig.js';
+export { QUANX_CONFIG, QUANX_RESOURCE_PARSER_URL } from './quanxConfig.js';

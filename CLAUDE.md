@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概览
 
-Sublink Worker 是多平台代理订阅转换器：将各类协议（ShadowSocks/VMess/VLESS/Hysteria2/Trojan/TUIC）转为客户端配置（Sing-Box/Clash/Xray/Surge）。同一份代码跑在 Cloudflare Workers / Node.js / Vercel / Docker 上。技术栈：Hono（Web/JSX SSR）+ Vitest + Wrangler + esbuild + ioredis。
+Sublink Worker 是多平台代理订阅转换器：将各类协议（ShadowSocks/VMess/VLESS/Hysteria2/Trojan/TUIC）转为客户端配置（Sing-Box/Clash/Xray/Surge/Quantumult X）。同一份代码跑在 Cloudflare Workers / Node.js / Vercel / Docker 上。技术栈：Hono（Web/JSX SSR）+ Vitest + Wrangler + esbuild + ioredis。
 
 ## 常用命令
 
@@ -47,17 +47,20 @@ Sublink Worker 是多平台代理订阅转换器：将各类协议（ShadowSocks
 
 ## 协议解析与配置构建
 
-**ProxyParser**（`src/parsers/ProxyParser.js`）按 URL scheme 分发到 `src/parsers/protocols/<protocol>Parser.js`。HTTP(S) 订阅走 `httpSubscriptionFetcher` → `subscriptionContentParser`，自动识别 Sing-Box JSON / Clash YAML / Surge INI / Base64 列表。
+**ProxyParser**（`src/parsers/ProxyParser.js`）按 URL scheme 分发到 `src/parsers/protocols/<protocol>Parser.js`。HTTP(S) 订阅走 `httpSubscriptionFetcher` → `subscriptionContentParser`，自动识别 Sing-Box JSON / Clash YAML / Surge INI / Quantumult X 节点行 / Base64 列表。
 
 返回值约定：
 - 协议 parser：`{ tag, type, ...protocolFields }`
-- 订阅级 parser：`{ type: 'yamlConfig'|'singboxConfig'|'surgeConfig', config, proxies }`
+- 订阅级 parser：`{ type: 'yamlConfig'|'singboxConfig'|'surgeConfig'|'quanxConfig', config, proxies }`（类型集合见 `BaseConfigBuilder` 的 `CONFIG_RESULT_TYPES`）
+- 解析不出节点的输入行/订阅记入 builder 的 `inputDiagnostics`（QuanX 无节点时的 400 会列出）
 
 **新增协议**：在 `src/parsers/protocols/` 加 parser，并在 `ProxyParser.js` 的 `protocolParsers` map 注册。
 
-**Builder 模式**：`SingboxConfigBuilder` / `ClashConfigBuilder` / `SurgeConfigBuilder` 都继承 `BaseConfigBuilder`。子类必须实现：`getProxies()`、`getProxyName(proxy)`、`convertProxy(proxy)`、`addProxyToConfig(proxy)`、`addAutoSelectGroup(list)`、`addNodeSelectGroup(list)`、`addOutboundGroups(outbounds, list)`、`addCustomRuleGroups(list)`、`addFallBackGroup(list)`、`addCountryGroups()`、`formatConfig()`。
+**Builder 模式**：`SingboxConfigBuilder` / `ClashConfigBuilder` / `SurgeConfigBuilder` / `QuanxConfigBuilder` 都继承 `BaseConfigBuilder`。子类必须实现：`getProxies()`、`getProxyName(proxy)`、`convertProxy(proxy)`、`addProxyToConfig(proxy)`、`addAutoSelectGroup(list)`、`addNodeSelectGroup(list)`、`addOutboundGroups(outbounds, list)`、`addCustomRuleGroups(list)`、`addFallBackGroup(list)`、`addCountryGroups()`、`formatConfig()`。
 
 **Config Override**：订阅含完整配置时，`applyConfigOverrides()` 合并非代理字段到 base config；blacklist（proxies、rules、rule-providers）永远不被覆盖；Clash `proxy-groups` 可被订阅覆盖以保留用户分组结构。
+
+QuanX（`/quanx`，短链前缀 `q`）：不支持 hysteria2/tuic/grpc/xhttp/httpupgrade 等，节点输出为注释；一个可用节点都没有时返回 400 并列出跳过原因（不生成全 direct 配置）；远程规则复用 Surge 规则源，依赖 `resource_parser_url` + `opt-parser=true` 在设备端转换；不接受订阅的 config override；拉上游订阅默认用 `clash.meta` UA（不转发 QuanX UA，也不用 curl）。基础配置（`configId` 前缀 `quanx_`）由服务端解析 INI 存为 `{ sections: { name: [lines] } }`，`[general]` 按 key 合并，`policy/server_local/filter_*` 永远由生成逻辑决定。`list=true` 只输出节点行（用作 QX 节点资源）；TLS SNI 统一写 `tls-host`，`obfs-host` 只承载 ws/http Host（对齐 Sub-Store）。
 
 国家分组逻辑在 `src/utils.js#groupProxiesByCountry`。
 

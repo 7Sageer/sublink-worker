@@ -47,6 +47,19 @@ function getClashUdpValue(proxy, defaultEnabled = true) {
     return defaultEnabled;
 }
 
+// Xray-core >= 26.9.8 REALITY servers require an X25519MLKEM768 key share, which mihomo only
+// sends when asked; without it the handshake fails with "REALITY authentication failed".
+// Set here rather than on the shared proxy model, which is copied verbatim into sing-box output.
+function getClashRealityOpts(proxy) {
+    const reality = proxy.tls?.reality;
+    if (!reality?.enabled) return undefined;
+    return {
+        'public-key': reality.public_key,
+        'short-id': reality.short_id,
+        'support-x25519mlkem768': true
+    };
+}
+
 export class ClashConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, includeAutoSelect = true) {
         if (!baseConfig) {
@@ -202,10 +215,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         path: proxy.transport.path,
                         headers: proxy.transport.headers
                     } : undefined,
-                    'reality-opts': proxy.tls?.reality?.enabled ? {
-                        'public-key': proxy.tls.reality.public_key,
-                        'short-id': proxy.tls.reality.short_id,
-                    } : undefined,
+                    'reality-opts': getClashRealityOpts(proxy),
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,
@@ -252,10 +262,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                         path: proxy.transport.path,
                         headers: proxy.transport.headers
                     } : undefined,
-                    'reality-opts': proxy.tls?.reality?.enabled ? {
-                        'public-key': proxy.tls.reality.public_key,
-                        'short-id': proxy.tls.reality.short_id,
-                    } : undefined,
+                    'reality-opts': getClashRealityOpts(proxy),
                     'grpc-opts': proxy.transport?.type === 'grpc' ? {
                         'grpc-service-name': proxy.transport.service_name,
                     } : undefined,

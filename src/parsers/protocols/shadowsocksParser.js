@@ -14,7 +14,7 @@ function parseServer(serverPart) {
  * @param {string} pluginStr - The plugin parameter value (URL decoded)
  * @returns {{plugin: string, plugin_opts: object}|null} - Parsed plugin info or null
  */
-function parsePluginString(pluginStr) {
+export function parsePluginString(pluginStr) {
     if (!pluginStr) return null;
 
     const parts = pluginStr.split(';');
