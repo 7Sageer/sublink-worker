@@ -16,6 +16,12 @@ describe('share links without a #name', () => {
         expect(text).toContain('static=🚀 节点选择, vless 203.0.113.10:20443, direct, reject');
     });
 
+    it('emit Clash REALITY options that new Xray servers accept', async () => {
+        const text = await (await app().request(`http://localhost/clash?${QUERY}`)).text();
+        expect(text).toContain('support-x25519mlkem768: true');
+        expect(text).toContain('client-fingerprint: chrome');
+    });
+
     it('are kept for Clash too', async () => {
         const text = await (await app().request(`http://localhost/clash?${QUERY}`)).text();
         expect(text).toContain('name: vless 203.0.113.10:20443');
