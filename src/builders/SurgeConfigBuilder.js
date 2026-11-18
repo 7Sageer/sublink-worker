@@ -168,6 +168,13 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                     this.conversionNotes.push(`# ${proxy.tag}: Legacy TUIC congestion-controller/udp-relay-mode options are not documented by Surge; runtime effects are unverified.`);
                 }
                 break;
+            case 'snell':
+                surgeProxy = `${proxy.tag} = snell, ${proxy.server}, ${proxy.server_port}, psk=${source?.psk ?? proxy.psk}`;
+                add('version', source?.version ?? proxy.version ?? 1);
+                add('mode', source?.mode ?? proxy.mode);
+                add('reuse', source?.reuse ?? proxy.reuse);
+                map('psk', 'version', 'mode', 'reuse');
+                break;
             default:
                 return `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
         }
@@ -205,6 +212,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             }
         }
         if (source?.udp === true && ['vmess', 'trojan', 'hysteria2', 'tuic', 'anytls'].includes(proxy.type)) map('udp');
+        if (source?.udp === true && proxy.type === 'snell' && Number(source.version) >= 3) map('udp');
 
         if (source) {
             const unmapped = yamlFieldPaths(source).filter(path => ![...mapped].some(key => path === key || path.startsWith(`${key}.`)));

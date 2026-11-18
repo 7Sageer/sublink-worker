@@ -95,6 +95,15 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(line).toContain('skip-cert-verify=false');
     });
 
+    it('keeps Snell v6 authentication and transport options', async () => {
+        const source = getSource('snell');
+        const line = policy(await build([source]), source.name);
+        expect(line).toContain('= snell, node.example.com, 8893, psk=synthetic-password');
+        expect(line).toContain('version=6');
+        expect(line).toContain('mode=default');
+        expect(line).toContain('reuse=true');
+    });
+
     it.each([[true, false], [false, true], ['false', true]])('maps AnyTLS disable-reuse=%s to reuse=%s', async (disabled, reuse) => {
         const source = getSource('anytls');
         source['disable-reuse'] = disabled;
@@ -107,6 +116,28 @@ describe('Clash YAML to Surge parameter mapping', () => {
         const source = getSource('anytls');
         source['disable-reuse'] = 'invalid';
         await expect(build([source])).rejects.toThrow('Invalid AnyTLS disable-reuse flag');
+    });
+
+    it('accounts for all eleven source nodes and identifies unmapped fields without leaking their values', async () => {
+        const builder = makeBuilder(yaml.dump({ proxies: sourceProxies }));
+        const profile = await builder.build();
+        expect(builder.getValidProxies()).toHaveLength(8);
+        for (const source of sourceProxies) {
+            if (source.type === 'vless') {
+                expect(profile).toContain(`# ${source.name} - Unsupported proxy type: vless`);
+                expect(builder.getProxyList()).not.toContain(source.name);
+            } else {
+                expect(policy(profile, source.name)).toBeDefined();
+            }
+        }
+        expect(profile).toContain('Unmapped Clash fields: up');
+        expect(profile).toContain('request-timeout');
+        expect(profile).toContain('client-fingerprint');
+        expect(profile).toContain('smux.enabled');
+        expect(profile).toContain('idle-session-check-interval');
+        const comments = profile.split('\n').filter(line => line.startsWith('#')).join('\n');
+        expect(comments).not.toContain('synthetic-password');
+        expect(comments).not.toContain('1000 Mbps');
     });
 
     it.each(['direct', 'base64', 'http'])('keeps pinning through the %s subscription path', async (path) => {
