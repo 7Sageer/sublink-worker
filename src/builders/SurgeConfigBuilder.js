@@ -98,6 +98,20 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             case 'shadowsocks':
                 surgeProxy = `${proxy.tag} = ss, ${proxy.server}, ${proxy.server_port}, encrypt-method=${proxy.method}, password=${proxy.password}`;
                 map('cipher', 'method', 'password');
+                if (source?.udp !== undefined) {
+                    add('udp-relay', parseBool(source.udp));
+                    map('udp');
+                }
+                if (proxy.plugin === 'shadow-tls') {
+                    const plugin = proxy.plugin_opts || {};
+                    if (!plugin.password || ![2, 3].includes(Number(plugin.version ?? 2)) || (Number(plugin.version) === 3 && !plugin.host)) {
+                        throw new InvalidConfigError('Invalid ShadowTLS plugin options');
+                    }
+                    add('shadow-tls-password', plugin.password);
+                    add('shadow-tls-sni', plugin.host);
+                    add('shadow-tls-version', plugin.version ?? 2);
+                    map('plugin', 'plugin-opts.password', 'plugin-opts.host', 'plugin-opts.version');
+                }
                 break;
             case 'vmess':
                 surgeProxy = `${proxy.tag} = vmess, ${proxy.server}, ${proxy.server_port}, username=${proxy.uuid}`;

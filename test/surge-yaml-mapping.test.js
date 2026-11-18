@@ -71,6 +71,20 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(line).not.toContain('undefined');
     });
 
+    it('preserves ShadowTLS instead of producing an ordinary Shadowsocks policy', async () => {
+        const source = sourceProxies.find(p => p.plugin === 'shadow-tls');
+        const line = policy(await build([source]), source.name);
+        expect(line).toContain('shadow-tls-password=synthetic-password');
+        expect(line).toContain('shadow-tls-sni=shadow.example.com');
+        expect(line).toContain('shadow-tls-version=3');
+    });
+
+    it.each([true, false])('preserves Shadowsocks UDP relay setting %s', async (udp) => {
+        const source = getSource('ss');
+        source.udp = udp;
+        expect(policy(await build([source]), source.name)).toContain(`udp-relay=${udp}`);
+    });
+
     it('identifies undocumented TUIC options while preserving authentication and certificate pinning', async () => {
         const source = getSource('tuic');
         const profile = await build([source]);
