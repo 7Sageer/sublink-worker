@@ -15,7 +15,7 @@ const policy = (profile, name) => profile.split('\n').find(line => line.startsWi
 afterEach(() => vi.restoreAllMocks());
 
 describe('Clash YAML to Surge parameter mapping', () => {
-    it.each(['hysteria2', 'tuic', 'trojan'])('preserves certificate pinning for %s without disabling validation', async (type) => {
+    it.each(['hysteria2', 'tuic', 'trojan', 'anytls'])('preserves certificate pinning for %s without disabling validation', async (type) => {
         const source = getSource(type);
         const line = policy(await build([source]), source.name);
         expect(line).toContain(`server-cert-fingerprint-sha256=${fingerprint}`);
@@ -93,6 +93,20 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(line).toContain(`uuid=${source.uuid}`);
         expect(line).toContain(`server-cert-fingerprint-sha256=${fingerprint}`);
         expect(line).toContain('skip-cert-verify=false');
+    });
+
+    it.each([[true, false], [false, true], ['false', true]])('maps AnyTLS disable-reuse=%s to reuse=%s', async (disabled, reuse) => {
+        const source = getSource('anytls');
+        source['disable-reuse'] = disabled;
+        const profile = await build([source]);
+        expect(policy(profile, source.name)).toContain(`reuse=${reuse}`);
+        expect(profile).not.toContain('disable-reuse');
+    });
+
+    it('rejects an invalid AnyTLS reuse flag', async () => {
+        const source = getSource('anytls');
+        source['disable-reuse'] = 'invalid';
+        await expect(build([source])).rejects.toThrow('Invalid AnyTLS disable-reuse flag');
     });
 
     it.each(['direct', 'base64', 'http'])('keeps pinning through the %s subscription path', async (path) => {

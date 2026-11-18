@@ -125,7 +125,19 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 }
                 break;
             case 'trojan':
-                surgeProxy = `${proxy.tag} = trojan, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
+            case 'anytls':
+                surgeProxy = `${proxy.tag} = ${proxy.type}, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
+                if (proxy.type === 'anytls') {
+                    if (source?.['disable-reuse'] !== undefined) {
+                        const disabled = parseBool(source['disable-reuse']);
+                        if (disabled === undefined) throw new InvalidConfigError('Invalid AnyTLS disable-reuse flag');
+                        add('reuse', !disabled);
+                        map('disable-reuse');
+                    } else {
+                        add('reuse', source?.reuse);
+                        map('reuse');
+                    }
+                }
                 map('password');
                 break;
             case 'hysteria2':
@@ -160,7 +172,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 return `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
         }
 
-        const implicitTls = ['trojan', 'hysteria2', 'tuic'].includes(proxy.type);
+        const implicitTls = ['trojan', 'hysteria2', 'tuic', 'anytls'].includes(proxy.type);
         if (proxy.type === 'vmess' && (proxy.tls?.enabled || source?.tls !== undefined)) {
             add('tls', proxy.tls?.enabled === true);
             map('tls');
@@ -192,7 +204,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 map('network', 'network-type');
             }
         }
-        if (source?.udp === true && ['vmess', 'trojan', 'hysteria2', 'tuic'].includes(proxy.type)) map('udp');
+        if (source?.udp === true && ['vmess', 'trojan', 'hysteria2', 'tuic', 'anytls'].includes(proxy.type)) map('udp');
 
         if (source) {
             const unmapped = yamlFieldPaths(source).filter(path => ![...mapped].some(key => path === key || path.startsWith(`${key}.`)));
