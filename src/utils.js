@@ -299,10 +299,12 @@ export function createTlsConfig(params) {
 			// },
 		};
 		if (params.security === 'reality') {
+			const supportX25519Mlkem768 = parseBool(params['support-x25519mlkem768']);
 			tls.reality = {
 				enabled: true,
 				public_key: params.pbk,
 				short_id: params.sid,
+				...(supportX25519Mlkem768 !== undefined ? { support_x25519mlkem768: supportX25519Mlkem768 } : {}),
 			};
 		}
 	}

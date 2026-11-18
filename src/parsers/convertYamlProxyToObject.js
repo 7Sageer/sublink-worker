@@ -1,3 +1,5 @@
+import { parseBool } from '../utils.js';
+
 export function convertYamlProxyToObject(p) {
     if (!p || typeof p !== 'object' || !p.type) return null;
     const type = String(p.type).toLowerCase();
@@ -71,13 +73,21 @@ export function convertYamlProxyToObject(p) {
         case 'vless': {
             const tlsEnabled = !!p.tls;
             const reality = p['reality-opts'];
+            const supportX25519Mlkem768 = parseBool(reality?.['support-x25519mlkem768']);
             const tls = tlsEnabled
                 ? {
                     enabled: true,
                     server_name: p.servername || p.sni,
                     insecure: !!p['skip-cert-verify'],
                     ...(reality
-                        ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'] } }
+                        ? {
+                            reality: {
+                                enabled: true,
+                                public_key: reality['public-key'],
+                                short_id: reality['short-id'],
+                                ...(supportX25519Mlkem768 !== undefined ? { support_x25519mlkem768: supportX25519Mlkem768 } : {})
+                            }
+                        }
                         : {})
                 }
                 : { enabled: false };
@@ -126,13 +136,21 @@ export function convertYamlProxyToObject(p) {
         case 'trojan': {
             const tlsEnabled = !!p.tls;
             const reality = p['reality-opts'];
+            const supportX25519Mlkem768 = parseBool(reality?.['support-x25519mlkem768']);
             const tls = tlsEnabled
                 ? {
                     enabled: true,
                     server_name: p.servername || p.sni,
                     insecure: !!p['skip-cert-verify'],
                     ...(reality
-                        ? { reality: { enabled: true, public_key: reality['public-key'], short_id: reality['short-id'] } }
+                        ? {
+                            reality: {
+                                enabled: true,
+                                public_key: reality['public-key'],
+                                short_id: reality['short-id'],
+                                ...(supportX25519Mlkem768 !== undefined ? { support_x25519mlkem768: supportX25519Mlkem768 } : {})
+                            }
+                        }
                         : {})
                 }
                 : { enabled: false };
