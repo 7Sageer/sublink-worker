@@ -57,6 +57,27 @@ describe('VLESS Reality ML-KEM option', () => {
         }
     });
 
+    it.each([
+        ['vless', '00000000-0000-4000-8000-800000000001'],
+        ['trojan', undefined]
+    ])('preserves the option through Clash YAML input and Mihomo output for %s', async (type, uuid) => {
+        const input = `proxies:
+  - name: Reality-YAML
+    type: ${type}
+    server: node.example.net
+    port: 443
+    ${uuid ? `uuid: ${uuid}` : 'password: test-password'}
+    tls: true
+    reality-opts:
+      public-key: TEST_PUBLIC_KEY
+      short-id: c94
+      ${OPTION}: true`;
+        const builder = new ClashConfigBuilder(input, 'minimal', [], null, 'en-US', 'mihomo/1.0');
+        const config = yaml.load(await builder.build());
+
+        expect(config.proxies[0]['reality-opts'][OPTION]).toBe(true);
+    });
+
     it.each(CASES)('keeps sing-box output unchanged for %s', async (value) => {
         const builder = new SingboxConfigBuilder(realityUri(value), 'minimal', [], null, 'en-US', 'sing-box/1.12');
         const config = await builder.build();
