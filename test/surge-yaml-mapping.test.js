@@ -60,6 +60,17 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(line).toContain('alpn="h3,synthetic-protocol"');
     });
 
+    it('preserves VMess cipher and case-sensitive WebSocket headers', async () => {
+        const source = getSource('vmess');
+        source['ws-opts'].headers['X-Test'] = 'synthetic';
+        const line = policy(await build([source]), source.name);
+        expect(line).toContain('encrypt-method=aes-128-gcm');
+        expect(line).toContain('vmess-aead=true');
+        expect(line).toContain('ws-path=/synthetic-path');
+        expect(line).toContain('ws-headers=Host:node.example.com|X-Test:synthetic');
+        expect(line).not.toContain('undefined');
+    });
+
     it('identifies undocumented TUIC options while preserving authentication and certificate pinning', async () => {
         const source = getSource('tuic');
         const profile = await build([source]);

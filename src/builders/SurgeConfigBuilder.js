@@ -105,6 +105,10 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 if (proxy.alter_id == 0) {
                     add('vmess-aead', true);
                 }
+                if (['aes-128-gcm', 'chacha20-ietf-poly1305'].includes(proxy.security)) {
+                    add('encrypt-method', proxy.security);
+                    map('cipher');
+                }
                 break;
             case 'trojan':
                 surgeProxy = `${proxy.tag} = trojan, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
@@ -165,7 +169,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 add('ws', true);
                 add('ws-path', proxy.transport.path);
                 if (proxy.transport.headers) {
-                    add('ws-headers', `Host:${proxy.transport.headers.host}`);
+                    add('ws-headers', Object.entries(proxy.transport.headers).map(([name, value]) => `${name}:${value}`).join('|'));
                 }
                 map('network', 'network-type', 'ws-opts.path', 'ws-opts.headers');
             } else if (proxy.transport?.type === 'grpc') {
