@@ -118,6 +118,53 @@ describe('Clash YAML to Surge parameter mapping', () => {
         await expect(build([source])).rejects.toThrow('Invalid AnyTLS disable-reuse flag');
     });
 
+    it.each([true, false])('silently ignores top-level Brutal settings with enabled=%s', async (enabled) => {
+        const source = getSource('trojan');
+        delete source.smux;
+        source['brutal-opts'] = { enabled, up: 'synthetic-up', down: 'synthetic-down' };
+        const profile = await build([source]);
+        expect(policy(profile, source.name)).toContain(' = trojan, ');
+        expect(profile).not.toContain('brutal-opts');
+        expect(profile).not.toContain('TCP Brutal');
+    });
+
+    it.each([
+        [false, true], [true, false], [true, undefined], [undefined, true],
+        ['false', 'true'], ['true', 'false']
+    ])('silently ignores inactive Brutal settings with smux=%s and brutal=%s', async (smuxEnabled, brutalEnabled) => {
+        const source = getSource('trojan');
+        delete source['brutal-opts'];
+        source.smux = {
+            ...(smuxEnabled !== undefined ? { enabled: smuxEnabled } : {}),
+            protocol: 'h2mux',
+            'brutal-opts': { ...(brutalEnabled !== undefined ? { enabled: brutalEnabled } : {}), up: 50, down: 100 }
+        };
+        const profile = await build([source]);
+        expect(profile).not.toContain('brutal-opts');
+        expect(profile).not.toContain('TCP Brutal');
+        expect(profile).toContain('smux.protocol');
+    });
+
+    it.each([true, 'true', '1'])('reports active Brutal once while keeping SMUX diagnostics for enabled=%s', async (enabled) => {
+        const source = getSource('trojan');
+        source.smux = { enabled, protocol: 'h2mux', 'brutal-opts': { enabled, up: 'synthetic-up', down: 'synthetic-down' } };
+        const profile = await build([source]);
+        expect(profile.match(/TCP Brutal is enabled in Clash but unsupported by Surge/g)).toHaveLength(1);
+        expect(profile).not.toContain('brutal-opts');
+        expect(profile).toContain('smux.enabled');
+        expect(profile).toContain('smux.protocol');
+        expect(profile).not.toContain('synthetic-up');
+        expect(profile).not.toContain('synthetic-down');
+    });
+
+    it.each([['invalid', true], [true, 'invalid']])('keeps diagnostics for unknown flags smux=%s and brutal=%s', async (smuxEnabled, brutalEnabled) => {
+        const source = getSource('trojan');
+        source.smux = { enabled: smuxEnabled, 'brutal-opts': { enabled: brutalEnabled } };
+        const profile = await build([source]);
+        expect(profile).toContain('smux.brutal-opts.enabled');
+        expect(profile).not.toContain('TCP Brutal');
+    });
+
     it('accounts for all eleven source nodes and identifies unmapped fields without leaking their values', async () => {
         const builder = makeBuilder(yaml.dump({ proxies: sourceProxies }));
         const profile = await builder.build();
@@ -131,6 +178,7 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(profile).toContain('client-fingerprint');
         expect(profile).toContain('smux.enabled');
         expect(profile).toContain('idle-session-check-interval');
+        expect(profile).not.toContain('brutal-opts');
         const comments = profile.split('\n').filter(line => line.startsWith('#')).join('\n');
         expect(comments).not.toContain('synthetic-password');
         expect(comments).not.toContain('1000 Mbps');

@@ -234,6 +234,16 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         if (source?.udp === true && proxy.type === 'snell' && Number(source.version) >= 3) map('udp');
 
         if (source) {
+            // Mihomo only consumes Brutal settings nested under smux.
+            map('brutal-opts');
+            const smuxEnabled = parseBool(source.smux?.enabled ?? false);
+            const brutalEnabled = parseBool(source.smux?.['brutal-opts']?.enabled ?? false);
+            if (smuxEnabled === false || brutalEnabled === false) {
+                map('smux.brutal-opts');
+            } else if (smuxEnabled === true && brutalEnabled === true) {
+                map('smux.brutal-opts');
+                this.conversionNotes.push(`# ${proxy.tag}: TCP Brutal is enabled in Clash but unsupported by Surge; bandwidth negotiation and congestion-control settings were omitted.`);
+            }
             const unmapped = yamlFieldPaths(source).filter(path => ![...mapped].some(key => path === key || path.startsWith(`${key}.`)));
             if (unmapped.length) this.conversionNotes.push(`# ${proxy.tag}: Unmapped Clash fields: ${unmapped.join(', ')}`);
         }
