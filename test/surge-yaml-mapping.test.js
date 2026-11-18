@@ -15,7 +15,7 @@ const policy = (profile, name) => profile.split('\n').find(line => line.startsWi
 afterEach(() => vi.restoreAllMocks());
 
 describe('Clash YAML to Surge parameter mapping', () => {
-    it.each(['hysteria2', 'tuic'])('preserves certificate pinning for %s without disabling validation', async (type) => {
+    it.each(['hysteria2', 'tuic', 'trojan'])('preserves certificate pinning for %s without disabling validation', async (type) => {
         const source = getSource(type);
         const line = policy(await build([source]), source.name);
         expect(line).toContain(`server-cert-fingerprint-sha256=${fingerprint}`);
