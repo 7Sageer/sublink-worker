@@ -5,6 +5,8 @@ import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { convertYamlProxyToSurgeObject } from '../parsers/convertYamlProxyToSurgeObject.js';
 import { InvalidConfigError } from '../services/errors.js';
+import { parseVlessForSurge } from '../parsers/protocols/vlessSurgeParser.js';
+import { addSurgeVlessOptions } from './helpers/surgeVless.js';
 
 function normalizeCertificateFingerprint(value) {
     if (typeof value !== 'string' || !/^(?:[0-9a-f]{64}|(?:[0-9a-f]{2}:){31}[0-9a-f]{2})$/i.test(value)) {
@@ -57,6 +59,11 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         return this;
     }
 
+    async parseProxyUri(uri) {
+        if (typeof uri === 'string' && /^vless:\/\//i.test(uri.trim())) return parseVlessForSurge(uri);
+        return super.parseProxyUri(uri);
+    }
+
     getProxies() {
         return this.config.proxies || [];
     }
@@ -94,6 +101,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             options.push(`${key}=${String(value).includes(',') ? JSON.stringify(String(value)) : value}`);
         };
         let surgeProxy;
+        let tls = proxy.tls;
         switch (proxy.type) {
             case 'shadowsocks':
                 surgeProxy = `${proxy.tag} = ss, ${proxy.server}, ${proxy.server_port}, encrypt-method=${proxy.method}, password=${proxy.password}`;
@@ -123,6 +131,14 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                     add('encrypt-method', proxy.security);
                     map('cipher');
                 }
+                break;
+            case 'vless':
+                surgeProxy = `${proxy.tag} = vless, ${proxy.server}, ${proxy.server_port}`;
+                add('username', proxy.uuid);
+                tls = addSurgeVlessOptions(proxy, {
+                    add, map,
+                    note: message => this.conversionNotes.push(`# ${proxy.tag}: ${message}`)
+                });
                 break;
             case 'trojan':
             case 'anytls':
@@ -184,15 +200,18 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             add('tls', proxy.tls?.enabled === true);
             map('tls');
         }
-        if (implicitTls || proxy.tls?.enabled) {
+        if (proxy.type === 'vless' && tls?.reality?.enabled) {
+            add('sni', tls.server_name);
+            map('sni', 'servername');
+        } else if (implicitTls || tls?.enabled) {
             if (implicitTls && source?.tls === false) throw new InvalidConfigError('Surge requires TLS for this proxy type');
-            add('sni', proxy.tls?.server_name);
-            const insecure = source?.['skip-cert-verify'] !== undefined ? parseBool(source['skip-cert-verify']) : proxy.tls?.insecure;
+            add('sni', tls?.server_name);
+            const insecure = source?.['skip-cert-verify'] !== undefined ? parseBool(source['skip-cert-verify']) : tls?.insecure;
             if (source?.['skip-cert-verify'] !== undefined && insecure === undefined) throw new InvalidConfigError('Invalid skip-cert-verify flag');
             if (insecure || source?.['skip-cert-verify'] !== undefined) add('skip-cert-verify', insecure);
             if (source?.fingerprint !== undefined) add('server-cert-fingerprint-sha256', normalizeCertificateFingerprint(source.fingerprint));
             add('server-cert-verify-name', source?.['name-cert-verify']);
-            const alpn = proxy.tls?.alpn ?? proxy.alpn;
+            const alpn = tls?.alpn ?? proxy.alpn;
             if (alpn?.length) add('alpn', alpn.join(','));
             map('tls', 'sni', 'servername', 'skip-cert-verify', 'fingerprint', 'name-cert-verify', 'alpn');
         }

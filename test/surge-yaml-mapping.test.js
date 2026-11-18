@@ -121,14 +121,10 @@ describe('Clash YAML to Surge parameter mapping', () => {
     it('accounts for all eleven source nodes and identifies unmapped fields without leaking their values', async () => {
         const builder = makeBuilder(yaml.dump({ proxies: sourceProxies }));
         const profile = await builder.build();
-        expect(builder.getValidProxies()).toHaveLength(8);
+        expect(builder.getValidProxies()).toHaveLength(11);
         for (const source of sourceProxies) {
-            if (source.type === 'vless') {
-                expect(profile).toContain(`# ${source.name} - Unsupported proxy type: vless`);
-                expect(builder.getProxyList()).not.toContain(source.name);
-            } else {
-                expect(policy(profile, source.name)).toBeDefined();
-            }
+            expect(policy(profile, source.name)).toBeDefined();
+            expect(builder.getProxyList()).toContain(source.name);
         }
         expect(profile).toContain('Unmapped Clash fields: up');
         expect(profile).toContain('request-timeout');
