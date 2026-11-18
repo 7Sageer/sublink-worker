@@ -60,6 +60,16 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(line).toContain('alpn="h3,synthetic-protocol"');
     });
 
+    it('identifies undocumented TUIC options while preserving authentication and certificate pinning', async () => {
+        const source = getSource('tuic');
+        const profile = await build([source]);
+        const line = policy(profile, source.name);
+        expect(profile).toContain('Legacy TUIC congestion-controller/udp-relay-mode options are not documented by Surge');
+        expect(line).toContain(`uuid=${source.uuid}`);
+        expect(line).toContain(`server-cert-fingerprint-sha256=${fingerprint}`);
+        expect(line).toContain('skip-cert-verify=false');
+    });
+
     it.each(['direct', 'base64', 'http'])('keeps pinning through the %s subscription path', async (path) => {
         const content = yaml.dump({ proxies: [getSource('hysteria2')] });
         let input = content;

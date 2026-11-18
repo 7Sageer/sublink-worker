@@ -134,6 +134,9 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 add('congestion-controller', proxy.congestion_control);
                 add('udp-relay-mode', proxy.udp_relay_mode);
                 map('uuid', 'password', 'congestion-controller', 'congestion_control', 'udp-relay-mode');
+                if (source && (proxy.congestion_control || proxy.udp_relay_mode)) {
+                    this.conversionNotes.push(`# ${proxy.tag}: Legacy TUIC congestion-controller/udp-relay-mode options are not documented by Surge; runtime effects are unverified.`);
+                }
                 break;
             default:
                 return `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
