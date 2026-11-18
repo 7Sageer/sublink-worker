@@ -1,8 +1,22 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { groupProxiesByCountry } from '../utils.js';
+import { groupProxiesByCountry, parseBool } from '../utils.js';
 import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS, DIRECT_DEFAULT_RULES } from '../config/index.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
+import { convertYamlProxyToSurgeObject } from '../parsers/convertYamlProxyToSurgeObject.js';
+import { InvalidConfigError } from '../services/errors.js';
+
+function normalizeCertificateFingerprint(value) {
+    if (typeof value !== 'string' || !/^(?:[0-9a-f]{64}|(?:[0-9a-f]{2}:){31}[0-9a-f]{2})$/i.test(value)) {
+        throw new InvalidConfigError('Invalid SHA-256 certificate fingerprint');
+    }
+    return value.replace(/:/g, '').toLowerCase();
+}
+
+function yamlFieldPaths(value, prefix = '') {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return [prefix];
+    return Object.entries(value).flatMap(([key, field]) => yamlFieldPaths(field, prefix ? `${prefix}.${key}` : key));
+}
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true) {
@@ -13,6 +27,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         this.subscriptionUrl = null;
         this.countryGroupNames = [];
         this.manualGroupName = null;
+        this.convertYamlProxy = convertYamlProxyToSurgeObject;
+        this.conversionNotes = [];
     }
 
     setSubscriptionUrl(url) {
@@ -47,91 +63,85 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
+        const source = proxy.surgeSource;
+        const mapped = new Set(['name', 'tag', 'type', 'server', 'port']);
+        const options = [];
+        const map = (...keys) => keys.forEach(key => mapped.add(key));
+        const add = (key, value) => {
+            if (value === undefined || value === null) return;
+            if (/[\r\n"]/.test(String(value))) throw new InvalidConfigError(`Invalid Surge parameter: ${key}`);
+            options.push(`${key}=${String(value).includes(',') ? JSON.stringify(String(value)) : value}`);
+        };
         let surgeProxy;
         switch (proxy.type) {
             case 'shadowsocks':
                 surgeProxy = `${proxy.tag} = ss, ${proxy.server}, ${proxy.server_port}, encrypt-method=${proxy.method}, password=${proxy.password}`;
+                map('cipher', 'method', 'password');
                 break;
             case 'vmess':
                 surgeProxy = `${proxy.tag} = vmess, ${proxy.server}, ${proxy.server_port}, username=${proxy.uuid}`;
+                map('uuid', 'alterId');
                 if (proxy.alter_id == 0) {
-                    surgeProxy += ', vmess-aead=true';
-                }
-                if (proxy.tls?.enabled) {
-                    surgeProxy += ', tls=true';
-                    if (proxy.tls.server_name) {
-                        surgeProxy += `, sni=${proxy.tls.server_name}`;
-                    }
-                    if (proxy.tls.insecure) {
-                        surgeProxy += ', skip-cert-verify=true';
-                    }
-                    if (proxy.tls.alpn) {
-                        surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                    }
-                }
-                if (proxy.transport?.type === 'ws') {
-                    surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
-                    if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
-                    }
-                } else if (proxy.transport?.type === 'grpc') {
-                    surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
+                    add('vmess-aead', true);
                 }
                 break;
             case 'trojan':
                 surgeProxy = `${proxy.tag} = trojan, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
-                if (proxy.tls?.server_name) {
-                    surgeProxy += `, sni=${proxy.tls.server_name}`;
-                }
-                if (proxy.tls?.insecure) {
-                    surgeProxy += ', skip-cert-verify=true';
-                }
-                if (proxy.tls?.alpn) {
-                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                }
-                if (proxy.transport?.type === 'ws') {
-                    surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
-                    if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
-                    }
-                } else if (proxy.transport?.type === 'grpc') {
-                    surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
-                }
+                map('password');
                 break;
             case 'hysteria2':
                 surgeProxy = `${proxy.tag} = hysteria2, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
-                if (proxy.tls?.server_name) {
-                    surgeProxy += `, sni=${proxy.tls.server_name}`;
-                }
-                if (proxy.tls?.insecure) {
-                    surgeProxy += ', skip-cert-verify=true';
-                }
-                if (proxy.tls?.alpn) {
-                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                }
+                map('password');
                 break;
             case 'tuic':
                 surgeProxy = `${proxy.tag} = tuic-v5, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}, uuid=${proxy.uuid}`;
-                if (proxy.tls?.server_name) {
-                    surgeProxy += `, sni=${proxy.tls.server_name}`;
-                }
-                if (proxy.tls?.alpn) {
-                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
-                }
-                if (proxy.tls?.insecure) {
-                    surgeProxy += ', skip-cert-verify=true';
-                }
-                if (proxy.congestion_control) {
-                    surgeProxy += `, congestion-controller=${proxy.congestion_control}`;
-                }
-                if (proxy.udp_relay_mode) {
-                    surgeProxy += `, udp-relay-mode=${proxy.udp_relay_mode}`;
-                }
+                add('congestion-controller', proxy.congestion_control);
+                add('udp-relay-mode', proxy.udp_relay_mode);
+                map('uuid', 'password', 'congestion-controller', 'congestion_control', 'udp-relay-mode');
                 break;
             default:
-                surgeProxy = `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
+                return `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
         }
-        return surgeProxy;
+
+        const implicitTls = ['trojan', 'hysteria2', 'tuic'].includes(proxy.type);
+        if (proxy.type === 'vmess' && (proxy.tls?.enabled || source?.tls !== undefined)) {
+            add('tls', proxy.tls?.enabled === true);
+            map('tls');
+        }
+        if (implicitTls || proxy.tls?.enabled) {
+            if (implicitTls && source?.tls === false) throw new InvalidConfigError('Surge requires TLS for this proxy type');
+            add('sni', proxy.tls?.server_name);
+            const insecure = source?.['skip-cert-verify'] !== undefined ? parseBool(source['skip-cert-verify']) : proxy.tls?.insecure;
+            if (source?.['skip-cert-verify'] !== undefined && insecure === undefined) throw new InvalidConfigError('Invalid skip-cert-verify flag');
+            if (insecure || source?.['skip-cert-verify'] !== undefined) add('skip-cert-verify', insecure);
+            if (source?.fingerprint !== undefined) add('server-cert-fingerprint-sha256', normalizeCertificateFingerprint(source.fingerprint));
+            add('server-cert-verify-name', source?.['name-cert-verify']);
+            const alpn = proxy.tls?.alpn ?? proxy.alpn;
+            if (alpn?.length) add('alpn', alpn.join(','));
+            map('tls', 'sni', 'servername', 'skip-cert-verify', 'fingerprint', 'name-cert-verify', 'alpn');
+        }
+
+        if (['vmess', 'trojan'].includes(proxy.type)) {
+            if (proxy.transport?.type === 'ws') {
+                add('ws', true);
+                add('ws-path', proxy.transport.path);
+                if (proxy.transport.headers) {
+                    add('ws-headers', `Host:${proxy.transport.headers.host}`);
+                }
+                map('network', 'network-type', 'ws-opts.path', 'ws-opts.headers');
+            } else if (proxy.transport?.type === 'grpc') {
+                add('grpc-service-name', proxy.transport.service_name);
+            } else if (!proxy.transport || proxy.transport.type === 'tcp') {
+                map('network', 'network-type');
+            }
+        }
+        if (source?.udp === true && ['vmess', 'trojan', 'hysteria2', 'tuic'].includes(proxy.type)) map('udp');
+
+        if (source) {
+            const unmapped = yamlFieldPaths(source).filter(path => ![...mapped].some(key => path === key || path.startsWith(`${key}.`)));
+            if (unmapped.length) this.conversionNotes.push(`# ${proxy.tag}: Unmapped Clash fields: ${unmapped.join(', ')}`);
+        }
+        return surgeProxy + (options.length ? `, ${options.join(', ')}` : '');
     }
 
     addProxyToConfig(proxy) {
@@ -398,6 +408,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         finalConfig.push('\n[Proxy]');
         finalConfig.push('DIRECT = direct');
+        finalConfig.push(...this.conversionNotes);
         if (this.config.proxies) {
             finalConfig.push(...this.config.proxies);
         }

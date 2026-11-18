@@ -35,7 +35,7 @@ export class BaseConfigBuilder {
         const { parseSubscriptionContent } = await import('../parsers/subscription/subscriptionContentParser.js');
 
         // Try to parse the entire input as a config format (Sing-Box JSON or Clash YAML)
-        const directResult = parseSubscriptionContent(input);
+        const directResult = parseSubscriptionContent(input, this.convertYamlProxy);
         if (directResult && typeof directResult === 'object' && directResult.type) {
             // It's a parsed config (singboxConfig or yamlConfig)
             if (directResult.config) {
@@ -58,7 +58,7 @@ export class BaseConfigBuilder {
                 const sanitized = input.replace(/\s+/g, '');
                 const decodedWhole = decodeBase64(sanitized);
                 if (typeof decodedWhole === 'string') {
-                    const decodedResult = parseSubscriptionContent(decodedWhole);
+                    const decodedResult = parseSubscriptionContent(decodedWhole, this.convertYamlProxy);
                     if (decodedResult && typeof decodedResult === 'object' && decodedResult.type) {
                         if (decodedResult.config) {
                             this.applyConfigOverrides(decodedResult.config);
@@ -110,7 +110,7 @@ export class BaseConfigBuilder {
                             }
 
                             // Otherwise parse the content as usual
-                            const result = parseSubscriptionContent(content);
+                            const result = parseSubscriptionContent(content, this.convertYamlProxy);
                             if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
                                 if (result.config) {
                                     this.applyConfigOverrides(result.config);
