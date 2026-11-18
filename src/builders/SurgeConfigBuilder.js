@@ -111,7 +111,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 }
                 break;
             case 'tuic':
-                surgeProxy = `${proxy.tag} = tuic, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}, uuid=${proxy.uuid}`;
+                surgeProxy = `${proxy.tag} = tuic-v5, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}, uuid=${proxy.uuid}`;
                 if (proxy.tls?.server_name) {
                     surgeProxy += `, sni=${proxy.tls.server_name}`;
                 }
