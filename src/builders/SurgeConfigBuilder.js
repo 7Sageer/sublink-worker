@@ -13,6 +13,27 @@ function normalizeCertificateFingerprint(value) {
     return value.replace(/:/g, '').toLowerCase();
 }
 
+function formatPortHopping(value) {
+    const ranges = String(value).split(',').map(range => range.trim());
+    if (!ranges.length || ranges.some(range => {
+        if (!/^\d+(?:-\d+)?$/.test(range)) return true;
+        const [start, end = start] = range.split('-').map(Number);
+        return start < 1 || end > 65535 || start > end;
+    })) {
+        throw new InvalidConfigError('Invalid Hysteria2 port hopping range');
+    }
+    return `"${ranges.join(';')}"`;
+}
+
+function bandwidthToMbps(value) {
+    const match = String(value).match(/^(\d+(?:\.\d+)?)\s*([kmg]?bps)?$/i);
+    if (!match) throw new InvalidConfigError('Invalid Hysteria2 download bandwidth');
+    const units = { bps: 0.000001, kbps: 0.001, mbps: 1, gbps: 1000 };
+    const result = Number(match[1]) * (units[match[2]?.toLowerCase()] ?? 1);
+    if (!Number.isFinite(result)) throw new InvalidConfigError('Invalid Hysteria2 download bandwidth');
+    return result;
+}
+
 function yamlFieldPaths(value, prefix = '') {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return [prefix];
     return Object.entries(value).flatMap(([key, field]) => yamlFieldPaths(field, prefix ? `${prefix}.${key}` : key));
@@ -92,6 +113,21 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             case 'hysteria2':
                 surgeProxy = `${proxy.tag} = hysteria2, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
                 map('password');
+                if (proxy.ports !== undefined) {
+                    options.push(`port-hopping=${formatPortHopping(proxy.ports)}`);
+                    map('ports', 'mport');
+                    if (proxy.hop_interval !== undefined) {
+                        if (!Number.isFinite(Number(proxy.hop_interval)) || Number(proxy.hop_interval) <= 0) {
+                            throw new InvalidConfigError('Invalid Hysteria2 hopping interval');
+                        }
+                        add('port-hopping-interval', proxy.hop_interval);
+                        map('hop-interval');
+                    }
+                }
+                if (proxy.down !== undefined) {
+                    add('download-bandwidth', bandwidthToMbps(proxy.down));
+                    map('down');
+                }
                 break;
             case 'tuic':
                 surgeProxy = `${proxy.tag} = tuic-v5, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}, uuid=${proxy.uuid}`;

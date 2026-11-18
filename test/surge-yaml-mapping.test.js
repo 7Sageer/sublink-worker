@@ -24,6 +24,33 @@ describe('Clash YAML to Surge parameter mapping', () => {
         expect(line).not.toContain('skip-cert-verify=true');
     });
 
+    it('preserves hopping and converts download bandwidth units', async () => {
+        const source = getSource('hysteria2');
+        source.ports = '50000-51000, 52000';
+        const line = policy(await build([source]), source.name);
+        expect(line).toContain('port-hopping="50000-51000;52000"');
+        expect(line).toContain('port-hopping-interval=30');
+        expect(line).toContain('download-bandwidth=1000');
+    });
+
+    it.each([[100, 100], ['0.5 Gbps', 500], ['1000 Kbps', 1]])('converts download bandwidth %s to %s Mbps', async (down, expected) => {
+        const source = getSource('hysteria2');
+        source.down = down;
+        expect(policy(await build([source]), source.name)).toContain(`download-bandwidth=${expected}`);
+    });
+
+    it.each(['0', '65536', '51000-50000', '443,,8443'])('rejects invalid hopping range %s', async (ports) => {
+        const source = getSource('hysteria2');
+        source.ports = ports;
+        await expect(build([source])).rejects.toThrow('Invalid Hysteria2 port hopping range');
+    });
+
+    it.each(['fast', '-1 Mbps'])('rejects invalid bandwidth %s', async (down) => {
+        const source = getSource('hysteria2');
+        source.down = down;
+        await expect(build([source])).rejects.toThrow('Invalid Hysteria2 download bandwidth');
+    });
+
     it('preserves a textual false verification flag and quotes multiple ALPN values', async () => {
         const source = getSource('hysteria2');
         source['skip-cert-verify'] = 'false';
