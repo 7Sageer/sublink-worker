@@ -1,0 +1,67 @@
+name: Client Compatibility
+
+# Loads the generated configs in real clients. Unit tests cannot catch a
+# config that a client refuses to load, which is how most regressions shipped.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    # New client releases can break configs without any change on our side.
+    - cron: '0 3 * * 1'
+
+jobs:
+  check:
+    name: ${{ matrix.client }} ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # One sing-box per config tier the app emits (1.11 / 1.12 / 1.14+).
+          - { client: sing-box, version: 1.11.15, experimental: false }
+          - { client: sing-box, version: 1.12.12, experimental: false }
+          - { client: sing-box, version: 1.14.4, experimental: false }
+          - { client: mihomo, version: 1.19.34, experimental: false }
+          # Newest release including pre-releases: an early warning for
+          # upcoming schema removals, not a merge blocker.
+          - { client: sing-box, version: latest, experimental: true }
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLIENT: ${{ matrix.client }}
+      VERSION: ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download ${{ matrix.client }} ${{ matrix.version }}
+        run: |
+          set -euo pipefail
+          BIN="$RUNNER_TEMP/client"
+          case "$CLIENT" in
+            sing-box)
+              if [ "$VERSION" = latest ]; then
+                VERSION=$(gh release list -R SagerNet/sing-box --limit 1 --json tagName -q '.[0].tagName')
+                VERSION=${VERSION#v}
+              fi
+              gh release download "v$VERSION" -R SagerNet/sing-box -p "sing-box-$VERSION-linux-amd64.tar.gz" -O - \
+                | tar xz -O "sing-box-$VERSION-linux-amd64/sing-box" > "$BIN"
+              ;;
+            mihomo)
+              gh release download "v$VERSION" -R MetaCubeX/mihomo -p "mihomo-linux-amd64-v$VERSION.gz" -O - \
+                | gunzip > "$BIN"
+              ;;
+          esac
+          chmod +x "$BIN"
+
+      - name: Check generated configs
+        run: npm run check:clients -- "$CLIENT" "$RUNNER_TEMP/client"

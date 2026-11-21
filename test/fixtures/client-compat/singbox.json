@@ -1,0 +1,8 @@
+{
+  "outbounds": [
+    { "type": "shadowsocks", "tag": "SB-SS", "server": "1.2.3.4", "server_port": 8388, "method": "aes-128-gcm", "password": "pw", "plugin": "obfs-local", "plugin_opts": "obfs=http;obfs-host=a.com" },
+    { "type": "vless", "tag": "SB-VLESS", "server": "1.2.3.4", "server_port": 443, "uuid": "11111111-2222-3333-4444-555555555555", "tls": { "enabled": true, "server_name": "a.com" }, "transport": { "type": "ws", "path": "/ws" } },
+    { "type": "hysteria2", "tag": "SB-Hy2", "server": "1.2.3.4", "server_port": 443, "password": "pw", "tls": { "enabled": true, "server_name": "a.com" } },
+    { "type": "selector", "tag": "SB-Group", "outbounds": ["SB-SS", "SB-VLESS"] }
+  ]
+}

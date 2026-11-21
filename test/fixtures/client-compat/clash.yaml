@@ -1,0 +1,14 @@
+proxies:
+  - {name: SS-obfs, type: ss, server: 1.2.3.4, port: 8388, cipher: aes-128-gcm, password: pw, plugin: obfs, plugin-opts: {mode: http, host: a.com}}
+  - {name: SS-v2ray-plugin, type: ss, server: 1.2.3.4, port: 8389, cipher: aes-128-gcm, password: pw, plugin: v2ray-plugin, plugin-opts: {mode: websocket, host: a.com, path: /ws, tls: true, mux: false}}
+  - {name: VMess-ws, type: vmess, server: 1.2.3.4, port: 443, uuid: 11111111-2222-3333-4444-555555555555, alterId: 0, cipher: auto, tls: true, servername: a.com, network: ws, ws-opts: {path: /ws, headers: {Host: a.com}}}
+  - {name: VMess-grpc, type: vmess, server: 1.2.3.4, port: 444, uuid: 11111111-2222-3333-4444-555555555555, alterId: 0, cipher: auto, tls: true, network: grpc, grpc-opts: {grpc-service-name: svc}}
+  - {name: VMess-h2, type: vmess, server: 1.2.3.4, port: 445, uuid: 11111111-2222-3333-4444-555555555555, alterId: 0, cipher: auto, tls: true, network: h2, h2-opts: {path: /h2, host: [a.com]}}
+  - {name: VLESS-reality, type: vless, server: 1.2.3.4, port: 443, uuid: 11111111-2222-3333-4444-555555555555, tls: true, servername: a.com, flow: xtls-rprx-vision, client-fingerprint: chrome, reality-opts: {public-key: jNXHt1yRo0vDuchQlIP6Z0ZvjT3KtzVI-T4E7RoLJS0, short-id: 6b}}
+  - {name: VLESS-xhttp, type: vless, server: 1.2.3.4, port: 446, uuid: 11111111-2222-3333-4444-555555555555, tls: true, servername: a.com, network: xhttp, xhttp-opts: {path: /xh, mode: packet-up}}
+  - {name: Trojan-ws, type: trojan, server: 1.2.3.4, port: 443, password: pw, sni: a.com, network: ws, ws-opts: {path: /tr}}
+  - {name: Hy2, type: hysteria2, server: 1.2.3.4, port: 443, password: pw, sni: a.com, ports: 20000-30000, up: 50, down: 100}
+  - {name: TUIC, type: tuic, server: 1.2.3.4, port: 443, uuid: 11111111-2222-3333-4444-555555555555, password: pw, sni: a.com, alpn: [h3], congestion-controller: bbr}
+  - {name: AnyTLS, type: anytls, server: 1.2.3.4, port: 443, password: pw, sni: a.com, idle-session-check-interval: 30, idle-session-timeout: 30, min-idle-session: 1}
+proxy-groups:
+  - {name: Custom, type: select, proxies: [SS-obfs, VMess-ws, DIRECT]}
