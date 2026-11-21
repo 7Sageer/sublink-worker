@@ -8,6 +8,8 @@ function parseServer(serverPart) {
     return serverPart.split(':');
 }
 
+const OBFS_PLUGIN_ALIASES = new Set(['simple-obfs', 'obfs-local']);
+
 /**
  * Parse plugin string from URL query parameter
  * Format: "simple-obfs;obfs=http;obfs-host=example.com" or "v2ray-plugin;mode=websocket;host=example.com"
@@ -51,8 +53,9 @@ function parsePluginString(pluginStr) {
         }
     }
 
-    // Normalize plugin name: simple-obfs -> obfs (Clash uses 'obfs')
-    const normalizedPlugin = pluginName === 'simple-obfs' ? 'obfs' : pluginName;
+    // The IR uses Clash's plugin names; Mihomo silently ignores the SIP003
+    // spellings and would connect without obfuscation.
+    const normalizedPlugin = OBFS_PLUGIN_ALIASES.has(pluginName) ? 'obfs' : pluginName;
 
     return {
         plugin: normalizedPlugin,
