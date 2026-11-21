@@ -292,7 +292,7 @@ export function createTlsConfig(params) {
 		tls = {
 			enabled: true,
 			server_name: params.sni || params.host,
-			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+			insecure: parseInsecureParam(params),
 			// utls: {
 			//   enabled: true,
 			//   fingerprint: "chrome"
@@ -320,6 +320,13 @@ export function createTransportConfig(params) {
 			service_name: params.serviceName ?? undefined,
 		})
 	};
+}
+
+// Share links spell the flag several ways and send it as a string, so "0" must
+// stay false instead of disabling certificate verification.
+const INSECURE_PARAM_KEYS = ['insecure', 'allowInsecure', 'allow_insecure', 'skip-cert-verify'];
+export function parseInsecureParam(params = {}) {
+	return INSECURE_PARAM_KEYS.some(key => parseBool(params[key]) === true);
 }
 
 // Parse boolean value from various formats
