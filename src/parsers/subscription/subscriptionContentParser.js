@@ -3,6 +3,7 @@ import { deepCopy } from '../../utils.js';
 import { convertYamlProxyToObject } from '../convertYamlProxyToObject.js';
 import { convertSurgeProxyToObject } from '../convertSurgeProxyToObject.js';
 import { convertSurgeIniToJson } from '../../utils/surgeConfigParser.js';
+import { parsePluginString } from '../protocols/shadowsocksParser.js';
 
 /**
  * Non-proxy outbound types in Sing-Box that should be filtered out from proxies list
@@ -13,6 +14,14 @@ const SINGBOX_NON_PROXY_TYPES = new Set(['direct', 'block', 'dns', 'selector', '
  * Sing-Box outbound types that represent proxy groups (should be converted to proxy-groups)
  */
 const SINGBOX_GROUP_TYPES = new Set(['selector', 'urltest']);
+
+// sing-box spells SS plugins the SIP003 way ("obfs-local", "obfs=http;..."),
+// while the IR and every builder expect Clash's name and plugin-opts map.
+function normalizeSingboxOutbound(outbound) {
+    if (outbound.type !== 'shadowsocks' || !outbound.plugin) return outbound;
+    const { plugin, plugin_opts } = parsePluginString(`${outbound.plugin};${outbound.plugin_opts ?? ''}`);
+    return { ...outbound, plugin, plugin_opts };
+}
 
 /**
  * Try to parse content as Sing-Box JSON format
@@ -27,7 +36,7 @@ export function parseSingboxJson(content) {
                 o && typeof o === 'object' &&
                 o.server && o.type &&
                 !SINGBOX_NON_PROXY_TYPES.has(o.type)
-            );
+            ).map(normalizeSingboxOutbound);
             if (proxies.length > 0) {
                 const configOverrides = deepCopy(parsed);
                 delete configOverrides.outbounds;

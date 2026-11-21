@@ -52,3 +52,24 @@ it('normalizes SIP003 obfs plugin names to Clash naming', () => {
     expect(parseShadowsocks(ss(1, 'obfs-local;obfs=http', 'n')).plugin).toBe('obfs');
     expect(parseShadowsocks(ss(1, 'simple-obfs;obfs=http', 'n')).plugin).toBe('obfs');
 });
+
+// sing-box JSON input carries SIP003 spellings; Mihomo rejects a string plugin-opts.
+describe('sing-box JSON input with shadowsocks plugins', () => {
+    const input = JSON.stringify({
+        outbounds: [{
+            type: 'shadowsocks', tag: 'SB', server: '1.2.3.4', server_port: 1, method: 'aes-128-gcm', password: 'pw',
+            plugin: 'obfs-local', plugin_opts: 'obfs=http;obfs-host=a.com'
+        }]
+    });
+
+    it('converts to Clash plugin name and plugin-opts map', async () => {
+        const { ClashConfigBuilder } = await import('../src/builders/ClashConfigBuilder.js');
+        const config = yaml.load(await new ClashConfigBuilder(input, [], [], null, 'en-US', 'clash.meta').build());
+        expect(config.proxies[0]).toMatchObject({ plugin: 'obfs', 'plugin-opts': { mode: 'http', host: 'a.com' } });
+    });
+
+    it('round-trips to sing-box unchanged', async () => {
+        const out = await shadowsocksOutbounds(input);
+        expect(out.SB).toMatchObject({ plugin: 'obfs-local', plugin_opts: 'obfs=http;obfs-host=a.com' });
+    });
+});

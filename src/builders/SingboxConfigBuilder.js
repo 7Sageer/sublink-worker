@@ -38,12 +38,9 @@ function toSingboxTransport(transport) {
     return result;
 }
 
-// sing-box bundles only these SIP003 plugins. The IR keeps Clash's plugin
-// names and plugin-opts keys; sing-box JSON input arrives already native.
-const OBFS_PLUGIN = { name: 'obfs-local', keys: { mode: 'obfs', host: 'obfs-host' } };
+// sing-box bundles only these SIP003 plugins, keyed by the IR's Clash names.
 const SINGBOX_SS_PLUGINS = {
-    obfs: OBFS_PLUGIN,
-    'obfs-local': OBFS_PLUGIN,
+    obfs: { name: 'obfs-local', keys: { mode: 'obfs', host: 'obfs-host' } },
     'v2ray-plugin': { name: 'v2ray-plugin', keys: {} }
 };
 
@@ -56,17 +53,15 @@ const escapeSip003 = (value) => String(value).replace(/[\\=;]/g, '\\$&');
 function toSingboxPlugin(plugin, opts) {
     const spec = SINGBOX_SS_PLUGINS[plugin];
     if (!spec) return null;
-    const pluginOpts = typeof opts === 'string'
-        ? opts
-        : Object.entries(opts ?? {}).flatMap(([key, value]) => {
-            const name = spec.keys[key] ?? key;
-            if (value === true) return [name];
-            // sing-box enables `tls` by mere presence, but reads `mux` as a
-            // count whose absence means 1, so false needs a different spelling.
-            if (value === false) return name === 'mux' ? ['mux=0'] : [];
-            if (value == null || typeof value === 'object') return [];
-            return [`${name}=${escapeSip003(value)}`];
-        }).join(';');
+    const pluginOpts = Object.entries(opts ?? {}).flatMap(([key, value]) => {
+        const name = spec.keys[key] ?? key;
+        if (value === true) return [name];
+        // sing-box enables `tls` by mere presence, but reads `mux` as a
+        // count whose absence means 1, so false needs a different spelling.
+        if (value === false) return name === 'mux' ? ['mux=0'] : [];
+        if (value == null || typeof value === 'object') return [];
+        return [`${name}=${escapeSip003(value)}`];
+    }).join(';');
     return { plugin: spec.name, ...(pluginOpts ? { plugin_opts: pluginOpts } : {}) };
 }
 
