@@ -7,6 +7,10 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 const RULE_SET_HTTP_CLIENT_TAG = 'rule-set-download';
+// Config tiers, oldest first; each tier is the oldest client the emitted shape
+// stays valid for. '1.14' adds http_clients, '1.15' drops the TUN stack option.
+const TIER_ORDER = ['1.11', '1.12', '1.14', '1.15'];
+const tierAtLeast = (tier, floor) => TIER_ORDER.indexOf(tier) >= TIER_ORDER.indexOf(floor);
 const ANYTLS_OPTION_KEYS = {
     'idle-session-check-interval': 'idle_session_check_interval',
     'idle-session-timeout': 'idle_session_timeout',
@@ -86,7 +90,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.enableClashUI = enableClashUI;
         this.externalController = externalController;
         this.externalUiDownloadUrl = externalUiDownloadUrl;
-        this.singboxVersion = singboxVersion;  // '1.11', '1.12' or '1.14'
+        this.singboxVersion = singboxVersion;  // '1.11', '1.12', '1.14' or '1.15'
 
         if (this.config?.dns?.servers?.length > 0) {
             this.config.dns.servers[0].detour = this.t('outboundNames.Node Select');
@@ -531,7 +535,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
      * while older versions get the legacy per-rule-set field.
      */
     configureRuleSetDownload() {
-        if (this.singboxVersion === '1.14') {
+        if (tierAtLeast(this.singboxVersion, '1.14')) {
             if (!this.config.route.default_http_client) {
                 if (!Array.isArray(this.config.http_clients) || this.config.http_clients.length === 0) {
                     this.config.http_clients = [{ tag: RULE_SET_HTTP_CLIENT_TAG, detour: 'DIRECT' }];
@@ -598,6 +602,14 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         (this.config.outbounds || []).forEach(outbound => {
             delete outbound.providers;
         });
+
+        // 1.15 ships its own TCP/IP stack, so the option is deprecated (removed
+        // in 1.17) and every config carrying it warns on load.
+        if (tierAtLeast(this.singboxVersion, '1.15')) {
+            (this.config.inbounds || []).forEach(inbound => {
+                if (inbound?.type === 'tun') delete inbound.stack;
+            });
+        }
 
         // Validate outbounds: fill empty urltest groups with all proxies
         this.validateOutbounds();

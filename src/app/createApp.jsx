@@ -469,38 +469,22 @@ function parseSemverLike(value) {
     };
 }
 
-function isSingboxLegacyConfig(version) {
-    if (!version || Number.isNaN(version.major) || Number.isNaN(version.minor)) {
-        return false;
-    }
-    if (version.major !== 1) {
-        return version.major < 1;
-    }
-    return version.minor < 12;
-}
-
-// 1.14 swaps rule-set download_detour for http_client, which older clients
-// reject as an unknown field, so it needs its own config tier.
-function isSingboxModernConfig(version) {
-    if (!version || Number.isNaN(version.major) || Number.isNaN(version.minor)) {
-        return false;
-    }
-    if (version.major !== 1) {
-        return version.major > 1;
-    }
-    return version.minor >= 14;
-}
-
+// Config tiers, oldest first: 1.14 swaps rule-set download_detour for
+// http_client, 1.15 deprecates the TUN stack option. An older client rejects
+// the newer shape, so each boundary gets its own tier.
 function resolveSingboxConfigTier(version) {
-    if (isSingboxLegacyConfig(version)) return '1.11';
-    return isSingboxModernConfig(version) ? '1.14' : '1.12';
+    if (!version || Number.isNaN(version.major) || Number.isNaN(version.minor)) return '1.12';
+    if (version.major !== 1) return version.major > 1 ? '1.15' : '1.11';
+    if (version.minor >= 15) return '1.15';
+    if (version.minor >= 14) return '1.14';
+    return version.minor >= 12 ? '1.12' : '1.11';
 }
 
 function resolveSingboxConfigVersion(requestedVersion, userAgent) {
     const normalizedRequested = typeof requestedVersion === 'string' ? requestedVersion.trim().toLowerCase() : '';
     if (normalizedRequested && normalizedRequested !== 'auto') {
         if (normalizedRequested === 'legacy') return '1.11';
-        if (normalizedRequested === 'latest') return '1.14';
+        if (normalizedRequested === 'latest') return '1.15';
         const parsed = parseSemverLike(normalizedRequested);
         if (parsed) {
             return resolveSingboxConfigTier(parsed);
