@@ -110,6 +110,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // sing-box has no VLESS encryption option and the server rejects clients
         // without it, so emitting the node would only add a dead outbound.
         if (proxy.type === 'vless' && proxy.encryption) return null;
+        // AnyTLS arrived in sing-box 1.12; 1.11 rejects the unknown outbound
+        // type and with it the whole config.
+        if (proxy.type === 'anytls' && this.singboxVersion === '1.11') return null;
 
         // Create a shallow copy to avoid mutating the original
         const sanitized = { ...proxy };
