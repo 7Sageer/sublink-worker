@@ -315,12 +315,17 @@ export function createTlsConfig(params) {
 // them mean "no transport layer", not a transport with an empty type.
 const PLAIN_TCP_TYPES = new Set([undefined, '', 'tcp', 'raw']);
 
+// `splithttp` is the pre-rename spelling of `xhttp`.
+const TRANSPORT_ALIASES = { splithttp: 'xhttp' };
+
 export function createTransportConfig(params) {
 	if (PLAIN_TCP_TYPES.has(params.type)) return undefined;
+	const type = TRANSPORT_ALIASES[params.type] ?? params.type;
 	return {
-		type: params.type,
+		type,
 		path: params.path ?? undefined,
 		...(params.host && { 'headers': { 'host': params.host } }),
+		...(type === 'xhttp' && params.mode && { mode: params.mode }),
 		...(params.type === 'grpc' && {
 			service_name: params.serviceName ?? undefined,
 		})
@@ -332,6 +337,11 @@ export function createTransportConfig(params) {
 const INSECURE_PARAM_KEYS = ['insecure', 'allowInsecure', 'allow_insecure', 'skip-cert-verify'];
 export function parseInsecureParam(params = {}) {
 	return INSECURE_PARAM_KEYS.some(key => parseBool(params[key]) === true);
+}
+
+// uTLS fingerprint from a share link's `fp`; undefined leaves the client default.
+export function createUtlsConfig(fingerprint) {
+	return fingerprint ? { enabled: true, fingerprint } : undefined;
 }
 
 // Parse boolean value from various formats

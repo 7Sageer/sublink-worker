@@ -1,4 +1,4 @@
-import { decodeBase64 } from '../../utils.js';
+import { decodeBase64, createUtlsConfig } from '../../utils.js';
 
 function normalizeArray(value) {
     if (!value) return undefined;
@@ -45,7 +45,8 @@ export function parseVmess(url) {
         tls = {
             enabled: true,
             server_name: vmessConfig.sni,
-            insecure: vmessConfig['skip-cert-verify'] || false
+            insecure: vmessConfig['skip-cert-verify'] || false,
+            ...(vmessConfig.fp ? { utls: createUtlsConfig(vmessConfig.fp) } : {})
         };
     }
 

@@ -1,4 +1,4 @@
-import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, parseBool } from '../../utils.js';
+import { parseServerInfo, parseUrlParams, createTlsConfig, createTransportConfig, createUtlsConfig, parseBool } from '../../utils.js';
 
 export function parseVless(url) {
     const { addressPart, params, name } = parseUrlParams(url);
@@ -6,16 +6,17 @@ export function parseVless(url) {
     const { host, port } = parseServerInfo(serverInfo);
 
     const tls = createTlsConfig(params);
-    if (tls.reality) {
-        tls.utls = {
-            enabled: true,
-            fingerprint: 'chrome'
-        };
-    }
+    // Reality needs a uTLS fingerprint, so fall back to chrome when the link has none.
+    const utls = tls.enabled ? createUtlsConfig(params.fp || (tls.reality ? 'chrome' : undefined)) : undefined;
+    if (utls) tls.utls = utls;
     const transport = createTransportConfig(params);
 
     // `udp` is a Clash-only flag; ClashConfigBuilder reads it, SingboxConfigBuilder strips it.
     const udp = params.udp !== undefined ? parseBool(params.udp) : undefined;
+
+    // VLESS post-quantum encryption (mlkem768x25519plus...); the server rejects
+    // clients that omit it, so it must survive conversion verbatim.
+    const encryption = params.encryption && params.encryption !== 'none' ? params.encryption : undefined;
 
     return {
         type: 'vless',
@@ -27,6 +28,7 @@ export function parseVless(url) {
         tls,
         transport,
         flow: params.flow ?? undefined,
+        ...(encryption ? { encryption } : {}),
         ...(udp !== undefined ? { udp } : {})
     };
 }

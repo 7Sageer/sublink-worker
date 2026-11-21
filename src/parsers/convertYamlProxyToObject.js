@@ -115,6 +115,10 @@ export function convertYamlProxyToObject(p) {
                     const h2 = p['h2-opts'] || {};
                     return { type: 'h2', path: h2.path, host: h2.host };
                 }
+                if (net === 'xhttp') {
+                    const x = p['xhttp-opts'] || {};
+                    return { type: 'xhttp', path: x.path, ...(x.host ? { headers: { host: x.host } } : {}), mode: x.mode };
+                }
                 return undefined;
             })();
             return {
@@ -128,6 +132,7 @@ export function convertYamlProxyToObject(p) {
                 transport,
                 network: transport?.type || 'tcp',
                 flow: p.flow ?? undefined,
+                ...(p.encryption && p.encryption !== 'none' ? { encryption: p.encryption } : {}),
                 udp: typeof p.udp !== 'undefined' ? !!p.udp : undefined,
                 packet_encoding: p['packet-encoding'],
                 alpn: toArray(p.alpn)
