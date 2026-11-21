@@ -1,4 +1,4 @@
-import { parseServerInfo, parseUrlParams, parseArray, parseBool } from '../../utils.js';
+import { parseServerInfo, parseUrlParams, parseArray, parseBool, parseInsecureParam } from '../../utils.js';
 
 export function parseTuic(url) {
     const { addressPart, params, name } = parseUrlParams(url);
@@ -8,7 +8,7 @@ export function parseTuic(url) {
         enabled: true,
         server_name: params.sni,
         alpn: parseArray(params.alpn),
-        insecure: parseBool(params['skip-cert-verify'] ?? params.insecure ?? params.allowInsecure, true)
+        insecure: parseInsecureParam(params)
     };
 
     return {
