@@ -32,6 +32,14 @@ export class ProxyParser {
         if (!parser) {
             return undefined;
         }
-        return parser(trimmed, userAgent);
+        try {
+            return await parser(trimmed, userAgent);
+        } catch (error) {
+            // One malformed link must not fail the whole request or, inside a
+            // subscription, drop every link after it. The link is not logged
+            // because it carries credentials.
+            console.warn(`Skipping malformed ${type} link:`, error?.message || error);
+            return undefined;
+        }
     }
 }
