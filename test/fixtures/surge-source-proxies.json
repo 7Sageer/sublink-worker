@@ -1,0 +1,266 @@
+[
+  {
+    "name": "Sample xtls-reality",
+    "type": "vless",
+    "server": "node.example.com",
+    "port": 8881,
+    "uuid": "00000000-0000-4000-8000-000000000001",
+    "network": "tcp",
+    "udp": true,
+    "tls": true,
+    "flow": "xtls-rprx-vision",
+    "servername": "cert.example.com",
+    "client-fingerprint": "chrome",
+    "reality-opts": {
+      "public-key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "short-id": "0123456789abcdef"
+    },
+    "smux": {
+      "enabled": false,
+      "protocol": "h2mux",
+      "padding": false,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample hysteria2",
+    "type": "hysteria2",
+    "server": "node.example.com",
+    "port": 8882,
+    "ports": "50000-51000",
+    "hop-interval": 30,
+    "up": "200 Mbps",
+    "down": "1000 Mbps",
+    "password": "synthetic-password",
+    "sni": "cert.example.com",
+    "skip-cert-verify": false,
+    "fingerprint": "11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11"
+  },
+  {
+    "name": "Sample tuic",
+    "type": "tuic",
+    "server": "node.example.com",
+    "port": 8883,
+    "uuid": "00000000-0000-4000-8000-000000000001",
+    "password": "synthetic-password",
+    "alpn": [
+      "h3"
+    ],
+    "reduce-rtt": true,
+    "request-timeout": 8000,
+    "udp-relay-mode": "native",
+    "congestion-controller": "bbr",
+    "sni": "cert.example.com",
+    "skip-cert-verify": false,
+    "fingerprint": "11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11"
+  },
+  {
+    "name": "Sample ShadowTLS",
+    "type": "ss",
+    "server": "node.example.com",
+    "port": 8884,
+    "cipher": "2022-blake3-aes-128-gcm",
+    "password": "AAAAAAAAAAAAAAAAAAAAAA==",
+    "plugin": "shadow-tls",
+    "client-fingerprint": "chrome",
+    "plugin-opts": {
+      "host": "shadow.example.com",
+      "password": "synthetic-password",
+      "version": 3
+    },
+    "smux": {
+      "enabled": true,
+      "protocol": "h2mux",
+      "padding": true,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample shadowsocks",
+    "type": "ss",
+    "server": "node.example.com",
+    "port": 8885,
+    "cipher": "2022-blake3-aes-128-gcm",
+    "password": "AAAAAAAAAAAAAAAAAAAAAA==",
+    "smux": {
+      "enabled": true,
+      "protocol": "h2mux",
+      "padding": true,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample trojan",
+    "type": "trojan",
+    "server": "node.example.com",
+    "port": 8886,
+    "password": "synthetic-password",
+    "client-fingerprint": "chrome",
+    "sni": "cert.example.com",
+    "skip-cert-verify": false,
+    "fingerprint": "11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11",
+    "smux": {
+      "enabled": true,
+      "protocol": "h2mux",
+      "padding": true,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample vmess-ws",
+    "type": "vmess",
+    "server": "node.example.com",
+    "port": 80,
+    "uuid": "00000000-0000-4000-8000-000000000001",
+    "udp": true,
+    "tls": false,
+    "alterId": 0,
+    "cipher": "aes-128-gcm",
+    "network": "ws",
+    "ws-opts": {
+      "path": "/synthetic-path",
+      "headers": {
+        "Host": "node.example.com"
+      }
+    },
+    "smux": {
+      "enabled": true,
+      "protocol": "h2mux",
+      "padding": true,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample vless-ws-tls",
+    "type": "vless",
+    "server": "node.example.com",
+    "port": 443,
+    "uuid": "00000000-0000-4000-8000-000000000001",
+    "udp": true,
+    "tls": true,
+    "servername": "cert.example.com",
+    "network": "ws",
+    "skip-cert-verify": false,
+    "ws-opts": {
+      "path": "/synthetic-path",
+      "headers": {
+        "Host": "node.example.com"
+      },
+      "max-early-data": 2560,
+      "early-data-header-name": "Sec-WebSocket-Protocol"
+    },
+    "smux": {
+      "enabled": true,
+      "protocol": "h2mux",
+      "padding": true,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample grpc-reality",
+    "type": "vless",
+    "server": "node.example.com",
+    "port": 8890,
+    "uuid": "00000000-0000-4000-8000-000000000001",
+    "network": "grpc",
+    "tls": true,
+    "udp": true,
+    "flow": null,
+    "client-fingerprint": "chrome",
+    "servername": "cert.example.com",
+    "grpc-opts": {
+      "grpc-service-name": "grpc"
+    },
+    "reality-opts": {
+      "public-key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "short-id": "0123456789abcdef"
+    },
+    "smux": {
+      "enabled": true,
+      "protocol": "h2mux",
+      "padding": true,
+      "max-connections": "8",
+      "min-streams": "16",
+      "statistic": true,
+      "only-tcp": false
+    },
+    "brutal-opts": {
+      "enabled": false,
+      "up": "1000 Mbps",
+      "down": "1000 Mbps"
+    }
+  },
+  {
+    "name": "Sample anytls",
+    "type": "anytls",
+    "server": "node.example.com",
+    "port": 8891,
+    "password": "synthetic-password",
+    "client-fingerprint": "chrome",
+    "udp": true,
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 30,
+    "sni": "cert.example.com",
+    "skip-cert-verify": false,
+    "fingerprint": "11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11"
+  },
+  {
+    "name": "Sample snell-v6",
+    "type": "snell",
+    "server": "node.example.com",
+    "port": 8893,
+    "psk": "synthetic-password",
+    "version": 6,
+    "mode": "default",
+    "udp": true,
+    "reuse": true
+  }
+]

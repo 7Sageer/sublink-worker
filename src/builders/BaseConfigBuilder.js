@@ -27,6 +27,10 @@ export class BaseConfigBuilder {
         return this.formatConfig();
     }
 
+    async parseProxyUri(uri) {
+        return ProxyParser.parse(uri, this.userAgent);
+    }
+
     async parseCustomItems() {
         const input = this.inputString || '';
         const parsedItems = [];
@@ -35,7 +39,7 @@ export class BaseConfigBuilder {
         const { parseSubscriptionContent } = await import('../parsers/subscription/subscriptionContentParser.js');
 
         // Try to parse the entire input as a config format (Sing-Box JSON or Clash YAML)
-        const directResult = parseSubscriptionContent(input);
+        const directResult = parseSubscriptionContent(input, this.convertYamlProxy);
         if (directResult && typeof directResult === 'object' && directResult.type) {
             // It's a parsed config (singboxConfig or yamlConfig)
             if (directResult.config) {
@@ -58,7 +62,7 @@ export class BaseConfigBuilder {
                 const sanitized = input.replace(/\s+/g, '');
                 const decodedWhole = decodeBase64(sanitized);
                 if (typeof decodedWhole === 'string') {
-                    const decodedResult = parseSubscriptionContent(decodedWhole);
+                    const decodedResult = parseSubscriptionContent(decodedWhole, this.convertYamlProxy);
                     if (decodedResult && typeof decodedResult === 'object' && decodedResult.type) {
                         if (decodedResult.config) {
                             this.applyConfigOverrides(decodedResult.config);
@@ -110,7 +114,7 @@ export class BaseConfigBuilder {
                             }
 
                             // Otherwise parse the content as usual
-                            const result = parseSubscriptionContent(content);
+                            const result = parseSubscriptionContent(content, this.convertYamlProxy);
                             if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
                                 if (result.config) {
                                     this.applyConfigOverrides(result.config);
@@ -130,7 +134,7 @@ export class BaseConfigBuilder {
                                     if (item && typeof item === 'object' && item.tag) {
                                         parsedItems.push(item);
                                     } else if (typeof item === 'string') {
-                                        const subResult = await ProxyParser.parse(item, this.userAgent);
+                                        const subResult = await this.parseProxyUri(item);
                                         if (subResult) {
                                             parsedItems.push(subResult);
                                         }
@@ -145,7 +149,7 @@ export class BaseConfigBuilder {
                 }
 
                 // Non-HTTP URLs (protocol URIs like ss://, vmess://, etc.)
-                const result = await ProxyParser.parse(processedUrl, this.userAgent);
+                const result = await this.parseProxyUri(processedUrl);
                 // Handle yamlConfig, singboxConfig, and surgeConfig types (they have the same structure)
                 if (result && typeof result === 'object' && (result.type === 'yamlConfig' || result.type === 'singboxConfig' || result.type === 'surgeConfig')) {
                     if (result.config) {
@@ -165,7 +169,7 @@ export class BaseConfigBuilder {
                         if (item && typeof item === 'object' && item.tag) {
                             parsedItems.push(item);
                         } else if (typeof item === 'string') {
-                            const subResult = await ProxyParser.parse(item, this.userAgent);
+                            const subResult = await this.parseProxyUri(item);
                             if (subResult) {
                                 parsedItems.push(subResult);
                             }

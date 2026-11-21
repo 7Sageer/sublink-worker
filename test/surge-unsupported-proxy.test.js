@@ -5,15 +5,16 @@ import { SurgeConfigBuilder } from '../src/builders/SurgeConfigBuilder.js';
  * Test for GitHub Issue #299
  * https://github.com/7Sageer/sublink-worker/issues/299
  *
- * Problem: When subscription contains unsupported proxy types (like VLESS),
- * the comment string "# USA-VLESS - Unsupported proxy type: vless" is incorrectly
- * added to Proxy Groups, breaking the config syntax.
+ * Unsupported-policy comments must stay out of proxy groups (Issue #299).
+ * VLESS is now supported, so a synthetic protocol keeps this regression relevant.
  */
 describe('Surge unsupported proxy type handling (Issue #299)', () => {
-    // Test input from issue #299 - contains VLESS which Surge doesn't support
-    const mixedProtocolInput = `hysteria2://580ef251-af2b-49f4-aea4-56a8a8f7a391@demo.de:8443?peer=demo.de&insecure=0&sni=demo.de&alpn=h3#USA-HY2
-vless://580ef251-af2b-49f4-aea4-56a8a8f7a391@1.2.3.4:8443?encryption=none&security=reality&type=tcp&sni=m.media-amazon.com&fp=chrome&pbk=testpublickey&sid=testsid&flow=xtls-rprx-vision#USA-VLESS
-hysteria2://11111251-af2b-49f4-aea4-56a8a8f7a391@demo1.de:8443?peer=demo1.de&insecure=0&sni=demo1.de&alpn=h3#USA-HY22`;
+    const unsupported = { type: 'unsupported-test-protocol', tag: 'USA-Unsupported', server: 'node.example.com', server_port: 443 };
+    const mixedProtocolInput = JSON.stringify({ outbounds: [
+        { type: 'hysteria2', tag: 'USA-HY2', server: 'one.example.com', server_port: 8443, password: 'synthetic' },
+        unsupported,
+        { type: 'hysteria2', tag: 'USA-HY22', server: 'two.example.com', server_port: 8443, password: 'synthetic' }
+    ] });
 
     it('should not include comment strings in proxy groups', async () => {
         const builder = new SurgeConfigBuilder(
@@ -35,7 +36,7 @@ hysteria2://11111251-af2b-49f4-aea4-56a8a8f7a391@demo1.de:8443?peer=demo1.de&ins
         const proxyGroupSection = proxyGroupMatch[1];
 
         // The comment string should NOT appear in proxy groups
-        expect(proxyGroupSection).not.toContain('# USA-VLESS');
+        expect(proxyGroupSection).not.toContain('USA-Unsupported');
         expect(proxyGroupSection).not.toContain('Unsupported proxy type');
     });
 
@@ -60,8 +61,7 @@ hysteria2://11111251-af2b-49f4-aea4-56a8a8f7a391@demo1.de:8443?peer=demo1.de&ins
         expect(proxyGroupSection).toContain('USA-HY2');
         expect(proxyGroupSection).toContain('USA-HY22');
 
-        // Should NOT contain VLESS proxy name in groups (it's unsupported)
-        // The issue is that the comment string was being added, not the proxy name
+        expect(proxyGroupSection).not.toContain('USA-Unsupported');
         expect(proxyGroupSection).not.toMatch(/,\s*#[^,\n]*/);
     });
 
@@ -84,9 +84,7 @@ hysteria2://11111251-af2b-49f4-aea4-56a8a8f7a391@demo1.de:8443?peer=demo1.de&ins
 
         const proxySection = proxyMatch[1];
 
-        // Comment in [Proxy] section is acceptable (informational)
-        // This is optional - we may or may not want to keep the comment
-        // The key requirement is that it should NOT appear in [Proxy Group]
+        expect(proxySection).toContain('# USA-Unsupported - Unsupported proxy type: unsupported-test-protocol');
 
         // Should contain supported proxies
         expect(proxySection).toContain('USA-HY2');
@@ -124,10 +122,10 @@ hysteria2://11111251-af2b-49f4-aea4-56a8a8f7a391@demo1.de:8443?peer=demo1.de&ins
     });
 
     it('should handle input with only unsupported protocols gracefully', async () => {
-        const vlessOnlyInput = `vless://580ef251-af2b-49f4-aea4-56a8a8f7a391@1.2.3.4:8443?encryption=none&security=reality&type=tcp&sni=example.com&fp=chrome&pbk=testkey&sid=testsid#VLESS-Only`;
+        const unsupportedOnlyInput = JSON.stringify({ outbounds: [unsupported] });
 
         const builder = new SurgeConfigBuilder(
-            vlessOnlyInput,
+            unsupportedOnlyInput,
             'minimal',
             [],
             null,
@@ -147,7 +145,7 @@ hysteria2://11111251-af2b-49f4-aea4-56a8a8f7a391@demo1.de:8443?peer=demo1.de&ins
         // Proxy groups should not contain comment strings
         const proxyGroupMatch = result.match(/\[Proxy Group\]([\s\S]*?)(?=\n\[|$)/);
         if (proxyGroupMatch) {
-            expect(proxyGroupMatch[1]).not.toContain('# VLESS-Only');
+            expect(proxyGroupMatch[1]).not.toContain('USA-Unsupported');
         }
     });
 });
