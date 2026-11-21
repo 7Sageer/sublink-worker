@@ -310,9 +310,11 @@ export function createApp(bindings = {}) {
         return c.text(encodeBase64(finalString), 200, responseHeaders);
     });
 
-    app.get('/shorten-v2', async (c) => {
+    // POST keeps long subscription URLs out of the request line, which
+    // Cloudflare rejects with 414 past its URI limit; GET stays for API callers.
+    const shortenHandler = (readParams) => async (c) => {
         try {
-            const url = c.req.query('url');
+            const { url, shortCode } = await readParams(c);
             if (!url) {
                 return c.text('Missing URL parameter', 400);
             }
@@ -325,12 +327,15 @@ export function createApp(bindings = {}) {
             const queryString = parsedUrl.search;
 
             const shortLinks = requireShortLinkService(services.shortLinks);
-            const code = await shortLinks.createShortLink(queryString, c.req.query('shortCode'));
+            const code = await shortLinks.createShortLink(queryString, shortCode);
             return c.text(code);
         } catch (error) {
             return handleError(c, error, runtime.logger);
         }
-    });
+    };
+
+    app.get('/shorten-v2', shortenHandler(async (c) => ({ url: c.req.query('url'), shortCode: c.req.query('shortCode') })));
+    app.post('/shorten-v2', shortenHandler(async (c) => (await c.req.json().catch(() => null)) ?? {}));
 
     const redirectHandler = (prefix) => async (c) => {
         try {

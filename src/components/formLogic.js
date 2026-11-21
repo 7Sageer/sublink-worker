@@ -439,15 +439,12 @@ export const formLogicFn = (t) => {
                     // Shorten each link type
                     for (const [type, url] of Object.entries(this.generatedLinks)) {
                         try {
-                            let apiUrl = `${origin}/shorten-v2?url=${encodeURIComponent(url)}`;
-
-                            // For the first request, either use custom code or let backend generate
-                            // For subsequent requests, use the code from first request
-                            if (shortCode) {
-                                apiUrl += `&shortCode=${encodeURIComponent(shortCode)}`;
-                            }
-
-                            const response = await fetch(apiUrl);
+                            // First request: custom code or backend-generated; later ones reuse it
+                            const response = await fetch(`${origin}/shorten-v2`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(shortCode ? { url, shortCode } : { url })
+                            });
                             if (!response.ok) {
                                 throw new Error(`Failed to shorten ${type} link`);
                             }

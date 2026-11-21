@@ -127,4 +127,29 @@ proxy-groups:
         expect(text).toBeTruthy();
         expect(kvMock.put).toHaveBeenCalled();
     });
+
+    // Long subscription URLs overflow the request line (414), so the UI posts them.
+    it('POST /shorten-v2 accepts url and shortCode in a JSON body', async () => {
+        const kvMock = {
+            put: vi.fn(async () => {}),
+            get: vi.fn(async () => null),
+            delete: vi.fn(async () => {})
+        };
+        const app = createTestApp({ kv: kvMock });
+        const longQuery = `?config=${'x'.repeat(20000)}`;
+        const res = await app.request('http://localhost/shorten-v2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: `http://example.com/singbox${longQuery}`, shortCode: 'mycode' })
+        });
+        expect(res.status).toBe(200);
+        expect(await res.text()).toBe('mycode');
+        expect(kvMock.put.mock.calls[0][1]).toBe(longQuery);
+    });
+
+    it('POST /shorten-v2 rejects a missing or malformed body', async () => {
+        const app = createTestApp({ kv: { put: vi.fn(), get: vi.fn(async () => null), delete: vi.fn() } });
+        const res = await app.request('http://localhost/shorten-v2', { method: 'POST', body: 'not json' });
+        expect(res.status).toBe(400);
+    });
 });
