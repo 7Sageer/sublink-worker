@@ -19,6 +19,9 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    # Builds take ~3 minutes; a hung QEMU runner otherwise holds the job for
+    # the 6-hour default before the tag image is reported missing.
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write
