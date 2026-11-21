@@ -12,7 +12,7 @@ export function parseVless(url) {
             fingerprint: 'chrome'
         };
     }
-    const transport = params.type !== 'tcp' ? createTransportConfig(params) : undefined;
+    const transport = createTransportConfig(params);
 
     // `udp` is a Clash-only flag; ClashConfigBuilder reads it, SingboxConfigBuilder strips it.
     const udp = params.udp !== undefined ? parseBool(params.udp) : undefined;

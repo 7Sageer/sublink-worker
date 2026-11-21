@@ -311,7 +311,12 @@ export function createTlsConfig(params) {
 	return tls;
 }
 
+// Xray renamed `tcp` to `raw`, and links often omit `type` entirely; all of
+// them mean "no transport layer", not a transport with an empty type.
+const PLAIN_TCP_TYPES = new Set([undefined, '', 'tcp', 'raw']);
+
 export function createTransportConfig(params) {
+	if (PLAIN_TCP_TYPES.has(params.type)) return undefined;
 	return {
 		type: params.type,
 		path: params.path ?? undefined,
