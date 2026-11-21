@@ -81,7 +81,7 @@ describe('VLESS Reality ML-KEM option', () => {
     it.each(CASES)('keeps sing-box output unchanged for %s', async (value) => {
         const builder = new SingboxConfigBuilder(realityUri(value), 'minimal', [], null, 'en-US', 'sing-box/1.12');
         const config = await builder.build();
-        const outbound = config.outbounds.find(item => item.type === 'vless');
+        const { domain_resolver: _nodeResolver, ...outbound } = config.outbounds.find(item => item.type === 'vless');
         const legacyProxy = await ProxyParser.parse(realityUri());
 
         expect(outbound).toEqual(legacyProxy);

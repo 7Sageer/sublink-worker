@@ -1,4 +1,41 @@
-import { parseBool } from '../utils.js';
+import { parseBool, splitEarlyData, EARLY_DATA_HEADER } from '../utils.js';
+
+// Clash opts carry early data either as a field or, from Xray exports, inside
+// the ws path query; both mean the same transport and neither keeps the query.
+function buildClashTransport(p) {
+    const net = p.network || p['network-type'];
+    if (net === 'ws') {
+        const w = p['ws-opts'] || {};
+        const path = splitEarlyData(w.path);
+        const earlyData = Number(w['max-early-data'] ?? path.max_early_data);
+        return {
+            type: 'ws',
+            path: path.path,
+            headers: w.headers,
+            ...(Number.isInteger(earlyData) && earlyData > 0 && {
+                max_early_data: earlyData,
+                early_data_header_name: w['early-data-header-name'] || EARLY_DATA_HEADER
+            })
+        };
+    }
+    if (net === 'grpc') {
+        const g = p['grpc-opts'] || {};
+        return { type: 'grpc', service_name: g['grpc-service-name'] };
+    }
+    if (net === 'http') {
+        const h = p['http-opts'] || {};
+        return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
+    }
+    if (net === 'h2') {
+        const h2 = p['h2-opts'] || {};
+        return { type: 'h2', path: h2.path, host: h2.host };
+    }
+    if (net === 'xhttp') {
+        const x = p['xhttp-opts'] || {};
+        return { type: 'xhttp', path: x.path, ...(x.host ? { headers: { host: x.host } } : {}), mode: x.mode };
+    }
+    return undefined;
+}
 
 export function convertYamlProxyToObject(p) {
     if (!p || typeof p !== 'object' || !p.type) return null;
@@ -33,26 +70,7 @@ export function convertYamlProxyToObject(p) {
                     insecure: !!p['skip-cert-verify']
                 }
                 : { enabled: false };
-            const transport = (() => {
-                const net = p.network || p['network-type'];
-                if (net === 'ws') {
-                    const w = p['ws-opts'] || {};
-                    return { type: 'ws', path: w.path, headers: w.headers };
-                }
-                if (net === 'grpc') {
-                    const g = p['grpc-opts'] || {};
-                    return { type: 'grpc', service_name: g['grpc-service-name'] };
-                }
-                if (net === 'http') {
-                    const h = p['http-opts'] || {};
-                    return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
-                }
-                if (net === 'h2') {
-                    const h2 = p['h2-opts'] || {};
-                    return { type: 'h2', path: h2.path, host: h2.host };
-                }
-                return undefined;
-            })();
+            const transport = buildClashTransport(p);
             return {
                 tag: name,
                 type: 'vmess',
@@ -97,30 +115,7 @@ export function convertYamlProxyToObject(p) {
                     fingerprint: p['client-fingerprint']
                 };
             }
-            const transport = (() => {
-                const net = p.network;
-                if (net === 'ws') {
-                    const w = p['ws-opts'] || {};
-                    return { type: 'ws', path: w.path, headers: w.headers };
-                }
-                if (net === 'grpc') {
-                    const g = p['grpc-opts'] || {};
-                    return { type: 'grpc', service_name: g['grpc-service-name'] };
-                }
-                if (net === 'http') {
-                    const h = p['http-opts'] || {};
-                    return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
-                }
-                if (net === 'h2') {
-                    const h2 = p['h2-opts'] || {};
-                    return { type: 'h2', path: h2.path, host: h2.host };
-                }
-                if (net === 'xhttp') {
-                    const x = p['xhttp-opts'] || {};
-                    return { type: 'xhttp', path: x.path, ...(x.host ? { headers: { host: x.host } } : {}), mode: x.mode };
-                }
-                return undefined;
-            })();
+            const transport = buildClashTransport(p);
             return {
                 tag: name,
                 type: 'vless',
@@ -165,26 +160,7 @@ export function convertYamlProxyToObject(p) {
                     fingerprint: p['client-fingerprint']
                 };
             }
-            const transport = (() => {
-                const net = p.network;
-                if (net === 'ws') {
-                    const w = p['ws-opts'] || {};
-                    return { type: 'ws', path: w.path, headers: w.headers };
-                }
-                if (net === 'grpc') {
-                    const g = p['grpc-opts'] || {};
-                    return { type: 'grpc', service_name: g['grpc-service-name'] };
-                }
-                if (net === 'http') {
-                    const h = p['http-opts'] || {};
-                    return { type: 'http', method: h.method || 'GET', path: h.path, headers: h.headers };
-                }
-                if (net === 'h2') {
-                    const h2 = p['h2-opts'] || {};
-                    return { type: 'h2', path: h2.path, host: h2.host };
-                }
-                return undefined;
-            })();
+            const transport = buildClashTransport(p);
             return {
                 type: 'trojan',
                 tag: name,

@@ -5,6 +5,15 @@ import { deepCopy, groupProxiesByCountry } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
+import { translations } from '../i18n/index.js';
+
+// Every locale's name for the node selector, so a template written in one
+// language keeps pointing at the group after translation.
+const NODE_SELECT_NAMES = new Set(
+    Object.values(translations)
+        .map(lang => lang?.outboundNames?.['Node Select'])
+        .filter(Boolean)
+);
 
 const RULE_SET_HTTP_CLIENT_TAG = 'rule-set-download';
 const ANYTLS_OPTION_KEYS = {
@@ -74,6 +83,27 @@ function isDirectDnsServer(server, outbounds = []) {
     return target?.type === 'direct' && !target.detour;
 }
 
+const IPV4_LITERAL = /^\d{1,3}(?:\.\d{1,3}){3}$/;
+
+// Every IPv6 literal carries a colon, so this only says "not a name" cheaply.
+const isDomainAddress = (server) =>
+    typeof server === 'string' && server.length > 0 && !IPV4_LITERAL.test(server) && !server.includes(':');
+
+// Tags people give the DNS server meant for node bootstrap, remote first.
+const NODE_RESOLVER_TAGS = [/proxy|remote/i, /resolver|local|direct|bootstrap/i];
+
+// A node dials its own server before any proxy exists, so the resolver must be
+// reachable without it. A DNS server whose own address is a name still works,
+// but only when it names a direct resolver that is itself reachable.
+function hasOwnBootstrap(server, servers, outbounds) {
+    if (!isDomainAddress(server.server)) return true;
+    const ownTag = typeof server.domain_resolver === 'string'
+        ? server.domain_resolver
+        : server.domain_resolver?.server;
+    const own = servers.find(candidate => candidate?.tag === ownTag);
+    return Boolean(own && own !== server && !isDomainAddress(own.server) && isDirectDnsServer(own, outbounds));
+}
+
 export class SingboxConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12', includeAutoSelect = true) {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
@@ -88,9 +118,16 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.externalUiDownloadUrl = externalUiDownloadUrl;
         this.singboxVersion = singboxVersion;  // '1.11', '1.12' or '1.14'
 
-        if (this.config?.dns?.servers?.length > 0) {
-            this.config.dns.servers[0].detour = this.t('outboundNames.Node Select');
-        }
+        // The template ships the zh-CN selector name and the group is renamed per
+        // language, so re-translate a detour that already pointed at the
+        // selector. Never invent one: a resolver a template left direct has to
+        // stay reachable, or node domains cannot be bootstrapped at all.
+        const nodeSelectTag = this.t('outboundNames.Node Select');
+        this.config?.dns?.servers?.forEach(server => {
+            if (server?.detour && NODE_SELECT_NAMES.has(server.detour)) {
+                server.detour = nodeSelectTag;
+            }
+        });
     }
 
     getProxies() {
@@ -572,6 +609,47 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         }
     }
 
+    /**
+     * An explicit route resolver wins as long as it is not behind a proxy. Else
+     * pick a direct server, preferring IP over name addresses and the tags this
+     * repo and common templates use for the remote/local resolver.
+     */
+    resolveNodeResolver() {
+        const servers = this.config.dns?.servers || [];
+        const configured = this.config.route?.default_domain_resolver;
+        const configuredTag = typeof configured === 'string' ? configured : configured?.server;
+        const configuredServer = servers.find(server => server?.tag === configuredTag);
+        if (configuredServer && isDirectDnsServer(configuredServer, this.config.outbounds)) {
+            return configuredTag;
+        }
+
+        const direct = servers.filter(server => isDirectDnsServer(server, this.config.outbounds));
+        // A resolver that needs a resolver of its own is the weaker choice.
+        const reachable = [
+            ...direct.filter(server => !isDomainAddress(server.server)),
+            ...direct.filter(server => isDomainAddress(server.server)
+                && hasOwnBootstrap(server, servers, this.config.outbounds))
+        ];
+        for (const pattern of NODE_RESOLVER_TAGS) {
+            const match = reachable.find(server => pattern.test(server.tag ?? ''));
+            if (match) return match.tag;
+        }
+        return undefined;
+    }
+
+    /**
+     * sing-box >= 1.12 resolves a node's server name through `domain_resolver`
+     * or the route default, and >= 1.14 no longer falls back implicitly. 1.11
+     * has no dial fields at all, so it keeps relying on its DNS rule.
+     */
+    applyNodeDomainResolvers(resolverTag) {
+        if (this.singboxVersion === '1.11' || !resolverTag) return;
+        (this.config.outbounds || []).forEach(outbound => {
+            if (!isDomainAddress(outbound?.server) || outbound.domain_resolver) return;
+            outbound.domain_resolver = resolverTag;
+        });
+    }
+
     formatConfig() {
         const rules = generateRules(this.selectedRules, this.customRules);
         const { site_rule_sets, ip_rule_sets } = generateRuleSets(this.selectedRules, this.customRules);
@@ -581,13 +659,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         this.config.route.rules ??= [];
 
         // Subscription route overrides must not make node bootstrap depend on proxy DNS.
-        if (this.singboxVersion !== '1.11' && !this.config.route.default_domain_resolver) {
-            const bootstrapResolver = (this.config.dns?.servers || []).find(server =>
-                server?.tag === 'dns_resolver' && isDirectDnsServer(server, this.config.outbounds)
-            );
-            if (bootstrapResolver) {
-                this.config.route.default_domain_resolver = bootstrapResolver.tag;
-            }
+        const nodeResolver = this.resolveNodeResolver();
+        if (this.singboxVersion !== '1.11' && !this.config.route.default_domain_resolver && nodeResolver) {
+            this.config.route.default_domain_resolver = nodeResolver;
         }
 
         this.config.route.rule_set = [...site_rule_sets, ...ip_rule_sets];
@@ -601,6 +675,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
         // Validate outbounds: fill empty urltest groups with all proxies
         this.validateOutbounds();
+        this.applyNodeDomainResolvers(nodeResolver);
         this.sanitizeLegacySpecialOutbounds();
 
         const attachProtocolIfNeeded = (entry, rule) => {
