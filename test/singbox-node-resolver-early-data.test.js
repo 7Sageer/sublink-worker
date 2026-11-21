@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SingboxConfigBuilder } from '../src/builders/SingboxConfigBuilder.js';
 import { ClashConfigBuilder } from '../src/builders/ClashConfigBuilder.js';
+import { SurgeConfigBuilder } from '../src/builders/SurgeConfigBuilder.js';
 import { SING_BOX_CONFIG } from '../src/config/singboxConfig.js';
 import yaml from 'js-yaml';
 
@@ -72,6 +73,16 @@ describe('Xray WebSocket early data (?ed=)', () => {
 
         expect(config.proxies[0]['ws-opts']['max-early-data']).toBe(2048);
         expect(config.proxies[0]['ws-opts'].path).toBe('/ws');
+    });
+
+    it('leaves Surge ws-path bare, since Surge has no early-data option', async () => {
+        const link = `trojan://pw@node.example.com:443?sni=node.example.com&type=ws&host=node.example.com&path=${encodeURIComponent('/ws?ed=2048')}#T`;
+        const builder = new SurgeConfigBuilder(link, [], [], null, 'en-US', 'Surge/5.0');
+        const line = (await builder.build()).split('\n').find(entry => entry.startsWith('T = '));
+
+        expect(line).toContain('ws-path=/ws');
+        expect(line).not.toMatch(/ed=\d/);
+        expect(line).not.toContain('early');
     });
 
     it('reads mihomo ws-opts early data back into the sing-box transport', async () => {
