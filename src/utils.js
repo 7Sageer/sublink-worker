@@ -318,12 +318,39 @@ const PLAIN_TCP_TYPES = new Set([undefined, '', 'tcp', 'raw']);
 // `splithttp` is the pre-rename spelling of `xhttp`.
 const TRANSPORT_ALIASES = { splithttp: 'xhttp' };
 
+// V2Ray and sing-box both default early data to this header, so every spelling
+// of the option has to agree on it.
+export const EARLY_DATA_HEADER = 'Sec-WebSocket-Protocol';
+
+// V2Ray spells WebSocket early data as a query on the path ("/ws?ed=2048");
+// sing-box and Clash both take it as transport fields and drop the query.
+export function splitEarlyData(path) {
+	if (typeof path !== 'string') return { path };
+	const queryStart = path.indexOf('?');
+	if (queryStart < 0) return { path };
+	const params = new URLSearchParams(path.slice(queryStart + 1));
+	const earlyData = Number(params.get('ed'));
+	if (!Number.isInteger(earlyData) || earlyData <= 0) return { path };
+	params.delete('ed');
+	const rest = params.toString();
+	return {
+		path: rest ? `${path.slice(0, queryStart)}?${rest}` : path.slice(0, queryStart),
+		max_early_data: earlyData,
+		early_data_header_name: EARLY_DATA_HEADER
+	};
+}
+
 export function createTransportConfig(params) {
 	if (PLAIN_TCP_TYPES.has(params.type)) return undefined;
 	const type = TRANSPORT_ALIASES[params.type] ?? params.type;
+	const ws = type === 'ws' ? splitEarlyData(params.path) : { path: params.path };
 	return {
 		type,
-		path: params.path ?? undefined,
+		path: ws.path ?? undefined,
+		...(ws.max_early_data && {
+			max_early_data: ws.max_early_data,
+			early_data_header_name: ws.early_data_header_name
+		}),
 		...(params.host && { 'headers': { 'host': params.host } }),
 		...(type === 'xhttp' && params.mode && { mode: params.mode }),
 		...(params.type === 'grpc' && {
