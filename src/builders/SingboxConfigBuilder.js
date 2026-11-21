@@ -13,6 +13,31 @@ const ANYTLS_OPTION_KEYS = {
     'min-idle-session': 'min_idle_session'
 };
 
+// sing-box V2Ray transports and the fields each accepts; sing-box rejects
+// unknown types and fields, so one stray value would fail the whole config.
+const SINGBOX_TRANSPORT_FIELDS = {
+    http: ['host', 'path', 'method', 'headers', 'idle_timeout', 'ping_timeout'],
+    ws: ['path', 'headers', 'max_early_data', 'early_data_header_name'],
+    quic: [],
+    grpc: ['service_name', 'idle_timeout', 'ping_timeout', 'permit_without_stream'],
+    httpupgrade: ['host', 'path', 'headers']
+};
+const SINGBOX_TRANSPORT_ALIASES = { h2: 'http' };
+
+// Returns null when sing-box has no equivalent (xhttp, kcp, ...): dropping
+// that node keeps the rest of the config loadable.
+function toSingboxTransport(transport) {
+    if (!transport?.type) return undefined;
+    const type = SINGBOX_TRANSPORT_ALIASES[transport.type] ?? transport.type;
+    const fields = SINGBOX_TRANSPORT_FIELDS[type];
+    if (!fields) return null;
+    const result = { type };
+    fields.forEach((key) => {
+        if (transport[key] !== undefined) result[key] = transport[key];
+    });
+    return result;
+}
+
 function isDirectDnsServer(server, outbounds = []) {
     if (!server?.tag || server.type === 'fakeip') return false;
     if (!server.detour) return true;
@@ -77,6 +102,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // every group that selects this node — including DNS hijack and fakeip.
         delete sanitized.udp;
         delete sanitized.network;
+
+        const transport = toSingboxTransport(sanitized.transport);
+        if (transport === null) return null;
+        if (transport) sanitized.transport = transport;
+        else delete sanitized.transport;
 
         // This Mihomo-only Reality option is not part of the sing-box TLS schema.
         if (sanitized.tls?.reality?.support_x25519mlkem768 !== undefined) {
