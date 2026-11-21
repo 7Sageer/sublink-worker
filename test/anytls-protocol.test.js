@@ -167,3 +167,18 @@ describe('AnyTLS protocol support', () => {
         });
     });
 });
+
+// sing-box 1.11 has no AnyTLS outbound and would reject the whole config.
+it('drops AnyTLS nodes only for the sing-box 1.11 tier', async () => {
+    const input = [
+        'anytls://pw@1.2.3.4:443?sni=a.com#ANYTLS',
+        `ss://${btoa('aes-128-gcm:pw')}@1.2.3.4:8388#SS`
+    ].join('\n');
+    const tagsFor = async (version) => {
+        const builder = new SingboxConfigBuilder(input, [], [], null, 'en-US', 'test', false, false, undefined, undefined, version);
+        const config = await builder.build();
+        return config.outbounds.filter(o => o.server).map(o => o.tag);
+    };
+    expect(await tagsFor('1.11')).toEqual(['SS']);
+    expect(await tagsFor('1.12')).toEqual(['ANYTLS', 'SS']);
+});
