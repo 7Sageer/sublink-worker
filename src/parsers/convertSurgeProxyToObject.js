@@ -5,7 +5,7 @@
  * - SS: ProxyName = ss, server, port, encrypt-method=cipher, password=xxx
  * - VMess: ProxyName = vmess, server, port, username=uuid, ...
  * - Trojan: ProxyName = trojan, server, port, password=xxx, ...
- * - TUIC: ProxyName = tuic, server, port, uuid=xxx, password=xxx, ...
+ * - TUIC v5: ProxyName = tuic-v5, server, port, uuid=xxx, password=xxx, ...
  * - Hysteria2: ProxyName = hysteria2, server, port, password=xxx, ...
  */
 
@@ -148,6 +148,7 @@ export function convertSurgeProxyToObject(line) {
             };
 
         case 'tuic':
+        case 'tuic-v5':
             return {
                 tag,
                 type: 'tuic',

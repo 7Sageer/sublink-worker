@@ -124,12 +124,12 @@ function parseInterval(interval) {
  * @param {string} content - The content to parse
  * @returns {object|null} - Parsed result or null if not Clash format
  */
-export function parseClashYaml(content) {
+export function parseClashYaml(content, convertProxy = convertYamlProxyToObject) {
     try {
         const parsed = yaml.load(content);
         if (parsed && typeof parsed === 'object' && Array.isArray(parsed.proxies)) {
             const proxies = parsed.proxies
-                .map(p => convertYamlProxyToObject(p))
+                .map(p => convertProxy(p))
                 .filter(p => p != null);
             if (proxies.length > 0) {
                 const configOverrides = deepCopy(parsed);
@@ -259,7 +259,7 @@ function parseSurgeProxyGroupLine(line) {
  * @param {string} content - The decoded subscription content
  * @returns {object|string[]} - Parsed config object or array of lines
  */
-export function parseSubscriptionContent(content) {
+export function parseSubscriptionContent(content, convertYamlProxy) {
     if (!content || typeof content !== 'string') {
         return [];
     }
@@ -276,7 +276,7 @@ export function parseSubscriptionContent(content) {
     }
 
     // Try Clash YAML
-    const clashResult = parseClashYaml(trimmed);
+    const clashResult = parseClashYaml(trimmed, convertYamlProxy);
     if (clashResult) {
         return clashResult;
     }
