@@ -705,7 +705,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             const defaultController = '0.0.0.0:9090';
             const defaultUiPath = './ui';
             const defaultUiName = 'zashboard';
-            const defaultUiUrl = 'https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip';
+            const defaultUiUrl = 'https://gh-proxy.org/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip';
             const defaultSecret = '';
 
             const controller = this.externalController || this.config['external-controller'] || defaultController;
