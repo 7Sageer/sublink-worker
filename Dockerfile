@@ -1,4 +1,7 @@
-FROM node:20-alpine AS builder
+# The build output is a single platform-independent JS bundle, so build it on
+# the runner's native platform: `npm install` under QEMU for arm64 sometimes
+# hangs until the job times out.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
@@ -9,7 +12,7 @@ COPY public ./public
 
 RUN npm run build:node
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
