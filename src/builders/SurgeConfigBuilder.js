@@ -4,6 +4,16 @@ import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, g
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
 
+// Only ws and grpc survive as Surge parameters. Surge has no early-data option
+// and always waits for the 101 before sending, so ws-path stays a bare path
+// (Xray's `?ed=` is dropped while parsing).
+function transportParams(transport) {
+    if (transport?.type === 'grpc') return `, grpc-service-name=${transport.service_name}`;
+    if (transport?.type !== 'ws') return '';
+    const headers = transport.headers?.host ? `, ws-headers=Host:${transport.headers.host}` : '';
+    return `, ws=true, ws-path=${transport.path}${headers}`;
+}
+
 export class SurgeConfigBuilder extends BaseConfigBuilder {
     constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry, includeAutoSelect = true) {
         const resolvedBaseConfig = baseConfig ?? SURGE_CONFIG;
@@ -69,14 +79,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                         surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
                     }
                 }
-                if (proxy.transport?.type === 'ws') {
-                    surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
-                    if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
-                    }
-                } else if (proxy.transport?.type === 'grpc') {
-                    surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
-                }
+                surgeProxy += transportParams(proxy.transport);
                 break;
             case 'trojan':
                 surgeProxy = `${proxy.tag} = trojan, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
@@ -89,14 +92,7 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 if (proxy.tls?.alpn) {
                     surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
                 }
-                if (proxy.transport?.type === 'ws') {
-                    surgeProxy += `, ws=true, ws-path=${proxy.transport.path}`;
-                    if (proxy.transport.headers) {
-                        surgeProxy += `, ws-headers=Host:${proxy.transport.headers.host}`;
-                    }
-                } else if (proxy.transport?.type === 'grpc') {
-                    surgeProxy += `, grpc-service-name=${proxy.transport.service_name}`;
-                }
+                surgeProxy += transportParams(proxy.transport);
                 break;
             case 'hysteria2':
                 surgeProxy = `${proxy.tag} = hysteria2, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;

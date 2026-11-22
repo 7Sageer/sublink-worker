@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS, DIRECT_DEFAULT_RULES } from '../config/index.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { deepCopy, groupProxiesByCountry, buildCountryNameFilter } from '../utils.js';
+import { deepCopy, groupProxiesByCountry, buildCountryNameFilter, EARLY_DATA_HEADER } from '../utils.js';
 import { addProxyWithDedup } from './helpers/proxyHelpers.js';
 import { buildSelectorMembers, buildNodeSelectMembers, buildCustomRuleMembers, uniqueNames } from './helpers/groupBuilder.js';
 import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigUtils.js';
@@ -45,6 +45,21 @@ function getClashUdpValue(proxy, defaultEnabled = true) {
         return proxy.udp;
     }
     return defaultEnabled;
+}
+
+// mihomo rejects the Xray `?ed=` spelling, so early data leaves the path and
+// becomes its own opts the way every Clash client expects it.
+function buildWsOpts(transport) {
+    if (transport?.type !== 'ws') return undefined;
+    return {
+        path: transport.path,
+        headers: transport.headers,
+        ...(transport.max_early_data && {
+            'max-early-data': transport.max_early_data,
+            // Subscriptions can carry the size without the header name.
+            'early-data-header-name': transport.early_data_header_name || EARLY_DATA_HEADER
+        })
+    };
 }
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
@@ -156,12 +171,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     servername: proxy.tls?.server_name || '',
                     'skip-cert-verify': !!proxy.tls?.insecure,
                     network: proxy.transport?.type || proxy.network || 'tcp',
-                    'ws-opts': proxy.transport?.type === 'ws'
-                        ? {
-                            path: proxy.transport.path,
-                            headers: proxy.transport.headers
-                        }
-                        : undefined,
+                    'ws-opts': buildWsOpts(proxy.transport),
                     'http-opts': proxy.transport?.type === 'http'
                         ? (() => {
                             const opts = {
@@ -200,10 +210,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'client-fingerprint': proxy.tls?.utls?.fingerprint,
                     servername: proxy.tls?.server_name || '',
                     network: proxy.transport?.type || 'tcp',
-                    'ws-opts': proxy.transport?.type === 'ws' ? {
-                        path: proxy.transport.path,
-                        headers: proxy.transport.headers
-                    } : undefined,
+                    'ws-opts': buildWsOpts(proxy.transport),
                     'xhttp-opts': proxy.transport?.type === 'xhttp' ? {
                         path: proxy.transport.path,
                         host: proxy.transport.headers?.host,
@@ -256,10 +263,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'client-fingerprint': proxy.tls?.utls?.fingerprint,
                     sni: proxy.tls?.server_name || '',
                     network: proxy.transport?.type || 'tcp',
-                    'ws-opts': proxy.transport?.type === 'ws' ? {
-                        path: proxy.transport.path,
-                        headers: proxy.transport.headers
-                    } : undefined,
+                    'ws-opts': buildWsOpts(proxy.transport),
                     'reality-opts': proxy.tls?.reality?.enabled ? {
                         'public-key': proxy.tls.reality.public_key,
                         'short-id': proxy.tls.reality.short_id,

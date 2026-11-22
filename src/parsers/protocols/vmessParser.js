@@ -1,4 +1,4 @@
-import { decodeBase64, createUtlsConfig } from '../../utils.js';
+import { decodeBase64, createUtlsConfig, splitEarlyData } from '../../utils.js';
 
 function normalizeArray(value) {
     if (!value) return undefined;
@@ -51,10 +51,15 @@ export function parseVmess(url) {
     }
 
     if (networkType === 'ws') {
+        const ws = splitEarlyData(vmessConfig.path);
         transport = {
             type: 'ws',
-            path: vmessConfig.path,
-            headers: { 'host': vmessConfig.host ? vmessConfig.host : vmessConfig.sni }
+            path: ws.path,
+            headers: { 'host': vmessConfig.host ? vmessConfig.host : vmessConfig.sni },
+            ...(ws.max_early_data && {
+                max_early_data: ws.max_early_data,
+                early_data_header_name: ws.early_data_header_name
+            })
         };
     } else if ((networkType === 'tcp' && transportType === 'http') || networkType === 'http') {
         const method = vmessConfig.method || 'GET';
