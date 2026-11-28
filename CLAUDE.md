@@ -22,7 +22,7 @@ Sublink Worker 是多平台代理订阅转换器：将各类协议（ShadowSocks
 - `npm test` — Vitest（基于 `@cloudflare/vitest-pool-workers`，依赖 `wrangler.toml`）
 - `npx vitest test/<file>.test.js` — 跑单个测试文件
 - `npm run build` — Vercel 构建（输出到 `dist/vercel/`）
-- `npm run deploy` — `setup-kv` + `wrangler deploy`
+- `npm run deploy` — `wrangler deploy`（KV 由 wrangler 自动配置，见下）
 
 无 ESLint/Prettier/Biome 配置，未启用自动格式化。
 
@@ -41,7 +41,7 @@ Sublink Worker 是多平台代理订阅转换器：将各类协议（ShadowSocks
 
 - 服务层：`ShortLinkService`（短链）、`ConfigStorageService`（base config 存储，默认 30 天 TTL）
 - Node/Vercel 优先级：Redis > Upstash/Vercel KV > 内存兜底；`DISABLE_MEMORY_KV=true` 关闭兜底
-- Cloudflare 用 `wrangler.toml` 的 `SUBLINK_KV` 与 `ASSETS` binding
+- Cloudflare 用 `wrangler.toml` 的 `SUBLINK_KV` 与 `ASSETS` binding；`SUBLINK_KV` 故意不写 `id`：wrangler 部署时沿用 Worker 上已有的同名绑定，没有则自动创建 `sublink-worker-sublink-kv`
 
 环境变量：`REDIS_URL` / `REDIS_HOST`+`REDIS_PORT` / `REDIS_USERNAME` / `REDIS_PASSWORD` / `REDIS_TLS` / `REDIS_KEY_PREFIX`、`KV_REST_API_URL`+`KV_REST_API_TOKEN`、`CONFIG_TTL_SECONDS`、`SHORT_LINK_TTL_SECONDS`、`STATIC_DIR`、`PORT`。
 

@@ -5,11 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-vercel.mjs",
-    "deploy": "npm run setup-kv && wrangler deploy",
+    "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "test": "vitest run",
-    "setup-kv": "node scripts/setup-kv.cjs",
     "build:node": "node_modules/.bin/esbuild src/platforms/node-server.js --bundle --platform=node --target=node18 --format=cjs --outfile=dist/node-server.cjs",
     "dev:node": "npm run build:node && node dist/node-server.cjs",
     "check:clients": "esbuild scripts/check-clients.js --bundle --platform=node --format=esm --packages=external --outfile=dist/check-clients.mjs --log-level=warning && node dist/check-clients.mjs"
